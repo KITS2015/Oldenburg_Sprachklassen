@@ -1,6 +1,6 @@
-# 🏩 Oldenburg Sprachklassen – Server Setup & Deployment
+# 🏫 Oldenburg Sprachklassen – Server Setup & Deployment
 
-Dieses Repository dokumentiert die vollständige Installation und Einrichtung des Webservers  
+Dieses Repository dokumentiert die vollständige Installation, Einrichtung und das Deployment des Webservers  
 **oldenburg.anmeldung.schule** für das Projekt **„Oldenburg Sprachklassen“**.
 
 ---
@@ -22,7 +22,7 @@ Dieses Repository dokumentiert die vollständige Installation und Einrichtung de
 
 ---
 
-## 🧩 1. Grundinstallation
+## 🧩 1️⃣ Grundinstallation
 
 ```bash
 su -
@@ -40,7 +40,7 @@ hostnamectl set-hostname oldenburg.anmeldung.schule
 
 ---
 
-## 🌐 2. Apache + PHP
+## 🌐 2️⃣ Apache + PHP
 
 ```bash
 sudo apt install apache2 libapache2-mod-php php php-cli php-common php-mysql \
@@ -57,7 +57,7 @@ echo "<?php phpinfo(); ?>" | sudo tee /var/www/html/info.php
 
 ---
 
-## 💄 3. MariaDB
+## 🗄️ 3️⃣ MariaDB
 
 ```bash
 sudo apt install mariadb-server -y
@@ -74,7 +74,7 @@ FLUSH PRIVILEGES;
 
 ---
 
-## 🌍 4. Apache VirtualHost
+## 🌍 4️⃣ Apache VirtualHost
 
 `/etc/apache2/sites-available/000-oldenburg.anmeldung.schule.conf`:
 
@@ -113,7 +113,7 @@ sudo systemctl reload apache2
 
 ---
 
-## 🔁 5. Reverse Proxy (Nginx Proxy Manager)
+## 🔁 5️⃣ Reverse Proxy (Nginx Proxy Manager)
 
 **Proxy Host:**
 | Feld | Wert |
@@ -134,7 +134,7 @@ proxy_set_header X-Forwarded-Proto https;
 
 ---
 
-## 🔒 6. Firewall & Sicherheit
+## 🔒 6️⃣ Firewall & Sicherheit
 
 ```bash
 sudo ufw default deny incoming
@@ -147,7 +147,7 @@ sudo dpkg-reconfigure --priority=low unattended-upgrades
 
 ---
 
-## 🧮 7. PHP-Optimierung
+## 🧰 7️⃣ PHP-Optimierung
 
 ```bash
 sudo sed -i 's/^upload_max_filesize.*/upload_max_filesize = 16M/' /etc/php/*/apache2/php.ini
@@ -157,7 +157,86 @@ sudo systemctl reload apache2
 
 ---
 
-## 🧪 8. Testseite
+## 🔄 8️⃣ Repository Deployment (Read-Only GitHub Zugriff)
+
+### 📦 Vorbereitung
+
+```bash
+sudo apt install git ca-certificates -y
+sudo install -d -o user -g www-data -m 2775 /var/www/oldenburg.anmeldung.schule
+```
+
+### 🔐 Deploy Key (empfohlen)
+
+Auf dem Server:
+```bash
+ssh-keygen -t ed25519 -C "deploy@oldenburg.anmeldung.schule"
+cat ~/.ssh/id_ed25519.pub
+```
+
+→ Schlüssel in GitHub unter  
+**Settings → Deploy keys → Add deploy key**  
+**Allow write access deaktivieren!** ✅
+
+Test:
+```bash
+sudo -u user ssh -T git@github.com
+```
+
+Erwartete Ausgabe:
+```
+Hi KITS2015! You've successfully authenticated, but GitHub does not provide shell access.
+```
+
+### 📥 Repository klonen
+
+```bash
+sudo -u user git clone git@github.com:KITS2015/Oldenburg_Sprachklassen.git /var/www/oldenburg.anmeldung.schule
+```
+
+### 🧱 Rechte
+
+```bash
+sudo chown -R user:www-data /var/www/oldenburg.anmeldung.schule
+sudo find /var/www/oldenburg.anmeldung.schule -type d -exec chmod 2755 {} \;
+sudo find /var/www/oldenburg.anmeldung.schule -type f -exec chmod 0644 {} \;
+```
+
+### 🧭 Update-Skript (Read-only Pull)
+
+`/usr/local/bin/update-sprachklassen.sh`:
+
+```bash
+#!/bin/bash
+set -e
+cd /var/www/oldenburg.anmeldung.schule
+sudo -u user git fetch --all
+sudo -u user git reset --hard origin/main
+sudo systemctl reload apache2
+```
+
+```bash
+sudo chmod +x /usr/local/bin/update-sprachklassen.sh
+```
+
+### 🕓 Cronjob (täglich um 03:00 Uhr)
+
+```bash
+sudo crontab -e
+# Einfügen:
+0 3 * * * /usr/local/bin/update-sprachklassen.sh >/dev/null 2>&1
+```
+
+Test:
+```bash
+sudo /usr/local/bin/update-sprachklassen.sh
+```
+
+Erwartung: Repository wird aktualisiert, Apache neu geladen.
+
+---
+
+## 🧪 9️⃣ Testseite
 
 `/var/www/oldenburg.anmeldung.schule/index.php`:
 
@@ -184,7 +263,7 @@ Zeit: <Datum/Uhrzeit>
 
 ---
 
-## ✅ 9. Zusammenfassung
+## ✅ 🔚 Zusammenfassung
 
 | Komponente | Pfad / Funktion |
 |-------------|-----------------|
@@ -197,10 +276,12 @@ Zeit: <Datum/Uhrzeit>
 | Firewall | UFW + Fail2Ban |
 | HTTPS-Erkennung | `X-Forwarded-Proto` |
 | Zugriff | Nur über Proxy (192.168.84.253) |
+| Repo Update | Automatisch per `git fetch --all` (read-only) |
 
 ---
 
-## 🩶 Autoren & Credits
+## 🪶 Autoren & Credits
 **Projekt:** Oldenburg Sprachklassen  
 **Betreuung & Infrastruktur:** Kuhlmann IT Solutions (KITS)  
-**Version:** 1.0 – Stand November 2025
+**Version:** 1.1 – Stand November 2025
+
