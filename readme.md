@@ -315,7 +315,6 @@ cd /var/www/oldenburg.anmeldung.schule/public
 nano kontakt.php
 /var/www/oldenburg.anmeldung.schule/deploy.sh
 
-
 ---
 
 ## 🪶 Autoren & Credits
