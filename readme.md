@@ -279,6 +279,15 @@ Zeit: <Datum/Uhrzeit>
 | Repo Update | Automatisch per `git fetch --all` (read-only) |
 
 ---
+## Script Deploy
+
+Richtung	Befehl	Beschreibung
+Beide Richtungen	deploy.sh oder deploy.sh sync	auto push / pull je nach Status
+Server → Git	deploy.sh push "Kommentar"	schiebt lokale Änderungen hoch
+Git → Server	deploy.sh pull	holt Änderungen von GitHub
+Nur prüfen	deploy.sh status	zeigt aktuellen Zustand
+
+---
 
 ## 🪶 Autoren & Credits
 **Projekt:** Oldenburg Sprachklassen  
