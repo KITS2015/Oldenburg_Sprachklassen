@@ -8,13 +8,11 @@ REMOTE="origin"
 BRANCH="main"
 LOG_FILE="$REPO_DIR/logs/git_deploy_oldenburg.log"
 
-# Log-Verzeichnis anlegen
 mkdir -p "$(dirname "$LOG_FILE")"
 
 # ── Hilfsfunktionen
 log()  { mkdir -p "$(dirname "$LOG_FILE")"; echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG_FILE"; }
 bail() { log "FEHLER: $*"; exit 1; }
-# Einzeilige Befehls-Protokollierung
 run()  { local s; s=$(printf '%q ' "$@"); log "+ ${s% }"; "$@" >>"$LOG_FILE" 2>&1; }
 
 require_cmd()  { command -v "$1" >/dev/null 2>&1 || bail "Benötigt: $1"; }
@@ -33,7 +31,6 @@ Verwendung:
 USAGE
 }
 
-# ── Checks
 require_cmd git
 require_cmd tee
 ensure_repo
@@ -46,14 +43,14 @@ case "$CMD" in
     log "SYNC gestartet (Repo: $REPO_DIR, $REMOTE/$BRANCH)"
     run git fetch --prune "$REMOTE"
 
-    # Uncommitted Änderungen vorab sichern (Auto-Commit)
-    if ! git diff --quiet || ! git diff --cached --quiet; then
-      log "Uncommitted Änderungen → Auto-Commit"
-      run git add -A
+    # Immer zuerst alles zum Index hinzufügen (fasst auch untracked an)
+    run git add -A
+    if git diff --cached --quiet; then
+      log "Keine lokalen Änderungen zum Commit."
+    else
       run git commit -m "server: WIP $(date '+%Y-%m-%d %H:%M:%S')" || true
     fi
 
-    # Ahead/Behind robust ermitteln
     BEHIND=$(git rev-list --count HEAD.."$REMOTE/$BRANCH" 2>/dev/null || echo 0)
     AHEAD=$(git rev-list --count "$REMOTE/$BRANCH"..HEAD 2>/dev/null || echo 0)
     log "Status: behind=$BEHIND ahead=$AHEAD"
@@ -61,33 +58,21 @@ case "$CMD" in
     if [[ "$AHEAD" -gt 0 && "$BEHIND" -eq 0 ]]; then
       log "Nur lokal neue Commits → push"
       run git push "$REMOTE" "$BRANCH"
-      log "SYNC abgeschlossen (push)."
-      exit 0
+      log "SYNC abgeschlossen (push)."; exit 0
     fi
 
     if [[ "$BEHIND" -gt 0 && "$AHEAD" -eq 0 ]]; then
       log "Nur remote neue Commits → pull (ff-only)"
-      run git pull --ff-only "$REMOTE" "$BRANCH" || {
-        log "Kein Fast-Forward möglich → rebase"
-        run git pull --rebase "$REMOTE" "$BRANCH"
-      }
-      log "SYNC abgeschlossen (pull)."
-      exit 0
+      run git pull --ff-only "$REMOTE" "$BRANCH" || { log "Kein FF → rebase"; run git pull --rebase "$REMOTE" "$BRANCH"; }
+      log "SYNC abgeschlossen (pull)."; exit 0
     fi
 
     if [[ "$BEHIND" -gt 0 && "$AHEAD" -gt 0 ]]; then
       log "Sowohl lokal als auch remote neue Commits → rebase"
-      set +e
-      git pull --rebase "$REMOTE" "$BRANCH" >>"$LOG_FILE" 2>&1
-      rc=$?
-      set -e
-      if [[ $rc -ne 0 ]]; then
-        bail "Rebase-Konflikte. Bitte Konflikte lösen, dann: git rebase --continue (oder --abort)."
-      fi
-      log "Rebase ok → push"
-      run git push "$REMOTE" "$BRANCH"
-      log "SYNC abgeschlossen (rebase + push)."
-      exit 0
+      set +e; git pull --rebase "$REMOTE" "$BRANCH" >>"$LOG_FILE" 2>&1; rc=$?; set -e
+      if [[ $rc -ne 0 ]]; then bail "Rebase-Konflikte. Bitte lösen, dann rebase fortsetzen."; fi
+      log "Rebase ok → push"; run git push "$REMOTE" "$BRANCH"
+      log "SYNC abgeschlossen (rebase + push)."; exit 0
     fi
 
     log "Keine Änderungen – already up-to-date."
@@ -96,17 +81,18 @@ case "$CMD" in
   pull)
     log "PULL gestartet"
     run git fetch --prune "$REMOTE"
-    run git pull --ff-only "$REMOTE" "$BRANCH" || {
-      log "Kein Fast-Forward möglich → rebase"
-      run git pull --rebase "$REMOTE" "$BRANCH"
-    }
+    run git pull --ff-only "$REMOTE" "$BRANCH" || { log "Kein FF → rebase"; run git pull --rebase "$REMOTE" "$BRANCH"; }
     log "PULL abgeschlossen."
     ;;
 
   push)
     log "PUSH gestartet"
     run git add -A
-    run git commit -m "${2:-server: update $(date '+%Y-%m-%d %H:%M:%S')}" || log "Nichts zu committen."
+    if git diff --cached --quiet; then
+      log "Nichts zu committen."
+    else
+      run git commit -m "${2:-server: update $(date '+%Y-%m-%d %H:%M:%S')}" || true
+    fi
     run git push "$REMOTE" "$BRANCH"
     log "PUSH abgeschlossen."
     ;;
