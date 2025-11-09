@@ -279,13 +279,42 @@ Zeit: <Datum/Uhrzeit>
 | Repo Update | Automatisch per `git fetch --all` (read-only) |
 
 ---
-## Script Deploy
 
-Richtung	Befehl	Beschreibung
-Beide Richtungen	deploy.sh oder deploy.sh sync	auto push / pull je nach Status
-Server → Git	deploy.sh push "Kommentar"	schiebt lokale Änderungen hoch
-Git → Server	deploy.sh pull	holt Änderungen von GitHub
-Nur prüfen	deploy.sh status	zeigt aktuellen Zustand
+## 🚀 Deployment-Skript (`deploy.sh`)
+
+Das Skript automatisiert die Synchronisation zwischen **Server und GitHub**  
+und liegt unter `/var/www/oldenburg.anmeldung.schule/deploy.sh`.
+
+### 🔧 Funktionsweise
+
+- Erkennung lokaler Änderungen → automatischer Commit (`git add -A && git commit`)
+- Prüfung auf Änderungen in GitHub → automatischer Pull (`git pull --ff-only` oder `--rebase`)
+- Push lokaler Änderungen zu GitHub (`git push origin main`)
+- Vollständiges Logging unter  
+  `/var/www/oldenburg.anmeldung.schule/logs/git_deploy_oldenburg.log`
+
+---
+
+### 🧭 Befehlsübersicht
+
+| Befehl | Richtung | Beschreibung |
+|:--------|:----------|:--------------|
+| `./deploy.sh` oder `./deploy.sh sync` | 🔄 **Beide Richtungen** | Synchronisiert Server ↔ GitHub automatisch. Erzeugt Commits bei lokalen Änderungen und pusht oder pullt je nach Status. |
+| `./deploy.sh push "Kommentar"` | ⬆️ **Server → GitHub** | Committet lokale Änderungen (inkl. neuer Dateien) und pusht sie zum Remote. |
+| `./deploy.sh pull` | ⬇️ **GitHub → Server** | Holt Änderungen aus GitHub und führt ggf. Rebase aus. |
+| `./deploy.sh status` | 📋 **Statusabfrage** | Zeigt Remote-URLs, Branch-Status und letzte Commits. |
+| `./deploy.sh help` | ❔ **Hilfe** | Zeigt Kurzbeschreibung aller Befehle. |
+
+---
+
+### 🪶 Beispielabläufe
+
+**Neue Datei auf dem Server anlegen**
+```bash
+cd /var/www/oldenburg.anmeldung.schule/public
+nano kontakt.php
+/var/www/oldenburg.anmeldung.schule/deploy.sh
+
 
 ---
 
