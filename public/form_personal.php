@@ -3,7 +3,13 @@
 declare(strict_types=1);
 
 require __DIR__ . '/wizard/_common.php';
-require_once __DIR__ . '/../app/functions_form.php'; // <- DB-Helpers (ensure_application, save_personal, ...)
+require_once __DIR__ . '/../app/functions_form.php'; // ggf. weitere DB-Helper (falls genutzt)
+
+// --- No-Email-Modus erkennen & ggf. sofort Token ausstellen ---
+$noEmailMode = (($_GET['mode'] ?? '') === 'noemail');
+if ($noEmailMode && current_access_token() === '') {
+  issue_access_token(); // Token sofort vergeben, damit Nutzer ihn direkt sieht
+}
 
 $errors = [];
 $kontakt_errors = []; // zeilenweise Fehlerhinweise
@@ -11,8 +17,10 @@ $kontakt_errors = []; // zeilenweise Fehlerhinweise
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if (!csrf_check()) { http_response_code(400); exit('Ungültige Anfrage.'); }
 
-  // Pflichtfelder
-  $req = ['name','vorname','geschlecht','geburtsdatum','geburtsort_land','staatsang','strasse','plz','telefon','email','dsgvo_ok'];
+  // Pflichtfelder (E-Mail nur, wenn NICHT im No-Email-Modus)
+  $req = ['name','vorname','geschlecht','geburtsdatum','geburtsort_land','staatsang','strasse','plz','telefon','dsgvo_ok'];
+  if (!$noEmailMode) { $req[] = 'email'; }
+
   foreach ($req as $f) {
     if ($f === 'dsgvo_ok') {
       if (($_POST['dsgvo_ok'] ?? '') !== '1') $errors['dsgvo_ok'] = 'Erforderlich.';
@@ -30,15 +38,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!preg_match('/^\d{2}\.\d{2}\.\d{4}$/', (string)$_POST['geburtsdatum'])) {
       $errors['geburtsdatum'] = 'TT.MM.JJJJ';
     } else {
-      [$t,$m,$j] = explode('.', $_POST['geburtsdatum']);
+      [$t,$m,$j] = explode('.', (string)$_POST['geburtsdatum']);
       if (!checkdate((int)$m,(int)$t,(int)$j)) $errors['geburtsdatum'] = 'Ungültiges Datum.';
     }
   }
+
   if (!isset($errors['plz']) && !preg_match('/^\d{5}$/', (string)$_POST['plz'])) $errors['plz'] = '5 Ziffern.';
   if (!isset($errors['telefon']) && !preg_match('/^[0-9 +\/()\-]+$/', (string)$_POST['telefon'])) $errors['telefon'] = 'Ungültig.';
-  if (!isset($errors['email'])) {
-    if (!filter_var((string)$_POST['email'], FILTER_VALIDATE_EMAIL)) $errors['email'] = 'Ungültige E-Mail.';
-    elseif (preg_match('/@iserv\.de$/i', (string)$_POST['email'])) $errors['email'] = 'Bitte private E-Mail (keine IServ).';
+
+  // E-Mail validieren:
+  // - Im No-Email-Modus ist E-Mail optional: nur prüfen, wenn angegeben
+  // - Sonst (Standard-Modus) ist E-Mail Pflicht (oben im $req) und wird hier zusätzlich inhaltlich geprüft
+  $email_raw = trim((string)($_POST['email'] ?? ''));
+  if ($email_raw !== '') {
+    if (!filter_var($email_raw, FILTER_VALIDATE_EMAIL)) {
+      $errors['email'] = 'Ungültige E-Mail.';
+    } elseif (preg_match('/@iserv\.de$/i', $email_raw)) {
+      $errors['email'] = 'Bitte private E-Mail (keine IServ).';
+    }
+  } else {
+    if (!$noEmailMode && !isset($errors['email'])) {
+      $errors['email'] = 'Erforderlich.';
+    }
   }
 
   // ---------- Strukturierte Zusatzkontakte ----------
@@ -86,36 +107,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       'name'            => trim((string)$_POST['name']),
       'vorname'         => trim((string)$_POST['vorname']),
       'geschlecht'      => (string)$_POST['geschlecht'],
-      'geburtsdatum'    => (string)$_POST['geburtsdatum'],
+      'geburtsdatum'    => (string)$_POST['geburtsdatum'], // TT.MM.JJJJ
       'geburtsort_land' => trim((string)$_POST['geburtsort_land']),
       'staatsang'       => trim((string)$_POST['staatsang']),
       'strasse'         => trim((string)$_POST['strasse']),
       'plz'             => trim((string)$_POST['plz']),
       'wohnort'         => $_POST['wohnort'] ?? 'Oldenburg (Oldb)',
       'telefon'         => trim((string)$_POST['telefon']),
-      'email'           => trim((string)$_POST['email']),
+      'email'           => $email_raw, // kann im No-Email-Modus leer sein
       'contacts'        => $contacts,
       'dsgvo_ok'        => (($_POST['dsgvo_ok'] ?? '') === '1' ? '1' : '0'),
     ];
 
-    // DB persistieren
-    save_personal([
-      'name'            => $_SESSION['form']['personal']['name'],
-      'vorname'         => $_SESSION['form']['personal']['vorname'],
-      'geschlecht'      => $_SESSION['form']['personal']['geschlecht'],
-      'geburtsdatum'    => $_SESSION['form']['personal']['geburtsdatum'], // TT.MM.JJJJ
-      'geburtsort_land' => $_SESSION['form']['personal']['geburtsort_land'],
-      'staatsang'       => $_SESSION['form']['personal']['staatsang'],
-      'strasse'         => $_SESSION['form']['personal']['strasse'],
-      'plz'             => $_SESSION['form']['personal']['plz'],
-      'wohnort'         => $_SESSION['form']['personal']['wohnort'],
-      'telefon'         => $_SESSION['form']['personal']['telefon'],
-      'email'           => $_SESSION['form']['personal']['email'],
-      'dsgvo_ok'        => $_SESSION['form']['personal']['dsgvo_ok'] === '1',
-      'contacts'        => $contacts, // <- wichtig: Name muss 'contacts' heißen (siehe functions_form.php)
-    ]);
+    // DB persistieren:
+    // - Wenn verifizierte E-Mail + DOB vorhanden -> normal via ensure_record_with_token (steckt in save_scope_allow_noemail)
+    // - Sonst (DOB vorhanden) -> speichern mit Token + DOB (ohne E-Mail)
+    // - Sonst (kein DOB) -> nur Session
+    $save = save_scope_allow_noemail('personal', $_SESSION['form']['personal']);
 
-    header('Location: /form_school.php'); exit;
+    // Optional UI-Feedback (wenn du flash_* in _common.php hast; sonst auskommentieren)
+    if (function_exists('flash_set')) {
+      if ($save['ok']) {
+        flash_set('success', 'Daten gespeichert. Access-Token: ' . ($save['token'] ?? current_access_token()));
+      } elseif (($save['err'] ?? '') === 'nur Session (DOB fehlt)') {
+        flash_set('info', 'Daten zwischengespeichert. Mit Geburtsdatum werden sie dauerhaft gesichert.');
+      } else {
+        flash_set('warning', 'Daten gespeichert (Session). Hinweis: '. ($save['err'] ?? ''));
+      }
+    }
+
+    header('Location: /form_school.php');
+    exit;
   }
 }
 
@@ -155,18 +177,38 @@ if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'
     .card { border-radius: 1rem; }
     .table-contacts td { vertical-align: middle; }
     .row-error { background: #fff3f3; }
+    .token-badge { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
   </style>
 </head>
 <body class="bg-light">
 <div class="container py-4">
   <div class="card shadow border-0 rounded-4">
     <div class="card-body p-4 p-md-5">
-      <h1 class="h4 mb-3">Schritt 1/4 – Persönliche Daten</h1>
-      <?php if ($errors): ?>
-        <div class="alert alert-danger">Bitte prüfen Sie die markierten Felder.</div>
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h1 class="h4 mb-0">Schritt 1/4 – Persönliche Daten</h1>
+
+        <?php
+          $tok = current_access_token();
+          if ($tok !== '') {
+            echo '<span class="badge bg-dark-subtle text-dark token-badge">Access Token: '.h($tok).'</span>';
+          }
+        ?>
+      </div>
+
+      <?php if (function_exists('flash_render')) { flash_render(); } ?>
+
+      <?php if ($noEmailMode): ?>
+        <div class="alert alert-warning mt-3">
+          <strong>Hinweis (ohne E-Mail):</strong> Bitte notieren/fotografieren Sie Ihren Zugangscode (Access-Token) oben.
+          Ohne verifizierte E-Mail ist eine Wiederherstellung nur mit <strong>Token + Geburtsdatum</strong> möglich.
+        </div>
       <?php endif; ?>
 
-      <form method="post" action="" novalidate>
+      <?php if ($errors): ?>
+        <div class="alert alert-danger mt-3">Bitte prüfen Sie die markierten Felder.</div>
+      <?php endif; ?>
+
+      <form method="post" action="" novalidate class="mt-3">
         <?php csrf_field(); ?>
         <div class="row g-3">
           <div class="col-md-6">
@@ -227,8 +269,13 @@ if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'
           </div>
 
           <div class="col-md-6">
-            <label class="form-label">Private E-Mail-Adresse* (keine IServ)</label>
-            <input name="email" type="email" class="form-control<?= has_err('email',$errors) ?>" value="<?= old('email','personal') ?>" required>
+            <label class="form-label">
+              Private E-Mail-Adresse<?= $noEmailMode ? '' : '*' ?> (keine IServ)
+            </label>
+            <input name="email" type="email" class="form-control<?= has_err('email',$errors) ?>" value="<?= old('email','personal') ?>" <?= $noEmailMode ? '' : 'required' ?>>
+            <?php if ($noEmailMode): ?>
+              <div class="form-text">Freiwillig. Ohne E-Mail ist Wiederherstellung nur mit Token + Geburtsdatum möglich.</div>
+            <?php endif; ?>
           </div>
 
           <!-- Strukturierte weitere Kontakte -->
@@ -260,14 +307,14 @@ if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'
                       <select name="kontakt_role[]" class="form-select form-select-sm">
                         <?php
                           $roles = [''=>'–','Mutter'=>'Mutter','Vater'=>'Vater','Elternteil'=>'Elternteil','Betreuer*in'=>'Betreuer*in','Einrichtung'=>'Einrichtung','Sonstiges'=>'Sonstiges'];
-                          foreach ($roles as $rv=>$rl) echo '<option value="'.h($rv).'" '.sel($rv, (string)$k['rolle']).'>'.h($rl).'</option>';
+                          foreach ($roles as $rv=>$rl) echo '<option value="'.h($rv).'" '.sel($rv, (string)($k['rolle'] ?? '')).'>'.h($rl).'</option>';
                         ?>
                       </select>
                     </td>
-                    <td><input name="kontakt_name[]" class="form-control form-control-sm" value="<?= h((string)$k['name']) ?>" placeholder="Name oder Bezeichnung"></td>
-                    <td><input name="kontakt_tel[]"  class="form-control form-control-sm" value="<?= h((string)$k['tel'])  ?>" placeholder="+49 …"></td>
-                    <td><input name="kontakt_mail[]" class="form-control form-control-sm" value="<?= h((string)$k['mail']) ?>" placeholder="name@example.org"></td>
-                    <td><input name="kontakt_notiz[]" class="form-control form-control-sm" value="<?= h((string)$k['notiz']) ?>" placeholder="z. B. Erreichbarkeit, Sprache"></td>
+                    <td><input name="kontakt_name[]" class="form-control form-control-sm" value="<?= h((string)($k['name'] ?? '')) ?>" placeholder="Name oder Bezeichnung"></td>
+                    <td><input name="kontakt_tel[]"  class="form-control form-control-sm" value="<?= h((string)($k['tel'] ?? ''))  ?>" placeholder="+49 …"></td>
+                    <td><input name="kontakt_mail[]" class="form-control form-control-sm" value="<?= h((string)($k['mail'] ?? '')) ?>" placeholder="name@example.org"></td>
+                    <td><input name="kontakt_notiz[]" class="form-control form-control-sm" value="<?= h((string)($k['notiz'] ?? '')) ?>" placeholder="z. B. Erreichbarkeit, Sprache"></td>
                     <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)" title="Zeile entfernen">&times;</button></td>
                   </tr>
                 <?php endforeach; ?>

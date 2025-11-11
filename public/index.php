@@ -1,7 +1,6 @@
-<<<<<<< Updated upstream
 <?php
 // public/index.php
-// Mehrsprachiger Einleitungstext + Infoblock (keine externen Ressourcen).
+// Mehrsprachiger Einleitungstext + Zugang/DSGVO-Infoblock (keine externen Ressourcen).
 mb_internal_encoding('UTF-8');
 
 // verfügbare Sprachen
@@ -16,14 +15,14 @@ $languages = [
   'fa' => 'فارسی',
 ];
 
-// einfache Erkennung der gewünschten Sprache (Query > Cookie > Browser > de)
+// Sprache ermitteln (Query > Cookie > Browser > de)
 $lang = strtolower($_GET['lang'] ?? ($_COOKIE['lang'] ?? ''));
 if (!array_key_exists($lang, $languages)) {
-    $accept = strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '');
-    foreach ($languages as $code => $label) {
-        if (strpos($accept, $code) !== false) { $lang = $code; break; }
-    }
-    if (!array_key_exists($lang, $languages)) $lang = 'de';
+  $accept = strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '');
+  foreach ($languages as $code => $label) {
+    if (strpos($accept, $code) !== false) { $lang = $code; break; }
+  }
+  if (!array_key_exists($lang, $languages)) $lang = 'de';
 }
 setcookie('lang', $lang, time()+60*60*24*365, '/');
 
@@ -31,7 +30,7 @@ setcookie('lang', $lang, time()+60*60*24*365, '/');
 $rtl = in_array($lang, ['ar','fa'], true);
 $dir = $rtl ? 'rtl' : 'ltr';
 
-// Texte (Einleitung + Infoblock je Sprache)
+// Texte (Einleitung + Infoblock + Buttons je Sprache)
 $t = [
   'de' => [
     'title' => 'Willkommen zur Online-Anmeldung – Sprachklassen',
@@ -41,7 +40,7 @@ $t = [
       'Die Angaben können in mehreren Sprachen ausgefüllt werden.',
       'Ihre Daten werden gemäß DSGVO vertraulich behandelt.',
     ],
-    'cta' => 'Weiter zum Formular',
+    // Info-Block (Voraussetzungen)
     'info_p' => [
       'Liebe Schülerin, lieber Schüler,',
       'Hiermit bewerben Sie sich für einen Platz in der Sprachlernklasse „BES Sprache und Integration“ einer berufsbildenden Schule (BBS) in Oldenburg. Sie bewerben sich nicht für eine bestimmte BBS. Welche Schule Sie in der Sprachlernklasse aufnimmt, wird Ihnen nach dem 20. Februar mitgeteilt.',
@@ -53,6 +52,17 @@ $t = [
       'Sie sind am 30. September dieses Jahres mindestens 16 und höchstens 18 Jahre alt.',
       'Sie sind im nächsten Schuljahr schulpflichtig.',
     ],
+    // Zugang/DSGVO-Block
+    'access_title' => 'Datenschutz & Zugang',
+    'access_intro' => 'Sie können mit oder ohne E-Mail-Adresse fortfahren. Der Zugriff auf gespeicherte Bewerbungen ist nur mit persönlichem Zugangscode (Token) und Geburtsdatum möglich.',
+    'access_points' => [
+      '<strong>Mit E-Mail:</strong> Sie erhalten einen Bestätigungscode und können Ihre Bewerbung später erneut laden.',
+      '<strong>Ohne E-Mail:</strong> Sie erhalten einen persönlichen Zugangscode (Access-Token). Bitte notieren/fotografieren Sie diesen – ohne verifizierte E-Mail ist keine Wiederherstellung möglich.',
+    ],
+    // Buttons
+    'btn_noemail'   => 'Ohne E-Mail fortfahren',
+    'btn_create'    => 'Zugang mit E-Mail erstellen',
+    'btn_load'      => 'Bewerbung laden',
   ],
   'en' => [
     'title' => 'Welcome to the Online Registration – Language Classes',
@@ -62,7 +72,6 @@ $t = [
       'You can fill in the form in different languages.',
       'Your data is handled confidentially under GDPR.',
     ],
-    'cta' => 'Go to the form',
     'info_p' => [
       'Dear student,',
       'With this application you are applying for a place in the language learning class “BES Language and Integration” at a vocational school (BBS) in Oldenburg. You are not applying to a specific BBS. After 20 February you will be informed which school will accept you into the class.',
@@ -74,6 +83,15 @@ $t = [
       'On 30 September of this year you are at least 16 and at most 18 years old.',
       'You are subject to compulsory schooling in the next school year.',
     ],
+    'access_title' => 'Privacy & Access',
+    'access_intro' => 'You can proceed with or without an email address. Access to saved applications is only possible with your personal access token and date of birth.',
+    'access_points' => [
+      '<strong>With email:</strong> You receive a verification code and can resume your application later.',
+      '<strong>Without email:</strong> You get a personal access token. Please write it down or take a photo—without a verified email there is no recovery.',
+    ],
+    'btn_noemail' => 'Proceed without email',
+    'btn_create'  => 'Create access with email',
+    'btn_load'    => 'Load application',
   ],
   'fr' => [
     'title' => 'Bienvenue – Inscription en ligne aux cours de langue',
@@ -83,7 +101,6 @@ $t = [
       'Le formulaire peut être rempli dans plusieurs langues.',
       'Vos données sont traitées de manière confidentielle (RGPD).',
     ],
-    'cta' => 'Aller au formulaire',
     'info_p' => [
       'Chère élève, cher élève,',
       'Par la présente, vous posez votre candidature pour une place dans la classe d’apprentissage de la langue « BES Langue et Intégration » d’un établissement professionnel (BBS) à Oldenburg. Vous ne candidatez pas pour un établissement précis. Après le 20 février, vous serez informé·e de l’établissement qui vous accueillera.',
@@ -95,6 +112,15 @@ $t = [
       'Au 30 septembre de cette année, vous avez au moins 16 ans et au plus 18 ans.',
       'Vous êtes soumis·e à l’obligation scolaire pour la prochaine année scolaire.',
     ],
+    'access_title' => 'Confidentialité & Accès',
+    'access_intro' => 'Vous pouvez continuer avec ou sans adresse e-mail. L’accès aux candidatures enregistrées n’est possible qu’avec votre jeton d’accès personnel et votre date de naissance.',
+    'access_points' => [
+      '<strong>Avec e-mail :</strong> vous recevez un code de vérification et pouvez reprendre votre candidature plus tard.',
+      '<strong>Sans e-mail :</strong> vous recevez un jeton d’accès personnel. Veuillez le noter/photographier — sans e-mail vérifié, aucune récupération n’est possible.',
+    ],
+    'btn_noemail' => 'Continuer sans e-mail',
+    'btn_create'  => 'Créer un accès avec e-mail',
+    'btn_load'    => 'Charger la candidature',
   ],
   'uk' => [
     'title' => 'Ласкаво просимо до онлайн-реєстрації – мовні класи',
@@ -104,7 +130,6 @@ $t = [
       'Форму можна заповнювати різними мовами.',
       'Ваші дані обробляються конфіденційно відповідно до GDPR.',
     ],
-    'cta' => 'Перейти до форми',
     'info_p' => [
       'Шановна ученице, шановний учню!',
       'Ви подаєте заявку на місце у класі вивчення мови «BES Мова та інтеграція» у професійній школі (BBS) міста Ольденбург. Ви не подаєтеся до конкретної школи. Після 20 лютого вам повідомлять, яка школа зарахує вас до класу.',
@@ -116,6 +141,15 @@ $t = [
       'станом на 30 вересня цього року вам щонайменше 16 і не більше 18 років;',
       'у наступному навчальному році ви підлягаєте обов’язковому шкільному навчанню.',
     ],
+    'access_title' => 'Конфіденційність та доступ',
+    'access_intro' => 'Ви можете продовжити з електронною поштою або без неї. Доступ до збережених заяв можливий лише за допомогою особистого токена доступу та дати народження.',
+    'access_points' => [
+      '<strong>З e-mail:</strong> ви отримаєте код підтвердження і зможете пізніше продовжити заповнення.',
+      '<strong>Без e-mail:</strong> ви отримаєте особистий токен доступу. Занотуйте/сфотографуйте його — без підтвердженої e-mail відновлення неможливе.',
+    ],
+    'btn_noemail' => 'Продовжити без e-mail',
+    'btn_create'  => 'Створити доступ за e-mail',
+    'btn_load'    => 'Завантажити заявку',
   ],
   'ar' => [
     'title' => 'مرحبًا بكم في التسجيل الإلكتروني – صفوف اللغة',
@@ -125,7 +159,6 @@ $t = [
       'يمكن تعبئة النموذج بعدة لغات.',
       'تُعالج بياناتكم بسرية وفق اللائحة العامة لحماية البيانات (GDPR).',
     ],
-    'cta' => 'الانتقال إلى النموذج',
     'info_p' => [
       'عزيزتي الطالبة، عزيزي الطالب،',
       'بهذا التقديم تتقدّم/ين للحصول على مقعد في صف تعلّم اللغة «BES اللغة والاندماج» في إحدى المدارس المهنية (BBS) في أولدنبورغ. لا تتقدّم/ين إلى مدرسة بعينها. بعد 20 فبراير سيتم إبلاغك بأي مدرسة ستقبلك في الصف.',
@@ -137,6 +170,15 @@ $t = [
       'في تاريخ 30 سبتمبر من هذا العام يكون عمرك بين 16 و18 عامًا.',
       'تكون/ين خاضعًا/ة للتعليم الإلزامي في العام الدراسي القادم.',
     ],
+    'access_title' => 'الخصوصية والوصول',
+    'access_intro' => 'يمكنك المتابعة مع عنوان بريد إلكتروني أو بدونه. لا يمكن الوصول إلى الطلبات المحفوظة إلا باستخدام رمز الوصول الشخصي وتاريخ الميلاد.',
+    'access_points' => [
+      '<strong>مع البريد الإلكتروني:</strong> ستتلقى رمز تحقق ويمكنك متابعة طلبك لاحقًا.',
+      '<strong>بدون بريد إلكتروني:</strong> ستحصل على رمز وصول شخصي. يُرجى حفظه/تصويره — بدون بريد إلكتروني مُوثَّق لا يمكن الاستعادة.',
+    ],
+    'btn_noemail' => 'المتابعة دون بريد إلكتروني',
+    'btn_create'  => 'إنشاء وصول عبر البريد',
+    'btn_load'    => 'تحميل الطلب',
   ],
   'ru' => [
     'title' => 'Добро пожаловать на онлайн-регистрацию – языковые курсы',
@@ -146,7 +188,6 @@ $t = [
       'Форму можно заполнить на разных языках.',
       'Ваши данные обрабатываются конфиденциально в соответствии с GDPR.',
     ],
-    'cta' => 'Перейти к форме',
     'info_p' => [
       'Уважаемая ученица, уважаемый ученик!',
       'Этой заявкой вы подаётесь на место в языковом классе «BES Язык и интеграция» профессиональной школы (BBS) в Ольденбурге. Вы не подаётесь в конкретную школу. После 20 февраля вам сообщат, какая школа примет вас в класс.',
@@ -158,6 +199,15 @@ $t = [
       'на 30 сентября текущего года вам не менее 16 и не более 18 лет;',
       'в следующем учебном году на вас распространяется обязанность школьного обучения.',
     ],
+    'access_title' => 'Конфиденциальность и доступ',
+    'access_intro' => 'Можно продолжить с электронной почтой или без неё. Доступ к сохранённым заявлениям возможен только с личным токеном доступа и датой рождения.',
+    'access_points' => [
+      '<strong>С e-mail:</strong> вы получите код подтверждения и сможете позже продолжить.',
+      '<strong>Без e-mail:</strong> вы получите личный токен доступа. Запишите/сфотографируйте его — без подтверждённого e-mail восстановление невозможно.',
+    ],
+    'btn_noemail' => 'Продолжить без e-mail',
+    'btn_create'  => 'Создать доступ через e-mail',
+    'btn_load'    => 'Загрузить заявление',
   ],
   'tr' => [
     'title' => 'Çevrimiçi Kayıt – Dil Kursları',
@@ -167,10 +217,9 @@ $t = [
       'Formu birden fazla dilde doldurabilirsiniz.',
       'Verileriniz GDPR kapsamında gizli tutulur.',
     ],
-    'cta' => 'Forma git',
     'info_p' => [
       'Sevgili öğrenci,',
-      'Bu başvuru ile Oldenburg’daki bir mesleki okulda (BBS) “BES Dil ve Uyum” dil öğrenme sınıfına başvuruyorsunuz. Belirli bir BBS’e başvurmuyorsunuz. 20 Şubat’tan sonra hangi okulun sizi sınıfa kabul edeceği size bildirilecektir.',
+      'Bu başvuru ile Oldenburg’daki bir mesleki okulda (BBS) “BES Dil ve Uyum” dil öğrenme sınıfına başvuruyorsunuz. Belirli bir BBS’e başvurmuyorsunuz. 20 Şubat’tan sonra hangi okulun sizi kabul edeceği bildirilecektir.',
       'Aşağıdaki koşulların tümü sağlandığında kabul edilebilirsiniz:',
     ],
     'info_bullets' => [
@@ -179,6 +228,15 @@ $t = [
       'Bu yıl 30 Eylül tarihi itibarıyla yaşınız en az 16, en fazla 18’dir.',
       'Gelecek öğretim yılında okul zorunluluğuna tabisiniz.',
     ],
+    'access_title' => 'Gizlilik ve Erişim',
+    'access_intro' => 'E-posta ile veya e-posta olmadan devam edebilirsiniz. Kaydedilmiş başvurulara erişim yalnızca kişisel erişim kodu ve doğum tarihi ile mümkündür.',
+    'access_points' => [
+      '<strong>E-postayla:</strong> Doğrulama kodu alır ve başvurunuza daha sonra devam edebilirsiniz.',
+      '<strong>E-posta olmadan:</strong> Kişisel bir erişim kodu alırsınız. Lütfen not edin/fotoğraflayın — doğrulanmış e-posta olmadan kurtarma yoktur.',
+    ],
+    'btn_noemail' => 'E-posta olmadan devam et',
+    'btn_create'  => 'E-posta ile erişim oluştur',
+    'btn_load'    => 'Başvuruyu yükle',
   ],
   'fa' => [
     'title' => 'ثبت‌نام آنلاین – کلاس‌های زبان',
@@ -188,7 +246,6 @@ $t = [
       'می‌توانید فرم را به چند زبان تکمیل کنید.',
       'داده‌های شما مطابق مقررات GDPR محرمانه نگه‌داری می‌شود.',
     ],
-    'cta' => 'ورود به فرم',
     'info_p' => [
       'دانش‌آموز گرامی،',
       'با این درخواست برای یک جایگاه در کلاس یادگیری زبان «BES زبان و ادغام» در یکی از مدارس فنی‌وحرفه‌ای (BBS) اولدن‌بورگ اقدام می‌کنید. شما برای یک مدرسه مشخص اقدام نمی‌کنید. پس از ۲۰ فوریه به شما اطلاع داده می‌شود که کدام مدرسه شما را در کلاس می‌پذیرد.',
@@ -200,6 +257,15 @@ $t = [
       'در تاریخ ۳۰ سپتامبر امسال سن شما حداقل ۱۶ و حداکثر ۱۸ سال است.',
       'در سال تحصیلی آینده مشمول تحصیل اجباری هستید.',
     ],
+    'access_title' => 'حریم خصوصی و دسترسی',
+    'access_intro' => 'می‌توانید با ایمیل یا بدون آن ادامه دهید. دسترسی به درخواست‌های ذخیره‌شده فقط با کُد دسترسی شخصی و تاریخ تولد امکان‌پذیر است.',
+    'access_points' => [
+      '<strong>با ایمیل:</strong> یک کُد تأیید دریافت می‌کنید و می‌توانید بعداً ادامه دهید.',
+      '<strong>بدون ایمیل:</strong> یک کُد دسترسی شخصی دریافت می‌کنید. لطفاً آن را یادداشت/تصویر کنید — بدون ایمیل تأیید شده، بازیابی ممکن نیست.',
+    ],
+    'btn_noemail' => 'ادامه بدون ایمیل',
+    'btn_create'  => 'ایجاد دسترسی با ایمیل',
+    'btn_load'    => 'بارگذاری درخواست',
   ],
 ];
 
@@ -245,7 +311,7 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
           <?php foreach ($text['bullets'] as $li): ?><li><?= h($li) ?></li><?php endforeach; ?>
         </ul>
 
-        <!-- Infoblock je Sprache -->
+        <!-- Infoblock (Voraussetzungen) -->
         <div class="alert alert-info mb-4">
           <?php foreach (($text['info_p'] ?? []) as $p): ?>
             <p class="mb-2"><?= h($p) ?></p>
@@ -257,78 +323,30 @@ function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
           <?php endif; ?>
         </div>
 
-        <a href="/form_personal.php" class="btn btn-primary">
-          <?= h($text['cta']) ?>
-        </a>
-=======
-<?php /* Keine externen Ressourcen, alles lokal */ ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="utf-8" />
-  <title>Online-Anmeldung Oldenburg</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <!-- Zugang/DSGVO-Infoblock -->
+        <div class="alert alert-secondary mb-4">
+          <h2 class="h5 mb-2"><?= h($text['access_title']) ?></h2>
+          <p class="mb-2"><?= h($text['access_intro']) ?></p>
+          <?php if (!empty($text['access_points'])): ?>
+            <ul class="mb-0">
+              <?php foreach ($text['access_points'] as $li): ?>
+                <li><?= $li /* enthält <strong> … */ ?></li>
+              <?php endforeach; ?>
+            </ul>
+          <?php endif; ?>
+        </div>
 
-  <!-- Lokales Bootstrap CSS -->
-  <link rel="stylesheet" href="/assets/bootstrap/bootstrap.min.css" />
-
-  <!-- Euer lokales Form-Branding -->
-  <link rel="stylesheet" href="/assets/form.css" />
-</head>
-<body class="bg-light">
-  <div class="container py-5">
-    <div class="card shadow border-0 rounded-4">
-      <div class="card-body p-4 p-md-5">
-        <h1 class="h3 text-center mb-4">Anmeldung – Sprachklassen</h1>
-
-        <form method="post" action="/submit.php" novalidate>
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label for="vorname" class="form-label">Vorname</label>
-              <input id="vorname" name="vorname" type="text" class="form-control" required />
-            </div>
-            <div class="col-md-6">
-              <label for="nachname" class="form-label">Nachname</label>
-              <input id="nachname" name="nachname" type="text" class="form-control" required />
-            </div>
-            <div class="col-md-6">
-              <label for="email" class="form-label">E-Mail</label>
-              <input id="email" name="email" type="email" class="form-control" autocomplete="email" />
-            </div>
-            <div class="col-md-6">
-              <label for="telefon" class="form-label">Telefon</label>
-              <input id="telefon" name="telefon" type="tel" class="form-control" />
-            </div>
-            <div class="col-12">
-              <label for="nachricht" class="form-label">Nachricht</label>
-              <textarea id="nachricht" name="nachricht" rows="4" class="form-control"></textarea>
-            </div>
-            <div class="col-12">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="dsgvo" name="dsgvo" required>
-                <label class="form-check-label" for="dsgvo">
-                  Ich habe die Datenschutzhinweise gelesen und bin einverstanden.
-                </label>
-              </div>
-            </div>
-            <div class="col-12">
-              <button class="btn btn-primary w-100" type="submit">Absenden</button>
-            </div>
-          </div>
-        </form>
-
->>>>>>> Stashed changes
+        <!-- Aktionen -->
+        <div class="d-flex flex-column flex-md-row gap-2">
+          <a href="/form_personal.php?mode=noemail" class="btn btn-primary flex-fill"><?= h($text['btn_noemail']) ?></a>
+          <a href="/access_create.php" class="btn btn-outline-primary flex-fill"><?= h($text['btn_create']) ?></a>
+          <a href="/access_login.php" class="btn btn-outline-secondary flex-fill"><?= h($text['btn_load']) ?></a>
+        </div>
       </div>
     </div>
   </div>
 
-<<<<<<< Updated upstream
   <script src="/assets/bootstrap/bootstrap.bundle.min.js"></script>
   <?php include __DIR__ . '/partials/footer.php'; ?>
-
-=======
-  <!-- Lokales Bootstrap JS (enthält Popper) -->
-  <script src="/assets/bootstrap/bootstrap.bundle.min.js"></script>
->>>>>>> Stashed changes
 </body>
 </html>
