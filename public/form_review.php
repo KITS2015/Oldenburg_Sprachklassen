@@ -1,71 +1,71 @@
 <?php
 // public/form_review.php
+declare(strict_types=1);
+
 require __DIR__ . '/wizard/_common.php';
 require_step('review');
 
-// Wenn „Bewerben“ gedrrückt wurde:
+// ===== Wenn „Bewerben“ gedrückt wurde =====
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if (!csrf_check()) { http_response_code(400); exit('Ungültige Anfrage.'); }
 
-  // TODO: Speicherung (DB) / E-Mail (PHPMailer) / Ticket-System
+  // TODO: Hier echte Persistierung/Benachrichtigung einbauen
   // save_to_db($_SESSION['form']);
   // send_mail($_SESSION['form']);
 
-  // Session aufräumen (optional: Referenznummer generieren)
-  $ref = 'ANM-' . date('Ymd-His') . '-' . substr(bin2hex(random_bytes(3)),0,6);
+  // Referenz erzeugen, Session aufräumen
+  $ref = 'ANM-' . date('Ymd-His') . '-' . substr(bin2hex(random_bytes(3)), 0, 6);
   $_SESSION['last_ref'] = $ref;
   unset($_SESSION['form']);
 
-  header('Content-Type: text/html; charset=UTF-8');
+  // Header-Infos (Bestätigungsseite)
+  $hdr = [
+    'title'   => 'Bestätigung',
+    'status'  => 'success',
+    'message' => 'Bewerbung übermittelt',
+    'token'   => current_access_token() ?: null,
+  ];
+  require __DIR__ . '/partials/header.php';
   ?>
-  <!doctype html>
-  <html lang="de">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bestätigung</title>
-    <link rel="stylesheet" href="/assets/bootstrap/bootstrap.min.css">
-    <link rel="stylesheet" href="/assets/form.css">
-  </head>
-  <body class="bg-light">
-    <div class="container py-5">
-      <div class="card shadow border-0 rounded-4">
-        <div class="card-body p-4 p-md-5">
-          <h1 class="h4 text-success mb-3">Vielen Dank! Ihre Bewerbung wurde übermittelt.</h1>
-          <p class="mb-3">Referenz: <strong><?= htmlspecialchars($ref, ENT_QUOTES, 'UTF-8') ?></strong></p>
-          <a class="btn btn-primary" href="/index.php">Zur Startseite</a>
-        </div>
+  <div class="container py-5">
+    <div class="card shadow border-0 rounded-4">
+      <div class="card-body p-4 p-md-5">
+        <h1 class="h4 text-success mb-3">Vielen Dank! Ihre Bewerbung wurde übermittelt.</h1>
+        <p class="mb-3">Referenz: <strong><?= h($ref) ?></strong></p>
+        <a class="btn btn-primary" href="/index.php">Zur Startseite</a>
       </div>
     </div>
-    <script src="/assets/bootstrap/bootstrap.bundle.min.js"></script>
-  </body>
-  </html>
+  </div>
+  <script src="/assets/bootstrap/bootstrap.bundle.min.js"></script>
+  <?php include __DIR__ . '/partials/footer.php'; ?>
+  </body></html>
   <?php
   exit;
 }
 
-// Daten für Anzeige
+// ===== Daten für Anzeige =====
 $p = $_SESSION['form']['personal'] ?? [];
 $s = $_SESSION['form']['school']   ?? [];
 $u = $_SESSION['form']['upload']   ?? [];
+
+// Header-Infos (oben die grüne Statusleiste + Token-Badge)
+$saveInfo = $_SESSION['last_save'] ?? null;
+$hdr = [
+  'title'   => 'Schritt 4/4 – Zusammenfassung & Bewerbung',
+  'status'  => ($saveInfo && ($saveInfo['ok'] ?? false)) ? 'success' : null,
+  'message' => ($saveInfo && ($saveInfo['ok'] ?? false)) ? 'Daten gespeichert.' : null,
+  'token'   => current_access_token() ?: null,
+];
+require __DIR__ . '/partials/header.php';
+require APP_APPDIR . '/header.php';       // App-Header (Status/Token)
 ?>
-<!doctype html>
-<html lang="de">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Schritt 4/4 – Zusammenfassung & Bewerbung</title>
-  <link rel="stylesheet" href="/assets/bootstrap/bootstrap.min.css">
-  <link rel="stylesheet" href="/assets/form.css">
-  <style>.card{border-radius:1rem}</style>
-</head>
-<body class="bg-light">
+
 <div class="container py-4">
   <div class="card shadow border-0 rounded-4">
     <div class="card-body p-4 p-md-5">
-      <h1 class="h4 mb-3">Schritt 4/4 – Zusammenfassung & Bewerbung</h1>
+      <h1 class="h4 mb-3">Schritt 4/4 – Zusammenfassung &amp; Bewerbung</h1>
 
-      <!-- Hinweistext (dein gewünschter Inhalt) -->
+      <!-- Hinweistext -->
       <div class="alert alert-info">
         <p class="mb-2">Liebe Schülerin, lieber Schüler,</p>
         <p class="mb-2">
@@ -80,9 +80,7 @@ $u = $_SESSION['form']['upload']   ?? [];
         </p>
         <p class="mb-1">Sie erhalten mit der Zusage der Schule die Aufforderung, diese Dateien nachzureichen
           (falls Sie es heute noch nicht hochgeladen haben):</p>
-        <ul class="mb-0">
-          <li>letztes Halbjahreszeugnis</li>
-        </ul>
+        <ul class="mb-0"><li>letztes Halbjahreszeugnis</li></ul>
       </div>
 
       <p class="text-muted">Bitte prüfen Sie Ihre Angaben. Mit „Bewerben“ senden Sie die Daten ab.</p>
@@ -90,58 +88,85 @@ $u = $_SESSION['form']['upload']   ?? [];
       <!-- Zusammenfassung aller Eingaben -->
       <div class="row g-3">
         <div class="col-12"><strong>Persönliche Daten</strong></div>
-        <div class="col-md-6">Name: <?= htmlspecialchars($p['name'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
-        <div class="col-md-6">Vorname: <?= htmlspecialchars($p['vorname'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
-        <div class="col-md-6">Geschlecht: <?= htmlspecialchars($p['geschlecht'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
-        <div class="col-md-6">Geboren am: <?= htmlspecialchars($p['geburtsdatum'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
-        <div class="col-md-6">Geburtsort/Land: <?= htmlspecialchars($p['geburtsort_land'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
-        <div class="col-md-6">Staatsangehörigkeit: <?= htmlspecialchars($p['staatsang'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
-        <div class="col-md-8">Straße, Nr.: <?= htmlspecialchars($p['strasse'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
-        <div class="col-md-4">PLZ: <?= htmlspecialchars($p['plz'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
-        <div class="col-md-6">Wohnort: <?= htmlspecialchars($p['wohnort'] ?? 'Oldenburg (Oldb)', ENT_QUOTES, 'UTF-8') ?></div>
-        <div class="col-md-6">Telefon: <?= htmlspecialchars($p['telefon'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
-        <div class="col-md-6">E-Mail: <?= htmlspecialchars($p['email'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
-        <div class="col-12">Weitere Kontakte: <?= nl2br(htmlspecialchars($p['kontakt'] ?? '', ENT_QUOTES, 'UTF-8')) ?></div>
+        <div class="col-md-6">Name: <?= h($p['name'] ?? '') ?></div>
+        <div class="col-md-6">Vorname: <?= h($p['vorname'] ?? '') ?></div>
+        <div class="col-md-6">Geschlecht: <?= h($p['geschlecht'] ?? '') ?></div>
+        <div class="col-md-6">Geboren am: <?= h($p['geburtsdatum'] ?? '') ?></div>
+        <div class="col-md-6">Geburtsort/Land: <?= h($p['geburtsort_land'] ?? '') ?></div>
+        <div class="col-md-6">Staatsangehörigkeit: <?= h($p['staatsang'] ?? '') ?></div>
+        <div class="col-md-8">Straße, Nr.: <?= h($p['strasse'] ?? '') ?></div>
+        <div class="col-md-4">PLZ: <?= h($p['plz'] ?? '') ?></div>
+        <div class="col-md-6">Wohnort: <?= h($p['wohnort'] ?? 'Oldenburg (Oldb)') ?></div>
+        <div class="col-md-6">Telefon: <?= h($p['telefon'] ?? '') ?></div>
+        <div class="col-md-6">E-Mail: <?= h($p['email'] ?? '') ?></div>
 
-        <div class="col-12 mt-3"><strong>Schule & Interessen</strong></div>
+        <div class="col-12">
+          <div class="mt-2"><em>Weitere Kontakte:</em></div>
+          <?php
+            $contacts = $p['contacts'] ?? [];
+            if ($contacts && is_array($contacts)):
+          ?>
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Rolle</th><th>Name / Einrichtung</th><th>Telefon</th><th>E-Mail</th><th>Notiz</th>
+                  </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($contacts as $c): ?>
+                  <tr>
+                    <td><?= h($c['rolle'] ?? '') ?></td>
+                    <td><?= h($c['name']  ?? '') ?></td>
+                    <td><?= h($c['tel']   ?? '') ?></td>
+                    <td><?= h($c['mail']  ?? '') ?></td>
+                    <td><?= h($c['notiz'] ?? '') ?></td>
+                  </tr>
+                <?php endforeach; ?>
+                </tbody>
+              </table>
+            </div>
+          <?php else: ?>
+            <div>-</div>
+          <?php endif; ?>
+        </div>
+
+        <div class="col-12 mt-3"><strong>Schule &amp; Interessen</strong></div>
         <div class="col-md-6">
           Aktuelle Schule:
           <?php
             $curSchoolKey = $s['schule_aktuell'] ?? '';
-            echo htmlspecialchars($SCHULEN[$curSchoolKey] ?? $curSchoolKey, ENT_QUOTES, 'UTF-8');
+            echo h($SCHULEN[$curSchoolKey] ?? $curSchoolKey);
           ?>
         </div>
-        <div class="col-md-6">Klassenlehrer*in: <?= htmlspecialchars($s['klassenlehrer'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
-        <div class="col-md-6">E-Mail Lehrkraft: <?= htmlspecialchars($s['mail_lehrkraft'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
+        <div class="col-md-6">Klassenlehrer*in: <?= h($s['klassenlehrer'] ?? '') ?></div>
+        <div class="col-md-6">E-Mail Lehrkraft: <?= h($s['mail_lehrkraft'] ?? '') ?></div>
         <div class="col-md-6">
           Seit wann an der Schule:
           <?php
-            // Bevorzugt das normalisierte Feld, sonst Rekonstruktion
             if (!empty($s['seit_wann_schule'])) {
-              echo htmlspecialchars($s['seit_wann_schule'], ENT_QUOTES, 'UTF-8');
+              echo h($s['seit_wann_schule']);
             } else {
               $parts = [];
               if (!empty($s['seit_monat'])) $parts[] = $s['seit_monat'];
               if (!empty($s['seit_jahr']))  $parts[] = $s['seit_jahr'];
-              echo $parts ? htmlspecialchars(implode('.', $parts), ENT_QUOTES, 'UTF-8') : '-';
+              echo $parts ? h(implode('.', $parts)) : '-';
             }
           ?>
         </div>
-        <div class="col-md-6">Jahre in Deutschland: <?= htmlspecialchars($s['jahre_in_de'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
-        <div class="col-md-6">Schule im Herkunftsland: <?= htmlspecialchars($s['schule_herkunft'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
+        <div class="col-md-6">Jahre in Deutschland: <?= h($s['jahre_in_de'] ?? '') ?></div>
+        <div class="col-md-6">Schule im Herkunftsland: <?= h($s['schule_herkunft'] ?? '') ?></div>
         <?php if (($s['schule_herkunft'] ?? '') === 'ja'): ?>
-          <div class="col-md-6">Jahre Schule im Herkunftsland: <?= htmlspecialchars($s['jahre_schule_herkunft'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
+          <div class="col-md-6">Jahre Schule im Herkunftsland: <?= h($s['jahre_schule_herkunft'] ?? '') ?></div>
         <?php endif; ?>
-        <div class="col-md-6">Familiensprache: <?= htmlspecialchars($s['familiensprache'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
-        <div class="col-md-6">Deutsch-Niveau: <?= htmlspecialchars($s['deutsch_niveau'] ?? '', ENT_QUOTES, 'UTF-8') ?></div>
+        <div class="col-md-6">Familiensprache: <?= h($s['familiensprache'] ?? '') ?></div>
+        <div class="col-md-6">Deutsch-Niveau: <?= h($s['deutsch_niveau'] ?? '') ?></div>
         <div class="col-12">
           Interessen:
           <?php
             $lbls = [];
-            foreach (($s['interessen'] ?? []) as $k) {
-              $lbls[] = $INTERESSEN[$k] ?? $k;
-            }
-            echo $lbls ? htmlspecialchars(implode(', ', $lbls), ENT_QUOTES, 'UTF-8') : '-';
+            foreach (($s['interessen'] ?? []) as $k) $lbls[] = $INTERESSEN[$k] ?? $k;
+            echo $lbls ? h(implode(', ', $lbls)) : '-';
           ?>
         </div>
 
@@ -159,8 +184,6 @@ $u = $_SESSION['form']['upload']   ?? [];
     </div>
   </div>
 </div>
+
 <script src="/assets/bootstrap/bootstrap.bundle.min.js"></script>
 <?php include __DIR__ . '/partials/footer.php'; ?>
-
-</body>
-</html>
