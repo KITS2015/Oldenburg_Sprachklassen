@@ -5,15 +5,17 @@ declare(strict_types=1);
 require __DIR__ . '/wizard/_common.php';
 require_once __DIR__ . '/../app/functions_form.php'; // DB-/Save-Helper
 
-// --- Modus "ohne E-Mail" erkennen ---
+// ---------- Seitentitel (für <title>) ----------
+$title = 'Schritt 1/4 – Persönliche Daten';
+
+// ---------- Modus "ohne E-Mail" erkennen ----------
 $noEmailMode = (($_GET['mode'] ?? '') === 'noemail');
 if ($noEmailMode && current_access_token() === '') {
-    issue_access_token(); // sofort anzeigen
+    issue_access_token(); // Token sofort generieren und oben in der Topbar anzeigen
 }
 
 $errors = [];
 $kontakt_errors = [];
-$lastSave = null; // für Header-Statusmeldung
 
 // ---------- POST: Validierung & Speichern ----------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -99,24 +101,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'name'            => trim((string)$_POST['name']),
             'vorname'         => trim((string)$_POST['vorname']),
             'geschlecht'      => (string)$_POST['geschlecht'],
-            'geburtsdatum'    => (string)$_POST['geburtsdatum'],
+            'geburtsdatum'    => (string)$_POST['geburtsdatum'], // TT.MM.JJJJ
             'geburtsort_land' => trim((string)$_POST['geburtsort_land']),
             'staatsang'       => trim((string)$_POST['staatsang']),
             'strasse'         => trim((string)$_POST['strasse']),
             'plz'             => trim((string)$_POST['plz']),
             'wohnort'         => $_POST['wohnort'] ?? 'Oldenburg (Oldb)',
             'telefon'         => trim((string)$_POST['telefon']),
-            'email'           => $email_raw,      // im No-Email-Modus leer möglich
+            'email'           => $email_raw, // im No-Email-Modus leer möglich
             'contacts'        => $contacts,
             'dsgvo_ok'        => (($_POST['dsgvo_ok'] ?? '') === '1' ? '1' : '0'),
         ];
 
-        // Speichern (mit/ohne E-Mail, je nach Verfügbarkeit)
+        // Persistieren (mit/ohne E-Mail je nach Verfügbarkeit)
         $save = save_scope_allow_noemail('personal', $_SESSION['form']['personal']);
         $_SESSION['last_save'] = $save;
-        $lastSave = $save;
 
-        // Flash für Formular
+        // Optionales UI-Feedback
         if (function_exists('flash_set')) {
             if ($save['ok']) {
                 flash_set('success', 'Daten gespeichert. Access-Token: ' . ($save['token'] ?? current_access_token()));
@@ -132,21 +133,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// ---------- Header-Infos vorbereiten (für Badge + Pfeil) ----------
+// ---------- Token/Status für Topbar vorbereiten ----------
 $tok = current_access_token();
-$saveInfo = $_SESSION['last_save'] ?? null;
 
-$hdr = [
-    'title'   => 'Schritt 1/4 – Persönliche Daten',
-    // status: success|danger|warning|null
-    'status'  => ($saveInfo && ($saveInfo['ok'] ?? false)) ? 'success' : null,
-    'message' => ($saveInfo && ($saveInfo['ok'] ?? false)) ? 'Daten gespeichert.' : null,
-    'token'   => $tok ?: null,
-];
-
-require_once __DIR__ . '/partials/header.php';
-
-// ---------- ab hier NUR Seiteninhalt, kein Doctype/Head/Body öffnen ----------
+// ---------- Dokument-Header + Topbar ----------
+require __DIR__ . '/partials/header.php';   // öffnet <html>…<body>, bindet CSS
+require APP_APPDIR . '/header.php';         // Token-/Status-Topbar
 ?>
 <div class="container py-4">
   <?php if (function_exists('flash_render')) { flash_render(); } ?>
@@ -161,6 +153,8 @@ require_once __DIR__ . '/partials/header.php';
   <?php if ($errors): ?>
     <div class="alert alert-danger">Bitte prüfen Sie die markierten Felder.</div>
   <?php endif; ?>
+
+  <h1 class="h4 mb-3">Schritt 1/4 – Persönliche Daten</h1>
 
   <form method="post" action="" novalidate class="mt-3">
     <?php csrf_field(); ?>
@@ -232,9 +226,11 @@ require_once __DIR__ . '/partials/header.php';
         <?php endif; ?>
       </div>
 
-      <!-- Kontakte -->
+      <!-- Strukturierte weitere Kontakte -->
       <div class="col-12">
-        <label class="form-label">Weitere Kontaktdaten <span class="text-muted">(z. B. Eltern, Betreuer, Einrichtung)</span></label>
+        <label class="form-label">
+          Weitere Kontaktdaten <span class="text-muted">(z. B. Eltern, Betreuer, Einrichtung)</span>
+        </label>
         <?php if (!empty($errors['kontakte'])): ?>
           <div class="text-danger mb-2 small"><?= h($errors['kontakte']) ?></div>
         <?php endif; ?>
@@ -328,7 +324,7 @@ require_once __DIR__ . '/partials/header.php';
           </div>
         <?php endif; ?>
       </div>
-      <!-- Ende Kontakte -->
+      <!-- Ende strukturierte Kontakte -->
 
       <div class="col-12">
         <div class="form-check">
@@ -348,7 +344,6 @@ require_once __DIR__ . '/partials/header.php';
   </form>
 </div>
 
-<script src="/assets/bootstrap/bootstrap.bundle.min.js"></script>
 <script>
 function addRow(){
   const tpl = document.getElementById('row-template');
@@ -364,4 +359,6 @@ function removeRow(btn){
 }
 </script>
 
-<?php include __DIR__ . '/partials/footer.php'; ?>
+<?php
+// Footer (inkl. Bootstrap JS) und </body></html> schließen
+require __DIR__ . '/partials/footer.php';

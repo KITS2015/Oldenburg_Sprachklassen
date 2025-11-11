@@ -1,7 +1,9 @@
 <?php
 // public/index.php
-// Mehrsprachiger Einleitungstext + Zugang/DSGVO-Infoblock (keine externen Ressourcen).
-mb_internal_encoding('UTF-8');
+// Mehrsprachiger Einleitungstext + Zugang/DSGVO-Infoblock
+declare(strict_types=1);
+
+require __DIR__ . '/wizard/_common.php'; // Sessions, h(), etc.
 
 // verfügbare Sprachen
 $languages = [
@@ -269,84 +271,89 @@ $t = [
   ],
 ];
 
+// Für Kürze: Restsprachen aus deinem Snippet übernehmen
+$t += array_intersect_key($GLOBALS['t'] ?? [], array_flip(['fr','uk','ar','ru','tr','fa'])); // falls du sie separat lädst
+
 $text = $t[$lang] ?? $t['de'];
 
-// Hilfsfunktion
-function h($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
+// ---------- Seitentitel & HTML-Parameter für allgemeinen Header ----------
+$title      = $text['title'];
+$html_lang  = $lang;
+$html_dir   = $dir;
+
+// ---------- Allgemeiner Header + (optionale) Token-/Status-Topbar ----------
+require __DIR__ . '/partials/header.php';  // öffnet <html><head>… CSS … <body>
+require APP_APPDIR . '/header.php';        // zeigt Status/Token, wenn vorhanden
 ?>
-<!doctype html>
-<html lang="<?= h($lang) ?>" dir="<?= $dir ?>">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><?= h($text['title']) ?></title>
-  <link rel="stylesheet" href="/assets/bootstrap/bootstrap.min.css">
-  <link rel="stylesheet" href="/assets/form.css">
-  <style>
-    .lang-switch { gap: .5rem; }
-    .card { border-radius: 1rem; }
-    <?php if ($rtl): ?>body { text-align: right; }<?php endif; ?>
-  </style>
-</head>
-<body class="bg-light">
-  <div class="container py-5">
-    <!-- Sprachwahl -->
-    <div class="d-flex lang-switch justify-content-end mb-3">
-      <form method="get" action="" class="d-flex lang-switch">
-        <label class="me-2 fw-semibold" for="lang">Sprache / Language:</label>
-        <select class="form-select form-select-sm" name="lang" id="lang" onchange="this.form.submit()" style="max-width: 220px;">
-          <?php foreach ($languages as $code => $label): ?>
-            <option value="<?= h($code) ?>" <?= $code===$lang?'selected':''; ?>><?= h($label) ?></option>
-          <?php endforeach; ?>
-        </select>
-        <noscript><button class="btn btn-sm btn-primary ms-2">OK</button></noscript>
-      </form>
-    </div>
+<style>
+  .lang-switch { gap: .5rem; }
+  .card { border-radius: 1rem; }
+  <?php if ($rtl): ?> body { text-align: right; } <?php endif; ?>
+</style>
 
-    <div class="card shadow border-0">
-      <div class="card-body p-4 p-md-5">
-        <h1 class="h3 mb-3"><?= h($text['title']) ?></h1>
-        <p class="lead mb-4"><?= h($text['lead']) ?></p>
-        <ul class="mb-4">
-          <?php foreach ($text['bullets'] as $li): ?><li><?= h($li) ?></li><?php endforeach; ?>
-        </ul>
+<div class="container py-5">
+  <!-- Sprachwahl -->
+  <div class="d-flex lang-switch justify-content-end mb-3">
+    <form method="get" action="" class="d-flex lang-switch">
+      <label class="me-2 fw-semibold" for="lang">Sprache / Language:</label>
+      <select class="form-select form-select-sm" name="lang" id="lang" onchange="this.form.submit()" style="max-width: 220px;">
+        <?php foreach ($languages as $code => $label): ?>
+          <option value="<?= h($code) ?>" <?= $code===$lang?'selected':''; ?>><?= h($label) ?></option>
+        <?php endforeach; ?>
+      </select>
+      <noscript><button class="btn btn-sm btn-primary ms-2">OK</button></noscript>
+    </form>
+  </div>
 
-        <!-- Infoblock (Voraussetzungen) -->
-        <div class="alert alert-info mb-4">
-          <?php foreach (($text['info_p'] ?? []) as $p): ?>
-            <p class="mb-2"><?= h($p) ?></p>
-          <?php endforeach; ?>
-          <?php if (!empty($text['info_bullets'])): ?>
-            <ul class="mb-0">
-              <?php foreach ($text['info_bullets'] as $li): ?><li><?= h($li) ?></li><?php endforeach; ?>
-            </ul>
-          <?php endif; ?>
-        </div>
+  <div class="card shadow border-0">
+    <div class="card-body p-4 p-md-5">
+      <h1 class="h3 mb-3"><?= h($text['title']) ?></h1>
+      <p class="lead mb-4"><?= h($text['lead']) ?></p>
+      <ul class="mb-4">
+        <?php foreach (($text['bullets'] ?? []) as $li): ?>
+          <li><?= h($li) ?></li>
+        <?php endforeach; ?>
+      </ul>
 
-        <!-- Zugang/DSGVO-Infoblock -->
-        <div class="alert alert-secondary mb-4">
-          <h2 class="h5 mb-2"><?= h($text['access_title']) ?></h2>
-          <p class="mb-2"><?= h($text['access_intro']) ?></p>
-          <?php if (!empty($text['access_points'])): ?>
-            <ul class="mb-0">
-              <?php foreach ($text['access_points'] as $li): ?>
-                <li><?= $li /* enthält <strong> … */ ?></li>
-              <?php endforeach; ?>
-            </ul>
-          <?php endif; ?>
-        </div>
+      <!-- Infoblock (Voraussetzungen) -->
+      <?php if (!empty($text['info_p']) || !empty($text['info_bullets'])): ?>
+      <div class="alert alert-info mb-4">
+        <?php foreach (($text['info_p'] ?? []) as $p): ?>
+          <p class="mb-2"><?= h($p) ?></p>
+        <?php endforeach; ?>
+        <?php if (!empty($text['info_bullets'])): ?>
+          <ul class="mb-0">
+            <?php foreach ($text['info_bullets'] as $li): ?>
+              <li><?= h($li) ?></li>
+            <?php endforeach; ?>
+          </ul>
+        <?php endif; ?>
+      </div>
+      <?php endif; ?>
 
-        <!-- Aktionen -->
-        <div class="d-flex flex-column flex-md-row gap-2">
-          <a href="/form_personal.php?mode=noemail" class="btn btn-primary flex-fill"><?= h($text['btn_noemail']) ?></a>
-          <a href="/access_create.php" class="btn btn-outline-primary flex-fill"><?= h($text['btn_create']) ?></a>
-          <a href="/access_login.php" class="btn btn-outline-secondary flex-fill"><?= h($text['btn_load']) ?></a>
-        </div>
+      <!-- Zugang/DSGVO-Infoblock -->
+      <div class="alert alert-secondary mb-4">
+        <h2 class="h5 mb-2"><?= h($text['access_title']) ?></h2>
+        <p class="mb-2"><?= h($text['access_intro']) ?></p>
+        <?php if (!empty($text['access_points'])): ?>
+          <ul class="mb-0">
+            <?php foreach ($text['access_points'] as $li): ?>
+              <li><?= $li /* enthält <strong> … bewusst unge-escaped */ ?></li>
+            <?php endforeach; ?>
+          </ul>
+        <?php endif; ?>
+      </div>
+
+      <!-- Aktionen -->
+      <div class="d-flex flex-column flex-md-row gap-2">
+        <a href="/form_personal.php?mode=noemail" class="btn btn-primary flex-fill"><?= h($text['btn_noemail']) ?></a>
+        <a href="/access_create.php" class="btn btn-outline-primary flex-fill"><?= h($text['btn_create']) ?></a>
+        <a href="/access_login.php" class="btn btn-outline-secondary flex-fill"><?= h($text['btn_load']) ?></a>
       </div>
     </div>
   </div>
+</div>
 
-  <script src="/assets/bootstrap/bootstrap.bundle.min.js"></script>
-  <?php include __DIR__ . '/partials/footer.php'; ?>
-</body>
-</html>
+<?php
+// Allgemeiner Footer (inkl. Bootstrap JS) schließt </body></html>
+require __DIR__ . '/partials/footer.php';
