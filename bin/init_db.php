@@ -2,139 +2,243 @@
 // bin/init_db.php
 // UTF-8, no BOM
 declare(strict_types=1);
+
 require __DIR__ . '/../app/config.php';
 
+/**
+ * Kleine Helpers
+ */
+function pdo_admin(): PDO {
+    return pdo(DB_ADMIN_DSN, DB_ADMIN_USER, DB_ADMIN_PASS, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    ]);
+}
+function pdo_app(string $dbName): PDO {
+    return pdo("mysql:host=127.0.0.1;dbname=$dbName;port=3306;charset=utf8mb4", APP_DB_USER, APP_DB_PASS, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
+    ]);
+}
+function col_exists(PDO $pdo, string $db, string $table, string $col): bool {
+    $q = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=? LIMIT 1";
+    $st = $pdo->prepare($q); $st->execute([$db,$table,$col]);
+    return (bool)$st->fetchColumn();
+}
+function idx_exists(PDO $pdo, string $db, string $table, string $idx): bool {
+    $q = "SELECT 1 FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND INDEX_NAME=? LIMIT 1";
+    $st = $pdo->prepare($q); $st->execute([$db,$table,$idx]);
+    return (bool)$st->fetchColumn();
+}
+function table_exists(PDO $pdo, string $db, string $table): bool {
+    $q = "SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=? AND TABLE_NAME=? LIMIT 1";
+    $st = $pdo->prepare($q); $st->execute([$db,$table]);
+    return (bool)$st->fetchColumn();
+}
+
 try {
-  $admin = pdo(DB_ADMIN_DSN, DB_ADMIN_USER, DB_ADMIN_PASS);
+    $admin = pdo_admin();
 
-  // 1) DB anlegen
-  $dbName = APP_DB_NAME;
-  $admin->exec("
-    CREATE DATABASE IF NOT EXISTS `$dbName`
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci
-  ");
+    // 1) DB anlegen (idempotent)
+    $dbName = APP_DB_NAME;
+    $admin->exec("CREATE DATABASE IF NOT EXISTS `$dbName` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
 
-  // 2) App-User anlegen (idempotent)
-  // Hinweis: In manchen MariaDB-Versionen muss man vorher evtl. DROP USER IF EXISTS ausführen
-  $host = 'localhost';
-  $admin->exec("CREATE USER IF NOT EXISTS '".APP_DB_USER."'@'$host' IDENTIFIED BY '".APP_DB_PASS."'");
-  $admin->exec("GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX ON `$dbName`.* TO '".APP_DB_USER."'@'$host'");
-  $admin->exec("FLUSH PRIVILEGES");
+    // 2) App-User anlegen/Rechte (idempotent)
+    $host = 'localhost';
+    $admin->exec("CREATE USER IF NOT EXISTS '".APP_DB_USER."'@'$host' IDENTIFIED BY '".APP_DB_PASS."'");
+    $admin->exec("GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX ON `$dbName`.* TO '".APP_DB_USER."'@'$host'");
+    $admin->exec("FLUSH PRIVILEGES");
 
-  // 3) Tabellen erzeugen
-  $app = pdo("mysql:host=127.0.0.1;dbname=$dbName;port=3306;charset=utf8mb4", APP_DB_USER, APP_DB_PASS);
+    // 3) Mit App-User verbinden
+    $app = pdo_app($dbName);
 
-  // applications: Kopf / Wiederherstellung
-  $app->exec("
-    CREATE TABLE IF NOT EXISTS applications (
-      id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-      retrieval_token CHAR(32) NOT NULL UNIQUE,     -- stabile Bewerbungs-ID (Hex, z.B. 32 Zeichen)
-      email           VARCHAR(255) NOT NULL,        -- private E-Mail
-      geburtsdatum    DATE NOT NULL,                -- für Wiederherstellung
-      status          ENUM('draft','submitted','withdrawn') NOT NULL DEFAULT 'draft',
-      created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      submit_ip       VARBINARY(16) NULL,           -- IP bei Absenden (IPv4/6)
-      PRIMARY KEY (id),
-      KEY idx_email (email),
-      KEY idx_birth (geburtsdatum)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-  ");
+    // ========= applications =========
+    if (!table_exists($admin, $dbName, 'applications')) {
+        $app->exec("
+          CREATE TABLE IF NOT EXISTS applications (
+            id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            token           CHAR(32) NOT NULL UNIQUE,
+            email           VARCHAR(255) NULL,
+            dob             DATE NOT NULL,
+            email_verified  TINYINT(1) NOT NULL DEFAULT 0,
+            data_json       JSON NULL,
+            status          ENUM('draft','submitted','withdrawn') NOT NULL DEFAULT 'draft',
+            created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            submit_ip       VARBINARY(16) NULL,
+            PRIMARY KEY (id),
+            KEY idx_email (email),
+            KEY idx_birth (dob)
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        ");
+    } else {
+        // Migrations/Ergänzungen ohne Datenverlust
+        // a) retrieval_token -> token
+        if (col_exists($admin,$dbName,'applications','retrieval_token') && !col_exists($admin,$dbName,'applications','token')) {
+            $app->exec("ALTER TABLE applications CHANGE COLUMN retrieval_token token CHAR(32) NOT NULL");
+            // UNIQUE-Index sicherstellen
+            if (!idx_exists($admin,$dbName,'applications','token')) {
+                // Manche Systeme benennen UNIQUE automatisch 'token'
+                // Falls schon ein UNIQUE existiert, passiert hier nichts weiter.
+                $app->exec("ALTER TABLE applications ADD UNIQUE KEY token (token)");
+            }
+        }
+        // Token-Spalte erzeugen, falls komplett fehlt
+        if (!col_exists($admin,$dbName,'applications','token')) {
+            $app->exec("ALTER TABLE applications ADD COLUMN token CHAR(32) NOT NULL UNIQUE AFTER id");
+        }
 
-  // personal: Schritt 1
-  $app->exec("
-    CREATE TABLE IF NOT EXISTS personal (
-      application_id  BIGINT UNSIGNED NOT NULL,
-      name            VARCHAR(200) NOT NULL,
-      vorname         VARCHAR(200) NOT NULL,
-      geschlecht      ENUM('m','w','d') NOT NULL,
-      geburtsdatum    DATE NOT NULL,
-      geburtsort_land VARCHAR(200) NOT NULL,
-      staatsang       VARCHAR(200) NOT NULL,
-      strasse         VARCHAR(200) NOT NULL,
-      plz             CHAR(5) NOT NULL,
-      wohnort         VARCHAR(200) NOT NULL,
-      telefon         VARCHAR(100) NOT NULL,
-      email           VARCHAR(255) NOT NULL,
-      dsgvo_ok        TINYINT(1) NOT NULL DEFAULT 0,
-      created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      PRIMARY KEY (application_id),
-      CONSTRAINT fk_personal_app FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
-      KEY idx_personal_email (email)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-  ");
+        // b) geburtsdatum -> dob
+        if (col_exists($admin,$dbName,'applications','geburtsdatum') && !col_exists($admin,$dbName,'applications','dob')) {
+            $app->exec("ALTER TABLE applications CHANGE COLUMN geburtsdatum dob DATE NOT NULL");
+        }
+        if (!col_exists($admin,$dbName,'applications','dob')) {
+            $app->exec("ALTER TABLE applications ADD COLUMN dob DATE NOT NULL AFTER email");
+        }
 
-  // contacts: strukturierte Zusatzkontakte (0..n)
-  $app->exec("
-    CREATE TABLE IF NOT EXISTS contacts (
-      id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-      application_id BIGINT UNSIGNED NOT NULL,
-      rolle          VARCHAR(100) NULL,
-      name           VARCHAR(200) NOT NULL,
-      tel            VARCHAR(100) NULL,
-      mail           VARCHAR(255) NULL,
-      notiz          VARCHAR(500) NULL,
-      created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (id),
-      KEY idx_contacts_app (application_id),
-      CONSTRAINT fk_contacts_app FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-  ");
+        // c) email (NULL erlauben, falls nicht so)
+        if (col_exists($admin,$dbName,'applications','email')) {
+            // Nur ändern, wenn NOT NULL -> NULL notwendig
+            // (MariaDB: INFORMATION_SCHEMA prüft IS_NULLABLE)
+            $st = $app->query("SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=".$app->quote($dbName)." AND TABLE_NAME='applications' AND COLUMN_NAME='email'");
+            $nullable = ($st->fetchColumn() === 'YES');
+            if (!$nullable) {
+                $app->exec("ALTER TABLE applications MODIFY COLUMN email VARCHAR(255) NULL");
+            }
+        } else {
+            $app->exec("ALTER TABLE applications ADD COLUMN email VARCHAR(255) NULL AFTER token");
+        }
 
-  // school: Schritt 2 – Schul-/Sprachangaben (passe Felder an eure finale Form an)
-  $app->exec("
-    CREATE TABLE IF NOT EXISTS school (
-      application_id      BIGINT UNSIGNED NOT NULL,
-      schule_besucht      TINYINT(1) NOT NULL DEFAULT 0,
-      schule_jahre        TINYINT UNSIGNED NULL,
-      seit_monat          TINYINT UNSIGNED NULL,  -- 1..12
-      seit_jahr           SMALLINT UNSIGNED NULL, -- 1900..2100
-      deutsch_niveau      ENUM('kein','A1','A2','B1','B2','C1','C2') NULL,
-      deutsch_jahre       DECIMAL(3,1) NULL,
-      interessen          VARCHAR(500) NULL,
-      created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      PRIMARY KEY (application_id),
-      CONSTRAINT fk_school_app FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-  ");
+        // d) email_verified
+        if (!col_exists($admin,$dbName,'applications','email_verified')) {
+            $app->exec("ALTER TABLE applications ADD COLUMN email_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER dob");
+        }
 
-  // uploads: Schritt 3 – Datei-Metadaten
-  $app->exec("
-    CREATE TABLE IF NOT EXISTS uploads (
-      id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-      application_id BIGINT UNSIGNED NOT NULL,
-      typ            ENUM('zeugnis','lebenslauf') NOT NULL,
-      filename       VARCHAR(255) NOT NULL,        -- tatsächlicher Dateiname im uploads/-Verzeichnis
-      mime           VARCHAR(100) NOT NULL,
-      size_bytes     INT UNSIGNED NOT NULL,
-      uploaded_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (id),
-      KEY idx_uploads_app (application_id),
-      CONSTRAINT fk_uploads_app FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
-      UNIQUE KEY uq_app_typ (application_id, typ) -- pro Typ max. 1 Datei
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-  ");
+        // e) data_json
+        if (!col_exists($admin,$dbName,'applications','data_json')) {
+            $app->exec("ALTER TABLE applications ADD COLUMN data_json JSON NULL AFTER email_verified");
+        }
 
-  // review/audit: optional Audit-Log
-  $app->exec("
-    CREATE TABLE IF NOT EXISTS audit_log (
-      id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-      application_id BIGINT UNSIGNED NOT NULL,
-      event          VARCHAR(100) NOT NULL,     -- e.g., 'create','update_personal','upload_zeugnis','submit'
-      meta_json      JSON NULL,
-      created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (id),
-      KEY idx_audit_app (application_id),
-      CONSTRAINT fk_audit_app FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-  ");
+        // f) status
+        if (!col_exists($admin,$dbName,'applications','status')) {
+            $app->exec("ALTER TABLE applications ADD COLUMN status ENUM('draft','submitted','withdrawn') NOT NULL DEFAULT 'draft' AFTER data_json");
+        }
 
-  echo "[OK] Datenbank und Tabellen sind bereit.\n";
+        // g) created_at / updated_at
+        if (!col_exists($admin,$dbName,'applications','created_at')) {
+            $app->exec("ALTER TABLE applications ADD COLUMN created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER status");
+        }
+        if (!col_exists($admin,$dbName,'applications','updated_at')) {
+            $app->exec("ALTER TABLE applications ADD COLUMN updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at");
+        }
+
+        // h) submit_ip
+        if (!col_exists($admin,$dbName,'applications','submit_ip')) {
+            $app->exec("ALTER TABLE applications ADD COLUMN submit_ip VARBINARY(16) NULL AFTER updated_at");
+        }
+
+        // i) Indizes
+        if (!idx_exists($admin,$dbName,'applications','idx_email')) {
+            $app->exec("ALTER TABLE applications ADD KEY idx_email (email)");
+        }
+        if (!idx_exists($admin,$dbName,'applications','idx_birth')) {
+            $app->exec("ALTER TABLE applications ADD KEY idx_birth (dob)");
+        }
+    }
+
+    // ========= personal =========
+    $app->exec("
+      CREATE TABLE IF NOT EXISTS personal (
+        application_id  BIGINT UNSIGNED NOT NULL,
+        name            VARCHAR(200) NOT NULL,
+        vorname         VARCHAR(200) NOT NULL,
+        geschlecht      ENUM('m','w','d') NOT NULL,
+        geburtsdatum    DATE NOT NULL,
+        geburtsort_land VARCHAR(200) NOT NULL,
+        staatsang       VARCHAR(200) NOT NULL,
+        strasse         VARCHAR(200) NOT NULL,
+        plz             CHAR(5) NOT NULL,
+        wohnort         VARCHAR(200) NOT NULL,
+        telefon         VARCHAR(100) NOT NULL,
+        email           VARCHAR(255) NOT NULL,
+        dsgvo_ok        TINYINT(1) NOT NULL DEFAULT 0,
+        created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (application_id),
+        KEY idx_personal_email (email),
+        CONSTRAINT fk_personal_app FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ");
+
+    // ========= contacts =========
+    $app->exec("
+      CREATE TABLE IF NOT EXISTS contacts (
+        id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        application_id BIGINT UNSIGNED NOT NULL,
+        rolle          VARCHAR(100) NULL,
+        name           VARCHAR(200) NOT NULL,
+        tel            VARCHAR(100) NULL,
+        mail           VARCHAR(255) NULL,
+        notiz          VARCHAR(500) NULL,
+        created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_contacts_app (application_id),
+        CONSTRAINT fk_contacts_app FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ");
+
+    // ========= school =========
+    $app->exec("
+      CREATE TABLE IF NOT EXISTS school (
+        application_id      BIGINT UNSIGNED NOT NULL,
+        schule_besucht      TINYINT(1) NOT NULL DEFAULT 0,
+        schule_jahre        TINYINT UNSIGNED NULL,
+        seit_monat          TINYINT UNSIGNED NULL,
+        seit_jahr           SMALLINT UNSIGNED NULL,
+        deutsch_niveau      ENUM('kein','A1','A2','B1','B2','C1','C2') NULL,
+        deutsch_jahre       DECIMAL(3,1) NULL,
+        interessen          VARCHAR(500) NULL,
+        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (application_id),
+        CONSTRAINT fk_school_app FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ");
+
+    // ========= uploads =========
+    $app->exec("
+      CREATE TABLE IF NOT EXISTS uploads (
+        id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        application_id BIGINT UNSIGNED NOT NULL,
+        typ            ENUM('zeugnis','lebenslauf') NOT NULL,
+        filename       VARCHAR(255) NOT NULL,
+        mime           VARCHAR(100) NOT NULL,
+        size_bytes     INT UNSIGNED NOT NULL,
+        uploaded_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_uploads_app (application_id),
+        UNIQUE KEY uq_app_typ (application_id, typ),
+        CONSTRAINT fk_uploads_app FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ");
+
+    // ========= audit_log =========
+    $app->exec("
+      CREATE TABLE IF NOT EXISTS audit_log (
+        id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        application_id BIGINT UNSIGNED NOT NULL,
+        event          VARCHAR(100) NOT NULL,
+        meta_json      JSON NULL,
+        created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        KEY idx_audit_app (application_id),
+        CONSTRAINT fk_audit_app FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ");
+
+    echo "[OK] Datenbank ist aktuell (Tabellen/Spalten/Indizes ergänzt, nichts gelöscht).\n";
 
 } catch (Throwable $e) {
-  fwrite(STDERR, "[ERROR] ".$e->getMessage()."\n");
-  exit(1);
+    fwrite(STDERR, "[ERROR] ".$e->getMessage()."\n");
+    exit(1);
 }
