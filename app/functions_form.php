@@ -23,14 +23,9 @@ require_once __DIR__ . '/db.php'; // stellt db():PDO bereit
  *   submit_ip VARBINARY(16) NULL
  * );
  *
- * Falls deine alte Tabelle noch Spalten wie `retrieval_token` / `geburtsdatum` hat,
- * kannst du migrieren (einmalig):
- *
- *   ALTER TABLE applications
- *     CHANGE retrieval_token token CHAR(32) NOT NULL UNIQUE,
- *     CHANGE geburtsdatum dob DATE NULL,
- *     ADD COLUMN email_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER dob,
- *     ADD COLUMN data_json JSON NULL AFTER email_verified;
+ * Hinweise:
+ * - Der Datensatz kann unmittelbar nach E-Mail-Verifizierung persistiert werden (email_verified=1, dob=NULL).
+ * - Beim späteren Speichern von „Persönliche Daten“ wird die DOB ergänzt/gebunden.
  */
 
 // -------------------------
@@ -56,6 +51,66 @@ function merge_payload(PDO $pdo, string $token, array $payload): array {
 // -------------------------
 
 /**
+ * NEU: Upsert direkt nach E-Mail-Verifizierung (ohne DOB).
+ * Voraussetzung: $_SESSION['email_verified'] === true
+ * - Nutzt Token aus Session oder erzeugt neuen.
+ * - Setzt email_verified=1, email, merged $payload in data_json (optional).
+ * - Status bleibt 'draft'.
+ */
+function ensure_record_email_only(string $email, array $payload = []): array {
+    if (empty($_SESSION['email_verified'])) {
+        return ['ok'=>false,'token'=>'','err'=>'E-Mail nicht verifiziert'];
+    }
+    if (!function_exists('current_access_token') || !function_exists('issue_access_token')) {
+        return ['ok'=>false,'token'=>'','err'=>'Token-Helper fehlen'];
+    }
+    $token = current_access_token();
+    if ($token === '') $token = issue_access_token();
+
+    try {
+        $pdo = db();
+        $now = (new DateTimeImmutable('now'))->format('Y-m-d H:i:s');
+
+        // Payload mergen (falls Datensatz existiert)
+        $merged = merge_payload($pdo, $token, $payload);
+
+        // Existiert Datensatz?
+        $check = $pdo->prepare("SELECT 1 FROM applications WHERE token = :t LIMIT 1");
+        $check->execute([':t'=>$token]);
+
+        if ($check->fetchColumn()) {
+            $u = $pdo->prepare("UPDATE applications
+                                SET email = :e,
+                                    email_verified = 1,
+                                    data_json = :j,
+                                    updated_at = :u
+                                WHERE token = :t");
+            $u->execute([
+                ':e'=>$email,
+                ':j'=>json_encode($merged, JSON_UNESCAPED_UNICODE),
+                ':u'=>$now,
+                ':t'=>$token
+            ]);
+        } else {
+            $i = $pdo->prepare("INSERT INTO applications (token, email, dob, email_verified, data_json, created_at, updated_at, status)
+                                VALUES (:t, :e, NULL, 1, :j, :c, :u, 'draft')");
+            $i->execute([
+                ':t'=>$token,
+                ':e'=>$email,
+                ':j'=>json_encode($merged, JSON_UNESCAPED_UNICODE),
+                ':c'=>$now,
+                ':u'=>$now
+            ]);
+        }
+
+        return ['ok'=>true,'token'=>$token,'err'=>''];
+    } catch (Throwable $e) {
+        error_log('ensure_record_email_only: '.$e->getMessage());
+        return ['ok'=>false,'token'=>$token,'err'=>'DB-Fehler'];
+    }
+}
+
+/**
  * Upsert NUR mit Token + DOB (ohne E-Mail, nicht verifiziert).
  * - Erzeugt Token aus Session, falls nicht vorhanden.
  * - Setzt/aktualisiert `dob`, merged `$payload` in `data_json`.
@@ -67,7 +122,6 @@ function ensure_record_token_and_dob_only(string $dob_dmy, array $payload = []):
     $dob = norm_date_dmy_to_ymd($dob_dmy);
     if ($dob === '') return ['ok'=>false,'token'=>current_access_token(),'err'=>'Geburtsdatum ungültig'];
 
-    // Token aus Session oder neu
     if (!function_exists('current_access_token') || !function_exists('issue_access_token')) {
         return ['ok'=>false,'token'=>'','err'=>'Token-Helper fehlen'];
     }
@@ -78,10 +132,8 @@ function ensure_record_token_and_dob_only(string $dob_dmy, array $payload = []):
         $pdo = db();
         $now = (new DateTimeImmutable('now'))->format('Y-m-d H:i:s');
 
-        // Payload mergen
         $merged = merge_payload($pdo, $token, $payload);
 
-        // Existiert Datensatz?
         $check = $pdo->prepare("SELECT 1 FROM applications WHERE token = :t LIMIT 1");
         $check->execute([':t'=>$token]);
         if ($check->fetchColumn()) {

@@ -54,12 +54,13 @@ try {
 
     // ========= applications =========
     if (!table_exists($admin, $dbName, 'applications')) {
+        // Neuinstallation: dob ist NULL-fähig (für E-Mail-Flow ohne DOB direkt nach Verify)
         $app->exec("
           CREATE TABLE IF NOT EXISTS applications (
             id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-            token           CHAR(32) NOT NULL UNIQUE,
+            token           CHAR(32) NOT NULL,
             email           VARCHAR(255) NULL,
-            dob             DATE NOT NULL,
+            dob             DATE NULL,
             email_verified  TINYINT(1) NOT NULL DEFAULT 0,
             data_json       JSON NULL,
             status          ENUM('draft','submitted','withdrawn') NOT NULL DEFAULT 'draft',
@@ -67,39 +68,42 @@ try {
             updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             submit_ip       VARBINARY(16) NULL,
             PRIMARY KEY (id),
+            UNIQUE KEY uq_token (token),
             KEY idx_email (email),
-            KEY idx_birth (dob)
+            KEY idx_birth (dob),
+            KEY idx_email_dob (email, dob)
           ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ");
     } else {
         // Migrations/Ergänzungen ohne Datenverlust
+
         // a) retrieval_token -> token
         if (col_exists($admin,$dbName,'applications','retrieval_token') && !col_exists($admin,$dbName,'applications','token')) {
             $app->exec("ALTER TABLE applications CHANGE COLUMN retrieval_token token CHAR(32) NOT NULL");
-            // UNIQUE-Index sicherstellen
-            if (!idx_exists($admin,$dbName,'applications','token')) {
-                // Manche Systeme benennen UNIQUE automatisch 'token'
-                // Falls schon ein UNIQUE existiert, passiert hier nichts weiter.
-                $app->exec("ALTER TABLE applications ADD UNIQUE KEY token (token)");
-            }
         }
-        // Token-Spalte erzeugen, falls komplett fehlt
+        // Token-Spalte erzeugen, falls komplett fehlt + UNIQUE
         if (!col_exists($admin,$dbName,'applications','token')) {
-            $app->exec("ALTER TABLE applications ADD COLUMN token CHAR(32) NOT NULL UNIQUE AFTER id");
+            $app->exec("ALTER TABLE applications ADD COLUMN token CHAR(32) NOT NULL AFTER id");
+        }
+        if (!idx_exists($admin,$dbName,'applications','uq_token')) {
+            // UNIQUE-Index sicherstellen (Name vereinheitlicht)
+            // Falls es bereits einen UNIQUE mit anderem Namen gibt, schlägt das ggf. fehl -> try/catch vermeiden wir hier bewusst.
+            $app->exec("ALTER TABLE applications ADD UNIQUE KEY uq_token (token)");
         }
 
         // b) geburtsdatum -> dob
         if (col_exists($admin,$dbName,'applications','geburtsdatum') && !col_exists($admin,$dbName,'applications','dob')) {
-            $app->exec("ALTER TABLE applications CHANGE COLUMN geburtsdatum dob DATE NOT NULL");
+            $app->exec("ALTER TABLE applications CHANGE COLUMN geburtsdatum dob DATE NULL");
         }
         if (!col_exists($admin,$dbName,'applications','dob')) {
-            $app->exec("ALTER TABLE applications ADD COLUMN dob DATE NOT NULL AFTER email");
+            $app->exec("ALTER TABLE applications ADD COLUMN dob DATE NULL AFTER email");
+        } else {
+            // Sicherstellen, dass dob NULL-fähig ist
+            $app->exec("ALTER TABLE applications MODIFY COLUMN dob DATE NULL");
         }
 
-        // c) email (NULL erlauben, falls nicht so)
+        // c) email (NULL erlauben)
         if (col_exists($admin,$dbName,'applications','email')) {
-            // Nur ändern, wenn NOT NULL -> NULL notwendig
-            // (MariaDB: INFORMATION_SCHEMA prüft IS_NULLABLE)
             $st = $app->query("SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=".$app->quote($dbName)." AND TABLE_NAME='applications' AND COLUMN_NAME='email'");
             $nullable = ($st->fetchColumn() === 'YES');
             if (!$nullable) {
@@ -144,9 +148,14 @@ try {
         if (!idx_exists($admin,$dbName,'applications','idx_birth')) {
             $app->exec("ALTER TABLE applications ADD KEY idx_birth (dob)");
         }
+        if (!idx_exists($admin,$dbName,'applications','idx_email_dob')) {
+            $app->exec("ALTER TABLE applications ADD KEY idx_email_dob (email, dob)");
+        }
     }
 
     // ========= personal =========
+    // Hinweis: Diese Normalisierungstabelle wird derzeit von euren JSON-Flows nicht beschrieben.
+    // Email bleibt hier NOT NULL – ihr erfasst im No-Email-Flow die E-Mail nicht; diese Tabelle dann erst befüllen, wenn E-Mail vorhanden ist.
     $app->exec("
       CREATE TABLE IF NOT EXISTS personal (
         application_id  BIGINT UNSIGNED NOT NULL,
