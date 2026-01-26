@@ -1,7 +1,7 @@
 # 🏫 Oldenburg Sprachklassen – Server Setup & Deployment
 
 Dieses Repository dokumentiert die vollständige Installation, Einrichtung und das Deployment des Webservers  
-**oldenburg.anmeldung.schule** für das Projekt **„Oldenburg Sprachklassen“**.
+**xxx.xxx.schule** für das Projekt **„Oldenburg Sprachklassen“**.
 
 ---
 
@@ -30,7 +30,7 @@ apt update && apt upgrade -y
 apt install sudo vim curl wget unzip ufw net-tools -y
 usermod -aG sudo user
 timedatectl set-timezone Europe/Berlin
-hostnamectl set-hostname oldenburg.anmeldung.schule
+hostnamectl set-hostname xxx.xxx.schule
 ```
 
 `/etc/hosts` anpassen:
