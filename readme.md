@@ -16,9 +16,9 @@ Dieses Repository dokumentiert die vollständige Installation, Einrichtung und d
 | **Reverse Proxy** | Nginx Proxy Manager (NPM) |
 | **SSL/TLS** | Let’s Encrypt über NPM |
 | **Firewall & Schutz** | UFW + Fail2Ban |
-| **Hostname** | `oldenburg.anmeldung.schule` |
-| **Interne IP** | `192.168.84.207` |
-| **Reverse Proxy** | `kits-reverseproxy.kuhlmann-its.de` (192.168.84.253) |
+| **Hostname** | `xxx.xxx.schule` |
+| **Interne IP** | `192.168.xxx.207` |
+| **Reverse Proxy** | `xxx-xxx.xxx.de` (192.168.xxx.253) |
 
 ---
 
@@ -35,7 +35,7 @@ hostnamectl set-hostname oldenburg.anmeldung.schule
 
 `/etc/hosts` anpassen:
 ```
-127.0.0.1    oldenburg.anmeldung.schule oldenburg localhost
+127.0.0.1    xxx.xxx.schule oldenburg localhost
 ```
 
 ---
@@ -76,15 +76,15 @@ FLUSH PRIVILEGES;
 
 ## 🌍 4️⃣ Apache VirtualHost
 
-`/etc/apache2/sites-available/000-oldenburg.anmeldung.schule.conf`:
+`/etc/apache2/sites-available/000-xxx.xxx.schule.conf`:
 
 ```apache
 <VirtualHost *:80>
-    ServerName oldenburg.anmeldung.schule
-    ServerAlias www.oldenburg.anmeldung.schule
-    DocumentRoot /var/www/oldenburg.anmeldung.schule
+    ServerName xxx.xxx.schule
+    ServerAlias www.xxx.xxx.schule
+    DocumentRoot /var/www/xxx.xxx.schule
 
-    <Directory /var/www/oldenburg.anmeldung.schule>
+    <Directory /var/www/xxx.xxx.schule>
         Options -Indexes +FollowSymLinks
         AllowOverride All
         Require all granted
@@ -107,7 +107,7 @@ FLUSH PRIVILEGES;
 
 Aktivieren:
 ```bash
-sudo a2ensite 000-oldenburg.anmeldung.schule.conf
+sudo a2ensite 000-xxx.xxx.schule.conf
 sudo systemctl reload apache2
 ```
 
@@ -118,9 +118,9 @@ sudo systemctl reload apache2
 **Proxy Host:**
 | Feld | Wert |
 |------|------|
-| Domain Names | `oldenburg.anmeldung.schule` |
+| Domain Names | `xxx.xxx.schule` |
 | Scheme | `http` |
-| Forward Hostname / IP | `192.168.84.207` |
+| Forward Hostname / IP | `192.168.xxx.207` |
 | Forward Port | `80` |
 | Access List | Publicly Accessible |
 | SSL | Let’s Encrypt aktiv, „Force SSL“ aktiviert |
@@ -139,7 +139,7 @@ proxy_set_header X-Forwarded-Proto https;
 ```bash
 sudo ufw default deny incoming
 sudo ufw allow OpenSSH
-sudo ufw allow from 192.168.84.253 to any port 80 proto tcp
+sudo ufw allow from 192.168.xxx.253 to any port 80 proto tcp
 sudo ufw enable
 sudo apt install fail2ban unattended-upgrades -y
 sudo dpkg-reconfigure --priority=low unattended-upgrades
@@ -165,14 +165,14 @@ Sollte es beim hochladen Probleme geben, z.B. wegen der Größe der Datei, bitte
 
 ```bash
 sudo apt install git ca-certificates -y
-sudo install -d -o user -g www-data -m 2775 /var/www/oldenburg.anmeldung.schule
+sudo install -d -o user -g www-data -m 2775 /var/www/xxx.xxx.schule
 ```
 
 ### 🔐 Deploy Key (empfohlen)
 
 Auf dem Server:
 ```bash
-ssh-keygen -t ed25519 -C "deploy@oldenburg.anmeldung.schule"
+ssh-keygen -t ed25519 -C "deploy@xxx.xxx.schule"
 cat ~/.ssh/id_ed25519.pub
 ```
 
@@ -193,27 +193,27 @@ Hi KITS2015! You've successfully authenticated, but GitHub does not provide shel
 ### 📥 Repository klonen
 
 ```bash
-sudo -u user git clone git@github.com:KITS2015/Oldenburg_Sprachklassen.git /var/www/oldenburg.anmeldung.schule
+sudo -u user git clone git@github.com:KITS2015/Oldenburg_Sprachklassen.git /var/www/xxx.xxx.schule
 ```
 
 ### 🧱 Dateirechte (Server)
 
 ```bash
 ### Standardrechte (Code schreibgeschützt für Webserver)
-sudo chown -R user:www-data /var/www/oldenburg.anmeldung.schule
-sudo find /var/www/oldenburg.anmeldung.schule -type d -exec chmod 2755 {} \;
-sudo find /var/www/oldenburg.anmeldung.schule -type f -exec chmod 0644 {} \;
+sudo chown -R user:www-data /var/www/xxx.xxx.schule
+sudo find /var/www/xxx.xxx.schule -type d -exec chmod 2755 {} \;
+sudo find /var/www/xxx.xxx.schule -type f -exec chmod 0644 {} \;
 
 ### Schreibbare Verzeichnisse (Uploads)
 Das Verzeichnis `uploads` muss für den Webserver (Gruppe `www-data`) schreibbar sein, damit Uploads angelegt,
 umbenannt und später auch gelöscht werden können.
 
 # 2775 = rwxrwxr-x + setgid (Gruppe wird bei neuen Dateien/Ordnern vererbt)
-sudo chmod 2775 /var/www/oldenburg.anmeldung.schule/uploads
-sudo find /var/www/oldenburg.anmeldung.schule/uploads -type d -exec chmod 2775 {} \;
+sudo chmod 2775 /var/www/xxx.xxx.schule/uploads
+sudo find /var/www/xxx.xxx.schule/uploads -type d -exec chmod 2775 {} \;
 
 # Empfohlen: hochgeladene Dateien gruppen-schreibbar (für spätere Verwaltung/Löschen/Ersetzen durch die App)
-sudo find /var/www/oldenburg.anmeldung.schule/uploads -type f -exec chmod 0664 {} \;
+sudo find /var/www/xxx.xxx.schule/uploads -type f -exec chmod 0664 {} \;
 
 ### Option: ACLs (empfohlen, wenn Upload-Dateien trotz 2775/0664 später nicht verwaltbar sind)
 Je nach PHP-FPM/Apache und umask können neu hochgeladene Dateien ohne Gruppen-Schreibrecht entstehen.
@@ -224,11 +224,11 @@ sudo apt-get update
 sudo apt-get install -y acl
 
 ACLs setzen (bestehende Inhalte + Default-ACLs für neue Uploads):
-sudo setfacl -R -m u:user:rwx,g:www-data:rwx /var/www/oldenburg.anmeldung.schule/uploads
-sudo setfacl -d -m u:user:rwx,g:www-data:rwx /var/www/oldenburg.anmeldung.schule/uploads
+sudo setfacl -R -m u:user:rwx,g:www-data:rwx /var/www/xxx.xxx.schule/uploads
+sudo setfacl -d -m u:user:rwx,g:www-data:rwx /var/www/xxx.xxx.schule/uploads
 
 Prüfen:
-getfacl /var/www/oldenburg.anmeldung.schule/uploads
+getfacl /var/www/xxx.xxx.schule/uploads
 
 ```
 
@@ -239,7 +239,7 @@ getfacl /var/www/oldenburg.anmeldung.schule/uploads
 ```bash
 #!/bin/bash
 set -e
-cd /var/www/oldenburg.anmeldung.schule
+cd /var/www/xxx.xxx.schule
 sudo -u user git fetch --all
 sudo -u user git reset --hard origin/main
 sudo systemctl reload apache2
@@ -268,7 +268,7 @@ Erwartung: Repository wird aktualisiert, Apache neu geladen.
 
 ## 🧪 9️⃣ Testseite
 
-`/var/www/oldenburg.anmeldung.schule/index.php`:
+`/var/www/xxx.xxx.schule/index.php`:
 
 ```php
 <?php
@@ -283,7 +283,7 @@ echo "Zeit: " . date('Y-m-d H:i:s');
 
 Erwartete Ausgabe:
 ```
-Host: oldenburg.anmeldung.schule
+Host: xxx.xxx.schule
 Client-IP (REMOTE_ADDR): <deine-IP>
 X-Forwarded-For: <deine-IP>
 X-Forwarded-Proto: https
@@ -297,8 +297,8 @@ Zeit: <Datum/Uhrzeit>
 
 | Komponente | Pfad / Funktion |
 |-------------|-----------------|
-| Apache vHost | `/etc/apache2/sites-available/000-oldenburg.anmeldung.schule.conf` |
-| Webroot | `/var/www/oldenburg.anmeldung.schule` |
+| Apache vHost | `/etc/apache2/sites-available/000-xxx.xxx.schule.conf` |
+| Webroot | `/var/www/xxx.xxx.schule` |
 | PHP-Version | 8.2 |
 | Datenbank | `anmeldung` (MariaDB) |
 | Reverse Proxy | Nginx Proxy Manager |
@@ -313,7 +313,7 @@ Zeit: <Datum/Uhrzeit>
 ## 🚀 Deployment-Skript (`deploy.sh`)
 
 Das Skript automatisiert die Synchronisation zwischen **Server und GitHub**  
-und liegt unter `/var/www/oldenburg.anmeldung.schule/deploy.sh`.
+und liegt unter `/var/www/xxx.xxx.schule/deploy.sh`.
 
 ### 🔧 Funktionsweise
 
@@ -321,7 +321,7 @@ und liegt unter `/var/www/oldenburg.anmeldung.schule/deploy.sh`.
 - Prüfung auf Änderungen in GitHub → automatischer Pull (`git pull --ff-only` oder `--rebase`)
 - Push lokaler Änderungen zu GitHub (`git push origin main`)
 - Vollständiges Logging unter  
-  `/var/www/oldenburg.anmeldung.schule/logs/git_deploy_oldenburg.log`
+  `/var/www/xxx.xxx.schule/logs/git_deploy_oldenburg.log`
 
 ---
 
@@ -341,9 +341,9 @@ und liegt unter `/var/www/oldenburg.anmeldung.schule/deploy.sh`.
 
 **Neue Datei auf dem Server anlegen**
 ```bash
-cd /var/www/oldenburg.anmeldung.schule/public
+cd /var/www/xxx.xxx.schule/public
 nano kontakt.php
-/var/www/oldenburg.anmeldung.schule/deploy.sh
+/var/www/xxx.xxx.schule/deploy.sh
 
 ---
 
