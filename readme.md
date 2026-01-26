@@ -194,12 +194,40 @@ Hi KITS2015! You've successfully authenticated, but GitHub does not provide shel
 sudo -u user git clone git@github.com:KITS2015/Oldenburg_Sprachklassen.git /var/www/oldenburg.anmeldung.schule
 ```
 
-### 🧱 Rechte
+### 🧱 Dateirechte (Server)
 
 ```bash
+### Standardrechte (Code schreibgeschützt für Webserver)
 sudo chown -R user:www-data /var/www/oldenburg.anmeldung.schule
 sudo find /var/www/oldenburg.anmeldung.schule -type d -exec chmod 2755 {} \;
 sudo find /var/www/oldenburg.anmeldung.schule -type f -exec chmod 0644 {} \;
+
+### Schreibbare Verzeichnisse (Uploads)
+Das Verzeichnis `uploads` muss für den Webserver (Gruppe `www-data`) schreibbar sein, damit Uploads angelegt,
+umbenannt und später auch gelöscht werden können.
+
+# 2775 = rwxrwxr-x + setgid (Gruppe wird bei neuen Dateien/Ordnern vererbt)
+sudo chmod 2775 /var/www/oldenburg.anmeldung.schule/uploads
+sudo find /var/www/oldenburg.anmeldung.schule/uploads -type d -exec chmod 2775 {} \;
+
+# Empfohlen: hochgeladene Dateien gruppen-schreibbar (für spätere Verwaltung/Löschen/Ersetzen durch die App)
+sudo find /var/www/oldenburg.anmeldung.schule/uploads -type f -exec chmod 0664 {} \;
+
+### Option: ACLs (empfohlen, wenn Upload-Dateien trotz 2775/0664 später nicht verwaltbar sind)
+Je nach PHP-FPM/Apache und umask können neu hochgeladene Dateien ohne Gruppen-Schreibrecht entstehen.
+ACLs erzwingen konsistente Rechte für bestehende und zukünftige Dateien/Ordner im `uploads`-Pfad.
+
+Installation (Debian/Ubuntu):
+sudo apt-get update
+sudo apt-get install -y acl
+
+ACLs setzen (bestehende Inhalte + Default-ACLs für neue Uploads):
+sudo setfacl -R -m u:user:rwx,g:www-data:rwx /var/www/oldenburg.anmeldung.schule/uploads
+sudo setfacl -d -m u:user:rwx,g:www-data:rwx /var/www/oldenburg.anmeldung.schule/uploads
+
+Prüfen:
+getfacl /var/www/oldenburg.anmeldung.schule/uploads
+
 ```
 
 ### 🧭 Update-Skript (Read-only Pull)
