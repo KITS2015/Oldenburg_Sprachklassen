@@ -24,6 +24,7 @@ EXCLUDES=(
   ".env"
   "config.json"
   "config.local.php"
+  "app/config.php"
 )
 
 log() {
