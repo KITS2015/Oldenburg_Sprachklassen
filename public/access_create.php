@@ -8,6 +8,42 @@ require_once __DIR__ . '/../app/email.php';          // send_verification_email(
 require_once __DIR__ . '/../app/functions_form.php'; // optional helper, falls vorhanden
 
 // ------------------------------------------------------------
+// Abbrechen: Session komplett zurücksetzen, damit man neu starten kann
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel') {
+    if (!csrf_check()) { http_response_code(400); exit('Ungültige Anfrage.'); }
+
+    // Alles entfernen, was den Flow beeinflusst
+    unset(
+        $_SESSION['email_verify'],
+        $_SESSION['email_verified'],
+        $_SESSION['email_account'],
+        $_SESSION['access'],
+        $_SESSION['access_login'],
+        $_SESSION['access_token'],
+        $_SESSION['application_status'],
+        $_SESSION['application_readonly'],
+        $_SESSION['form'],
+        $_SESSION['flash'],
+        $_SESSION['rate']
+    );
+
+    // Session komplett zerstören
+    $_SESSION = [];
+
+    // Cookie löschen
+    if (ini_get('session.use_cookies')) {
+        $p = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'], (bool)$p['secure'], (bool)$p['httponly']);
+    }
+
+    session_destroy();
+
+    header('Location: /access_create.php'); // oder /index.php, wenn du lieber komplett zurück willst
+    exit;
+}
+
+
+// ------------------------------------------------------------
 // Sprache aus Cookie (wie index.php) + RTL bestimmen
 $languages = [
   'de' => 'Deutsch','en' => 'English','fr' => 'Français','uk' => 'Українська',
@@ -404,6 +440,14 @@ require APP_APPDIR . '/header.php';
           <div class="d-flex gap-2 mt-2">
             <button class="btn btn-primary"><?= h($text['login_btn']) ?></button>
             <a href="/index.php" class="btn btn-outline-secondary"><?= h($text['back']) ?></a>
+
+              <button type="submit"
+            name="action"
+            value="cancel"
+            class="btn btn-outline-danger"
+            formnovalidate>
+      <?= h($text['cancel'] ?? 'Abbrechen') ?>
+    </button>
           </div>
         </form>
 
@@ -432,6 +476,15 @@ require APP_APPDIR . '/header.php';
             <div class="d-flex gap-2">
               <button class="btn btn-primary"><?= h($text['send_btn']) ?></button>
               <a href="/index.php" class="btn btn-outline-secondary"><?= h($text['back']) ?></a>
+
+                <button type="submit"
+        name="action"
+        value="cancel"
+        class="btn btn-outline-danger"
+        formnovalidate>
+  <?= h($text['cancel'] ?? 'Abbrechen') ?>
+</button>
+
             </div>
           </form>
 
