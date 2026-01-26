@@ -25,6 +25,7 @@ EXCLUDES=(
   "config.json"
   "config.local.php"
   "app/config.php"
+  "app/mail.php"
 )
 
 log() {
