@@ -9,7 +9,7 @@ require_once __DIR__ . '/../app/functions_form.php'; // optional helper, falls v
 
 // ------------------------------------------------------------
 // Abbrechen: Session komplett zurücksetzen, damit man neu starten kann
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cancel') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && (string)($_POST['action'] ?? '') === 'cancel') {
     if (!csrf_check()) { http_response_code(400); exit('Ungültige Anfrage.'); }
 
     // Alles entfernen, was den Flow beeinflusst
@@ -33,15 +33,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'cance
     // Cookie löschen
     if (ini_get('session.use_cookies')) {
         $p = session_get_cookie_params();
-        setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'], (bool)$p['secure'], (bool)$p['httponly']);
+        setcookie(
+            session_name(),
+            '',
+            time() - 42000,
+            $p['path'] ?? '/',
+            $p['domain'] ?? '',
+            (bool)($p['secure'] ?? false),
+            (bool)($p['httponly'] ?? true)
+        );
     }
 
     session_destroy();
 
-    header('Location: /access_create.php'); // oder /index.php, wenn du lieber komplett zurück willst
+    header('Location: /access_create.php'); // neu starten
     exit;
 }
-
 
 // ------------------------------------------------------------
 // Sprache aus Cookie (wie index.php) + RTL bestimmen
@@ -138,7 +145,6 @@ function make_code(): string {
   return str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 }
 function make_password(int $len = 12): string {
-  // URL-safe, ohne Sonderzeichenprobleme
   $raw = rtrim(strtr(base64_encode(random_bytes(18)), '+/', '-_'), '=');
   return substr($raw, 0, $len);
 }
@@ -166,7 +172,6 @@ function send_account_password_email_fallback(string $email, string $password, s
     return (bool) send_account_password_email($email, $password, $lang);
   }
 
-  // Fallback: simple mail()
   $subject = ($lang === 'de') ? 'Ihr Passwort für die Online-Anmeldung' : 'Your password for the online registration';
   $body = ($lang === 'de')
     ? "Ihr Zugang wurde erstellt.\n\nE-Mail: {$email}\nPasswort: {$password}\n\nBitte bewahren Sie das Passwort sicher auf."
@@ -198,6 +203,7 @@ if ($step === 'do_login') {
   if (!$errors) {
     $acc = account_by_email($email);
     $ok = false;
+
     if ($acc && (int)($acc['email_verified'] ?? 0) === 1) {
       $hash = (string)($acc['password_hash'] ?? '');
       if ($hash !== '' && password_verify($pass, $hash)) {
@@ -222,15 +228,15 @@ if ($step === 'do_login') {
         'created' => time(),
       ];
 
-      // Access-Mode setzen (Token wird pro Bewerbung erzeugt – kommt später beim "Neue Bewerbung")
+      // Access-Mode setzen (Token pro Bewerbung erzeugen)
       $_SESSION['access'] = [
         'mode'    => 'email',
         'email'   => (string)$acc['email'],
-        'token'   => '',       // pro Bewerbung
+        'token'   => '',
         'created' => time(),
       ];
 
-      // Zielseite (kommt als nächstes: Liste Bewerbungen + "Neue Bewerbung")
+      // Zielseite (muss existieren): Liste Bewerbungen + "Neue Bewerbung"
       header('Location: /access_portal.php');
       exit;
     }
@@ -321,7 +327,6 @@ if ($step === 'verify') {
     if (!$errors) {
       $email = (string)$st['email'];
 
-      // Account anlegen / aktualisieren + Passwort setzen
       $password = make_password(12);
       $hash = password_hash($password, PASSWORD_DEFAULT);
 
@@ -333,9 +338,9 @@ if ($step === 'verify') {
         if ($acc) {
           $pdo->prepare("
             UPDATE email_accounts
-               SET password_hash = :ph,
+               SET password_hash  = :ph,
                    email_verified = 1,
-                   updated_at = NOW()
+                   updated_at     = NOW()
              WHERE id = :id
           ")->execute([
             ':ph' => $hash,
@@ -353,12 +358,11 @@ if ($step === 'verify') {
 
         // Passwort mailen
         if (!send_account_password_email_fallback($email, $password, $lang)) {
-          // Account ist angelegt, aber Mail ging nicht raus -> klarer Hinweis
           $errors[] = $text['error_mail_send'];
+          $mode = 'register';
         } else {
           $info = $text['ok_verified'];
           unset($_SESSION['email_verify']);
-          // Danach direkt auf Login-Tab
           $mode = 'login';
         }
       } catch (Throwable $e) {
@@ -441,13 +445,13 @@ require APP_APPDIR . '/header.php';
             <button class="btn btn-primary"><?= h($text['login_btn']) ?></button>
             <a href="/index.php" class="btn btn-outline-secondary"><?= h($text['back']) ?></a>
 
-              <button type="submit"
-            name="action"
-            value="cancel"
-            class="btn btn-outline-danger"
-            formnovalidate>
-      <?= h($text['cancel'] ?? 'Abbrechen') ?>
-    </button>
+            <button type="submit"
+                    name="action"
+                    value="cancel"
+                    class="btn btn-outline-danger"
+                    formnovalidate>
+              <?= h($text['cancel']) ?>
+            </button>
           </div>
         </form>
 
@@ -465,7 +469,9 @@ require APP_APPDIR . '/header.php';
 
             <div>
               <label for="email_r" class="form-label"><?= h($text['email_label']) ?></label>
-              <input type="email" class="form-control" name="email" id="email_r" required>
+              <input type="email" class="form-control" name="email" id="email_r"
+                     value="<?= h((string)($_POST['email'] ?? '')) ?>"
+                     required>
             </div>
 
             <div class="form-check">
@@ -477,14 +483,13 @@ require APP_APPDIR . '/header.php';
               <button class="btn btn-primary"><?= h($text['send_btn']) ?></button>
               <a href="/index.php" class="btn btn-outline-secondary"><?= h($text['back']) ?></a>
 
-                <button type="submit"
-        name="action"
-        value="cancel"
-        class="btn btn-outline-danger"
-        formnovalidate>
-  <?= h($text['cancel'] ?? 'Abbrechen') ?>
-</button>
-
+              <button type="submit"
+                      name="action"
+                      value="cancel"
+                      class="btn btn-outline-danger"
+                      formnovalidate>
+                <?= h($text['cancel']) ?>
+              </button>
             </div>
           </form>
 
@@ -505,8 +510,6 @@ require APP_APPDIR . '/header.php';
               <button class="btn btn-primary"><?= h($text['verify_btn']) ?></button>
 
               <button type="submit"
-                      formaction="/access_create.php"
-                      formmethod="post"
                       name="step"
                       value="resend"
                       class="btn btn-outline-secondary"
@@ -514,7 +517,13 @@ require APP_APPDIR . '/header.php';
                 <?= h($text['resend']) ?>
               </button>
 
-              <a href="/index.php" class="btn btn-outline-secondary"><?= h($text['cancel']) ?></a>
+              <button type="submit"
+                      name="action"
+                      value="cancel"
+                      class="btn btn-outline-danger"
+                      formnovalidate>
+                <?= h($text['cancel']) ?>
+              </button>
             </div>
           </form>
         <?php endif; ?>
