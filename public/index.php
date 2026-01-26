@@ -1,6 +1,7 @@
 <?php
 // public/index.php
-// Mehrsprachiger Einleitungstext + Zugang/DSGVO-Infoblock
+// Mehrsprachiger Einstieg + 3 Buttons (ohne E-Mail / mit E-Mail / Zugriff)
+// Hinweis: Button "Zugang mit E-Mail erstellen" umbenannt zu "Mit E-Mail fortfahren"
 declare(strict_types=1);
 
 require __DIR__ . '/wizard/_common.php'; // Sessions, h(), etc.
@@ -18,20 +19,18 @@ $languages = [
 ];
 
 // Sprache ermitteln (Query > Cookie > Browser > de)
-$lang = strtolower($_GET['lang'] ?? ($_COOKIE['lang'] ?? ''));
+$lang = strtolower((string)($_GET['lang'] ?? ($_COOKIE['lang'] ?? '')));
 if (!array_key_exists($lang, $languages)) {
-  $accept = strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '');
+  $accept = strtolower((string)($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? ''));
   foreach ($languages as $code => $label) {
-    if (strpos($accept, $code) !== false) {
+    if ($code !== '' && strpos($accept, $code) !== false) {
       $lang = $code;
       break;
     }
   }
-  if (!array_key_exists($lang, $languages)) {
-    $lang = 'de';
-  }
+  if (!array_key_exists($lang, $languages)) $lang = 'de';
 }
-setcookie('lang', $lang, time()+60*60*24*365, '/');
+setcookie('lang', $lang, time() + 60 * 60 * 24 * 365, '/');
 
 // RTL-Sprachen
 $rtl = in_array($lang, ['ar','fa'], true);
@@ -47,7 +46,6 @@ $t = [
       'Die Angaben können in mehreren Sprachen ausgefüllt werden.',
       'Ihre Daten werden gemäß DSGVO vertraulich behandelt.',
     ],
-    // Info-Block (Voraussetzungen)
     'info_p' => [
       'Liebe Schülerin, lieber Schüler,',
       'Hiermit bewerben Sie sich für einen Platz in der Sprachlernklasse „BES Sprache und Integration“ einer berufsbildenden Schule (BBS) in Oldenburg. Sie bewerben sich nicht für eine bestimmte BBS. Welche Schule Sie in der Sprachlernklasse aufnimmt, wird Ihnen nach dem 20. Februar mitgeteilt.',
@@ -59,16 +57,14 @@ $t = [
       'Sie sind am 30. September dieses Jahres mindestens 16 und höchstens 18 Jahre alt.',
       'Sie sind im nächsten Schuljahr schulpflichtig.',
     ],
-    // Zugang/DSGVO-Block
     'access_title' => 'Datenschutz & Zugang',
     'access_intro' => 'Sie können mit oder ohne E-Mail-Adresse fortfahren. Der Zugriff auf gespeicherte Bewerbungen ist nur mit persönlichem Zugangscode (Token) und Geburtsdatum möglich.',
     'access_points' => [
-      '<strong>Mit E-Mail:</strong> Sie erhalten einen Bestätigungscode und können Ihre Bewerbung später erneut laden.',
+      '<strong>Mit E-Mail:</strong> Sie erhalten einen Bestätigungscode und können mehrere Bewerbungen anlegen und später wieder aufrufen.',
       '<strong>Ohne E-Mail:</strong> Sie erhalten einen persönlichen Zugangscode (Access-Token). Bitte notieren/fotografieren Sie diesen – ohne verifizierte E-Mail ist keine Wiederherstellung möglich.',
     ],
-    // Buttons
     'btn_noemail'   => 'Ohne E-Mail fortfahren',
-    'btn_create'    => 'Zugang mit E-Mail erstellen',
+    'btn_create'    => 'Mit E-Mail fortfahren',
     'btn_load'      => 'Zugriff auf Bewerbung/en',
   ],
   'en' => [
@@ -93,14 +89,14 @@ $t = [
     'access_title' => 'Privacy & Access',
     'access_intro' => 'You can proceed with or without an email address. Access to saved applications is only possible with your personal access token and date of birth.',
     'access_points' => [
-      '<strong>With email:</strong> You receive a verification code and can resume your application later.',
+      '<strong>With email:</strong> You receive a verification code and can create multiple applications and access them later.',
       '<strong>Without email:</strong> You get a personal access token. Please write it down or take a photo—without a verified email there is no recovery.',
     ],
     'btn_noemail' => 'Proceed without email',
-    'btn_create'  => 'Create access with email',
+    'btn_create'  => 'Continue with email',
     'btn_load'    => 'Access your application(s)',
   ],
-  'fr' => [
+'fr' => [
     'title' => 'Bienvenue – Inscription en ligne aux cours de langue',
     'lead'  => 'Ce service s’adresse aux personnes récemment arrivées à Oldenburg. Le formulaire nous aide à vous contacter et à proposer une offre adaptée.',
     'bullets' => [
@@ -278,14 +274,14 @@ $t = [
 
 $text = $t[$lang] ?? $t['de'];
 
-// ---------- Seitentitel & HTML-Parameter für allgemeinen Header ----------
-$title      = $text['title'];
-$html_lang  = $lang;
-$html_dir   = $dir;
+// Seitentitel & HTML-Parameter für Header
+$title     = (string)($text['title'] ?? 'Online-Anmeldung');
+$html_lang = $lang;
+$html_dir  = $dir;
 
-// ---------- Allgemeiner Header + (optionale) Token-/Status-Topbar ----------
-require __DIR__ . '/partials/header.php';  // öffnet <html><head>… CSS … <body>
-require APP_APPDIR . '/header.php';        // zeigt Status/Token, wenn vorhanden
+// Header: allgemeiner Seiten-Header + App-Topbar (Status/Token)
+require __DIR__ . '/partials/header.php';
+require APP_APPDIR . '/header.php';
 ?>
 <style>
   .lang-switch { gap: .5rem; }
@@ -294,6 +290,7 @@ require APP_APPDIR . '/header.php';        // zeigt Status/Token, wenn vorhanden
 </style>
 
 <div class="container py-5">
+
   <!-- Sprachwahl -->
   <div class="d-flex lang-switch justify-content-end mb-3">
     <form method="get" action="" class="d-flex lang-switch">
@@ -309,38 +306,43 @@ require APP_APPDIR . '/header.php';        // zeigt Status/Token, wenn vorhanden
 
   <div class="card shadow border-0">
     <div class="card-body p-4 p-md-5">
-      <h1 class="h3 mb-3"><?= h($text['title']) ?></h1>
-      <p class="lead mb-4"><?= h($text['lead']) ?></p>
-      <ul class="mb-4">
-        <?php foreach (($text['bullets'] ?? []) as $li): ?>
-          <li><?= h($li) ?></li>
-        <?php endforeach; ?>
-      </ul>
+      <h1 class="h3 mb-3"><?= h((string)($text['title'] ?? '')) ?></h1>
+      <p class="lead mb-4"><?= h((string)($text['lead'] ?? '')) ?></p>
+
+      <?php if (!empty($text['bullets'])): ?>
+        <ul class="mb-4">
+          <?php foreach ((array)$text['bullets'] as $li): ?>
+            <li><?= h((string)$li) ?></li>
+          <?php endforeach; ?>
+        </ul>
+      <?php endif; ?>
 
       <!-- Infoblock (Voraussetzungen) -->
       <?php if (!empty($text['info_p']) || !empty($text['info_bullets'])): ?>
-      <div class="alert alert-info mb-4">
-        <?php foreach (($text['info_p'] ?? []) as $p): ?>
-          <p class="mb-2"><?= h($p) ?></p>
-        <?php endforeach; ?>
-        <?php if (!empty($text['info_bullets'])): ?>
-          <ul class="mb-0">
-            <?php foreach ($text['info_bullets'] as $li): ?>
-              <li><?= h($li) ?></li>
-            <?php endforeach; ?>
-          </ul>
-        <?php endif; ?>
-      </div>
+        <div class="alert alert-info mb-4">
+          <?php foreach ((array)($text['info_p'] ?? []) as $p): ?>
+            <p class="mb-2"><?= h((string)$p) ?></p>
+          <?php endforeach; ?>
+
+          <?php if (!empty($text['info_bullets'])): ?>
+            <ul class="mb-0">
+              <?php foreach ((array)$text['info_bullets'] as $li): ?>
+                <li><?= h((string)$li) ?></li>
+              <?php endforeach; ?>
+            </ul>
+          <?php endif; ?>
+        </div>
       <?php endif; ?>
 
-      <!-- Zugang/DSGVO-Infoblock -->
+      <!-- Zugang/DSGVO -->
       <div class="alert alert-secondary mb-4">
-        <h2 class="h5 mb-2"><?= h($text['access_title']) ?></h2>
-        <p class="mb-2"><?= h($text['access_intro']) ?></p>
+        <h2 class="h5 mb-2"><?= h((string)($text['access_title'] ?? '')) ?></h2>
+        <p class="mb-2"><?= h((string)($text['access_intro'] ?? '')) ?></p>
+
         <?php if (!empty($text['access_points'])): ?>
           <ul class="mb-0">
-            <?php foreach ($text['access_points'] as $li): ?>
-              <li><?= $li /* enthält <strong> … bewusst unge-escaped */ ?></li>
+            <?php foreach ((array)$text['access_points'] as $li): ?>
+              <li><?= $li /* enthält <strong> bewusst unge-escaped */ ?></li>
             <?php endforeach; ?>
           </ul>
         <?php endif; ?>
@@ -349,19 +351,19 @@ require APP_APPDIR . '/header.php';        // zeigt Status/Token, wenn vorhanden
       <!-- Aktionen -->
       <div class="d-flex flex-column flex-md-row gap-2">
         <a href="/form_personal.php?mode=noemail" class="btn btn-primary flex-fill">
-          <?= h($text['btn_noemail']) ?>
+          <?= h((string)($text['btn_noemail'] ?? '')) ?>
         </a>
+
         <a href="/access_create.php" class="btn btn-outline-primary flex-fill">
-          <?= h($text['btn_create']) ?>
+          <?= h((string)($text['btn_create'] ?? '')) ?>
         </a>
+
         <a href="/access_login.php" class="btn btn-outline-secondary flex-fill">
-          <?= h($text['btn_load']) ?>
+          <?= h((string)($text['btn_load'] ?? '')) ?>
         </a>
       </div>
     </div>
   </div>
 </div>
 
-<?php
-// Allgemeiner Footer (inkl. Bootstrap JS) schließt </body></html>
-require __DIR__ . '/partials/footer.php';
+<?php require __DIR__ . '/partials/footer.php'; ?>
