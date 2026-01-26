@@ -1,29 +1,33 @@
 <?php
-// /public/partials/header.php
-// Öffnet HTML-Dokument, bindet Bootstrap & form.css ein (kein Token/Status hier).
+// public/partials/header.php
 declare(strict_types=1);
 
-// Optional: von der Seite setzen, sonst Defaults
-$title = $title ?? 'Online-Anmeldung – Sprachklassen';
-$lang  = $lang  ?? 'de';
+// Usage:
+//   $title     = '...';             // optional
+//   $html_lang = 'de';              // optional
+//   $html_dir  = 'ltr';             // optional
+//   $extra_css = ['/assets/x.css']; // optional array of hrefs
 
-if (!function_exists('h')) {
-  function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
-}
+$title     = $title     ?? 'Online-Anmeldung – Sprachklassen';
+$html_lang = $html_lang ?? 'de';
+$html_dir  = $html_dir  ?? 'ltr';
+$extra_css = $extra_css ?? [];
 ?>
 <!doctype html>
-<html lang="<?= h($lang) ?>">
+<html lang="<?= htmlspecialchars($html_lang, ENT_QUOTES, 'UTF-8') ?>" dir="<?= htmlspecialchars($html_dir, ENT_QUOTES, 'UTF-8') ?>">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title><?= h($title) ?></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></title>
 
   <link rel="stylesheet" href="/assets/bootstrap/bootstrap.min.css">
   <link rel="stylesheet" href="/assets/form.css">
+<?php foreach ($extra_css as $href): ?>
+  <link rel="stylesheet" href="<?= htmlspecialchars((string)$href, ENT_QUOTES, 'UTF-8') ?>">
+<?php endforeach; ?>
 
   <style>
-    /* Platz für seitenweite, generische Styles */
-    .token-badge{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;}
+    .card { border-radius: 1rem; }
   </style>
 </head>
 <body class="bg-light">
