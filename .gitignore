@@ -8,3 +8,4 @@ logs/*.log
 !logs/.gitkeep
 uploads/*.*
 /app/config.php
+/app/mail.php
