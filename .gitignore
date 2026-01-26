@@ -7,3 +7,4 @@ composer.phar
 logs/*.log
 !logs/.gitkeep
 uploads/*.*
+/app/config.php
