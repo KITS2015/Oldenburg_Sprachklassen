@@ -14,9 +14,9 @@ require_once __DIR__ . '/db.php'; // stellt db():PDO bereit
  *   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
  *   token CHAR(32) NOT NULL UNIQUE,
  *   email VARCHAR(255) NULL,
- *   dob DATE NULL,
+ *   dob DATE NULL,                     -- Login-Geburtsdatum (Account, z. B. Elternteil ODER Bewerber ohne E-Mail)
  *   email_verified TINYINT(1) NOT NULL DEFAULT 0,
- *   data_json JSON NULL,
+ *   data_json JSON NULL,               -- Formular-/Bewerberdaten (inkl. Geburtsdatum der Bewerber*innen)
  *   status ENUM('draft','submitted','withdrawn') NOT NULL DEFAULT 'draft',
  *   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
  *   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -24,8 +24,9 @@ require_once __DIR__ . '/db.php'; // stellt db():PDO bereit
  * );
  *
  * Hinweise:
- * - Der Datensatz kann unmittelbar nach E-Mail-Verifizierung persistiert werden (email_verified=1, dob=NULL).
- * - Beim späteren Speichern von „Persönliche Daten“ wird die DOB ergänzt/gebunden.
+ * - Im E-Mail-Flow wird `dob` aus access_create.php (Login-Geburtsdatum) gefüllt.
+ * - Im No-E-Mail-Flow wird `dob` aus dem Formular „Persönliche Daten“ (Bewerber-Geburtsdatum) gesetzt.
+ * - Das Geburtsdatum der Bewerber*innen steht zusätzlich in data_json -> form.personal.geburtsdatum.
  */
 
 // -------------------------
@@ -46,15 +47,42 @@ function merge_payload(PDO $pdo, string $token, array $payload): array {
     return $merged;
 }
 
+/**
+ * Login-Geburtsdatum (aus access_create.php) als YYYY-MM-DD holen.
+ * Erwartet: $_SESSION['access_login']['dob_dmy'] = "TT.MM.JJJJ"
+ */
+function get_login_dob_ymd_from_session(): ?string {
+    $dob_dmy = (string)($_SESSION['access_login']['dob_dmy'] ?? '');
+    if ($dob_dmy === '') {
+        return null;
+    }
+    if (function_exists('norm_date_dmy_to_ymd')) {
+        $d = norm_date_dmy_to_ymd($dob_dmy);
+        return ($d !== '') ? $d : null;
+    }
+    // Fallback: einfache Umwandlung, ohne tiefe Plausibilitätsprüfung
+    if (!preg_match('/^(\d{2})\.(\d{2})\.(\d{4})$/', $dob_dmy, $m)) {
+        return null;
+    }
+    return $m[3] . '-' . $m[2] . '-' . $m[1];
+}
+
 // -------------------------
 // Upsert-Varianten
 // -------------------------
 
 /**
- * NEU: Upsert direkt nach E-Mail-Verifizierung (ohne DOB).
- * Voraussetzung: $_SESSION['email_verified'] === true
+ * Upsert direkt nach E-Mail-Verifizierung bzw. im weiteren Verlauf,
+ * basiert auf der in access_create.php verifizierten E-Mail.
+ *
+ * Voraussetzungen:
+ * - $_SESSION['email_verified'] === true
+ * - $_SESSION['access_login']['dob_dmy'] enthält das Login-Geburtsdatum (TT.MM.JJJJ)
+ *
+ * Verhalten:
  * - Nutzt Token aus Session oder erzeugt neuen.
- * - Setzt email_verified=1, email, merged $payload in data_json (optional).
+ * - Setzt email_verified = 1, email, dob = Login-DOB (Account),
+ *   merged $payload in data_json (optional).
  * - Status bleibt 'draft'.
  */
 function ensure_record_email_only(string $email, array $payload = []): array {
@@ -64,8 +92,14 @@ function ensure_record_email_only(string $email, array $payload = []): array {
     if (!function_exists('current_access_token') || !function_exists('issue_access_token')) {
         return ['ok'=>false,'token'=>'','err'=>'Token-Helper fehlen'];
     }
+
+    // Login-Geburtsdatum aus Session (Account-DOB)
+    $loginDob = get_login_dob_ymd_from_session();
+
     $token = current_access_token();
-    if ($token === '') $token = issue_access_token();
+    if ($token === '') {
+        $token = issue_access_token();
+    }
 
     try {
         $pdo = db();
@@ -79,27 +113,53 @@ function ensure_record_email_only(string $email, array $payload = []): array {
         $check->execute([':t'=>$token]);
 
         if ($check->fetchColumn()) {
-            $u = $pdo->prepare("UPDATE applications
-                                SET email = :e,
-                                    email_verified = 1,
-                                    data_json = :j,
-                                    updated_at = :u
-                                WHERE token = :t");
-            $u->execute([
-                ':e'=>$email,
-                ':j'=>json_encode($merged, JSON_UNESCAPED_UNICODE),
-                ':u'=>$now,
-                ':t'=>$token
-            ]);
+            // UPDATE – wenn Login-DOB bekannt, mit setzen
+            if ($loginDob !== null) {
+                $u = $pdo->prepare("
+                    UPDATE applications
+                       SET email          = :e,
+                           dob            = :d,
+                           email_verified = 1,
+                           data_json      = :j,
+                           updated_at     = :u
+                     WHERE token         = :t
+                ");
+                $u->execute([
+                    ':e' => $email,
+                    ':d' => $loginDob,
+                    ':j' => json_encode($merged, JSON_UNESCAPED_UNICODE),
+                    ':u' => $now,
+                    ':t' => $token,
+                ]);
+            } else {
+                $u = $pdo->prepare("
+                    UPDATE applications
+                       SET email          = :e,
+                           email_verified = 1,
+                           data_json      = :j,
+                           updated_at     = :u
+                     WHERE token         = :t
+                ");
+                $u->execute([
+                    ':e' => $email,
+                    ':j' => json_encode($merged, JSON_UNESCAPED_UNICODE),
+                    ':u' => $now,
+                    ':t' => $token,
+                ]);
+            }
         } else {
-            $i = $pdo->prepare("INSERT INTO applications (token, email, dob, email_verified, data_json, created_at, updated_at, status)
-                                VALUES (:t, :e, NULL, 1, :j, :c, :u, 'draft')");
+            // INSERT – Login-DOB (Account-DOB) verwenden, kann aber zur Not NULL sein
+            $i = $pdo->prepare("
+                INSERT INTO applications (token, email, dob, email_verified, data_json, created_at, updated_at, status)
+                VALUES (:t, :e, :d, 1, :j, :c, :u, 'draft')
+            ");
             $i->execute([
-                ':t'=>$token,
-                ':e'=>$email,
-                ':j'=>json_encode($merged, JSON_UNESCAPED_UNICODE),
-                ':c'=>$now,
-                ':u'=>$now
+                ':t' => $token,
+                ':e' => $email,
+                ':d' => $loginDob,
+                ':j' => json_encode($merged, JSON_UNESCAPED_UNICODE),
+                ':c' => $now,
+                ':u' => $now,
             ]);
         }
 
@@ -112,6 +172,9 @@ function ensure_record_email_only(string $email, array $payload = []): array {
 
 /**
  * Upsert NUR mit Token + DOB (ohne E-Mail, nicht verifiziert).
+ * Hier wird die DOB der Bewerberin / des Bewerbers als Login-/Token-DOB verwendet
+ * (No-E-Mail-Flow).
+ *
  * - Erzeugt Token aus Session, falls nicht vorhanden.
  * - Setzt/aktualisiert `dob`, merged `$payload` in `data_json`.
  */
@@ -120,13 +183,17 @@ function ensure_record_token_and_dob_only(string $dob_dmy, array $payload = []):
         return ['ok'=>false,'token'=>'','err'=>'Helper fehlt'];
     }
     $dob = norm_date_dmy_to_ymd($dob_dmy);
-    if ($dob === '') return ['ok'=>false,'token'=>current_access_token(),'err'=>'Geburtsdatum ungültig'];
+    if ($dob === '') {
+        return ['ok'=>false,'token'=>current_access_token(),'err'=>'Geburtsdatum ungültig'];
+    }
 
     if (!function_exists('current_access_token') || !function_exists('issue_access_token')) {
         return ['ok'=>false,'token'=>'','err'=>'Token-Helper fehlen'];
     }
     $token = current_access_token();
-    if ($token === '') $token = issue_access_token();
+    if ($token === '') {
+        $token = issue_access_token();
+    }
 
     try {
         $pdo = db();
@@ -137,24 +204,30 @@ function ensure_record_token_and_dob_only(string $dob_dmy, array $payload = []):
         $check = $pdo->prepare("SELECT 1 FROM applications WHERE token = :t LIMIT 1");
         $check->execute([':t'=>$token]);
         if ($check->fetchColumn()) {
-            $u = $pdo->prepare("UPDATE applications
-                                SET dob = :d, data_json = :j, updated_at = :u
-                                WHERE token = :t");
+            $u = $pdo->prepare("
+                UPDATE applications
+                   SET dob        = :d,
+                       data_json  = :j,
+                       updated_at = :u
+                 WHERE token      = :t
+            ");
             $u->execute([
-                ':d'=>$dob,
-                ':j'=>json_encode($merged, JSON_UNESCAPED_UNICODE),
-                ':u'=>$now,
-                ':t'=>$token
+                ':d' => $dob,
+                ':j' => json_encode($merged, JSON_UNESCAPED_UNICODE),
+                ':u' => $now,
+                ':t' => $token,
             ]);
         } else {
-            $i = $pdo->prepare("INSERT INTO applications (token, email, dob, email_verified, data_json, created_at, updated_at, status)
-                                VALUES (:t, NULL, :d, 0, :j, :c, :u, 'draft')");
+            $i = $pdo->prepare("
+                INSERT INTO applications (token, email, dob, email_verified, data_json, created_at, updated_at, status)
+                VALUES (:t, NULL, :d, 0, :j, :c, :u, 'draft')
+            ");
             $i->execute([
-                ':t'=>$token,
-                ':d'=>$dob,
-                ':j'=>json_encode($merged, JSON_UNESCAPED_UNICODE),
-                ':c'=>$now,
-                ':u'=>$now
+                ':t' => $token,
+                ':d' => $dob,
+                ':j' => json_encode($merged, JSON_UNESCAPED_UNICODE),
+                ':c' => $now,
+                ':u' => $now,
             ]);
         }
         return ['ok'=>true,'token'=>$token,'err'=>''];
@@ -165,88 +238,60 @@ function ensure_record_token_and_dob_only(string $dob_dmy, array $payload = []):
 }
 
 /**
- * Upsert mit verifizierter E-Mail + DOB (Standardweg).
- * Voraussetzung: $_SESSION['email_verified'] === true
+ * ALT: Upsert mit verifizierter E-Mail + DOB (Standardweg).
+ * NEU: Wir verwenden jetzt das Login-Geburtsdatum aus access_create.php,
+ * nicht mehr das Bewerber-Geburtsdatum aus dem Formular.
+ *
+ * Zur Abwärtskompatibilität delegiert diese Funktion auf ensure_record_email_only().
  */
 function ensure_record_with_token(string $email, string $geburtsdatum_dmy, array $payload = []): array {
-    if (empty($_SESSION['email_verified'])) {
-        return ['ok'=>false,'token'=>'','err'=>'E-Mail nicht verifiziert'];
-    }
-    if (!function_exists('norm_date_dmy_to_ymd')) {
-        return ['ok'=>false,'token'=>'','err'=>'Helper fehlt'];
-    }
-    $dob = norm_date_dmy_to_ymd($geburtsdatum_dmy);
-    if ($dob === '') {
-        return ['ok'=>false,'token'=>'','err'=>'Geburtsdatum ungültig'];
-    }
-
-    if (!function_exists('current_access_token') || !function_exists('issue_access_token')) {
-        return ['ok'=>false,'token'=>'','err'=>'Token-Helper fehlen'];
-    }
-    $token = current_access_token();
-    if ($token === '') $token = issue_access_token();
-
-    try {
-        $pdo = db();
-        $now = (new DateTimeImmutable('now'))->format('Y-m-d H:i:s');
-
-        $merged = merge_payload($pdo, $token, $payload);
-
-        $check = $pdo->prepare("SELECT 1 FROM applications WHERE token = :t LIMIT 1");
-        $check->execute([':t'=>$token]);
-        if ($check->fetchColumn()) {
-            $u = $pdo->prepare("UPDATE applications
-                                SET email = :e, dob = :d, email_verified = 1,
-                                    data_json = :j, updated_at = :u
-                                WHERE token = :t");
-            $u->execute([
-                ':e'=>$email,
-                ':d'=>$dob,
-                ':j'=>json_encode($merged, JSON_UNESCAPED_UNICODE),
-                ':u'=>$now,
-                ':t'=>$token
-            ]);
-        } else {
-            $i = $pdo->prepare("INSERT INTO applications (token, email, dob, email_verified, data_json, created_at, updated_at, status)
-                                VALUES (:t, :e, :d, 1, :j, :c, :u, 'draft')");
-            $i->execute([
-                ':t'=>$token,
-                ':e'=>$email,
-                ':d'=>$dob,
-                ':j'=>json_encode($merged, JSON_UNESCAPED_UNICODE),
-                ':c'=>$now,
-                ':u'=>$now
-            ]);
-        }
-        return ['ok'=>true,'token'=>$token,'err'=>''];
-    } catch (Throwable $e) {
-        error_log('ensure_record_with_token: '.$e->getMessage());
-        return ['ok'=>false,'token'=>$token,'err'=>'DB-Fehler'];
-    }
+    // Das übergebene $geburtsdatum_dmy wird ignoriert, da das Login-DOB
+    // bereits in $_SESSION['access_login']['dob_dmy'] steckt.
+    return ensure_record_email_only($email, $payload);
 }
 
 /**
  * Komfort: Speichert einen Teil (Scope) in data_json unter form.{scope}.
- * - Wenn verifizierte E-Mail + DOB vorhanden → ensure_record_with_token()
+ * - Wenn verifizierte Login-E-Mail + DOB vorhanden → ensure_record_with_token()
  * - sonst, wenn DOB vorhanden → ensure_record_token_and_dob_only()
  * - sonst nur Session (kein DB-Write)
+ *
+ * WICHTIG:
+ * - applications.email enthält die Login-/Access-E-Mail (z. B. Eltern),
+ *   NICHT die optionale E-Mail der Schülerin / des Schülers aus form.personal.email.
  */
 function save_scope_allow_noemail(string $scope, array $data): array {
+    // In der Session ablegen
     $_SESSION['form'][$scope] = $data;
 
-    $email = (string)($_SESSION['form']['personal']['email'] ?? '');
-    $dob   = (string)($_SESSION['form']['personal']['geburtsdatum'] ?? '');
+    // Login-E-Mail für den Zugangscode (Access-Account),
+    // nicht die E-Mail der Schülerin / des Schülers
+    $loginEmail = (string)($_SESSION['access']['email'] ?? '');
 
+    // DOB kommt aus den Personaldaten der Schülerin / des Schülers
+    $dob = (string)($_SESSION['form']['personal']['geburtsdatum'] ?? '');
+
+    // Payload, das in applications.data_json landet
     $payload = ['form' => [$scope => $data]];
 
-    if (!empty($_SESSION['email_verified']) && $email !== '' && $dob !== '') {
-        return ensure_record_with_token($email, $dob, $payload);
+    // Fall 1: verifizierte Login-E-Mail + DOB → in applications.email/dob schreiben
+    if (!empty($_SESSION['email_verified']) && $loginEmail !== '' && $dob !== '') {
+        return ensure_record_with_token($loginEmail, $dob, $payload);
     }
+
+    // Fall 2: nur DOB → Token + DOB ohne E-Mail (no-email-Flow)
     if ($dob !== '') {
         return ensure_record_token_and_dob_only($dob, $payload);
     }
-    return ['ok'=>false,'token'=>current_access_token(),'err'=>'nur Session (DOB fehlt)'];
+
+    // Fall 3: noch kein DOB → nur Session
+    return [
+        'ok'    => false,
+        'token' => current_access_token(),
+        'err'   => 'nur Session (DOB fehlt)',
+    ];
 }
+
 
 // -------------------------
 // Spezifischer Helfer: Schritt 1 (personal)
@@ -254,7 +299,14 @@ function save_scope_allow_noemail(string $scope, array $data): array {
 
 /**
  * Nimmt bereits validierte POST-Felder entgegen und speichert sie über save_scope_allow_noemail().
- * $contacts: strukturierte Liste (rolle,name,tel,mail,notiz)
+ *
+ * HINWEIS:
+ * In deiner aktuellen form_personal.php speicherst du bereits manuell
+ * in $_SESSION['form']['personal'] (inkl. telefon_e164 etc.) und rufst
+ * save_scope_allow_noemail('personal', ...) direkt auf.
+ *
+ * Diese Funktion kannst du inzwischen eigentlich ignorieren oder bei Bedarf
+ * auf den neuen Stand bringen. Ich lasse sie hier für Kompatibilität.
  */
 function save_personal_block(array $post, array $contacts): array {
     $data = [
@@ -267,7 +319,7 @@ function save_personal_block(array $post, array $contacts): array {
         'strasse'         => trim((string)($post['strasse']         ?? '')),
         'plz'             => trim((string)($post['plz']             ?? '')),
         'wohnort'         => (string)($post['wohnort']              ?? 'Oldenburg (Oldb)'),
-        'telefon'         => trim((string)($post['telefon']         ?? '')),
+        'telefon'         => trim((string)($post['telefon']         ?? '')), // ggf. nicht mehr benutzt
         'email'           => trim((string)($post['email']           ?? '')),
         'contacts'        => $contacts,
         'dsgvo_ok'        => (isset($post['dsgvo_ok']) && $post['dsgvo_ok'] === '1') ? '1' : '0',
@@ -281,13 +333,25 @@ function save_personal_block(array $post, array $contacts): array {
 
 /**
  * Lädt den JSON-Inhalt (data_json) zu Token + DOB. Gibt assoc-Array oder null.
+ *
+ * ACHTUNG:
+ * - Im E-Mail-Flow ist `dob` hier das Login-Geburtsdatum (aus access_create.php).
+ * - Im No-E-Mail-Flow ist `dob` das Bewerber-Geburtsdatum aus form_personal.
  */
 function load_application_by_token_and_dob(string $token, string $dob_dmy): ?array {
     $dob = (function_exists('norm_date_dmy_to_ymd') ? norm_date_dmy_to_ymd($dob_dmy) : '');
-    if ($token === '' || $dob === '') return null;
+    if ($token === '' || $dob === '') {
+        return null;
+    }
     try {
         $pdo = db();
-        $stmt = $pdo->prepare("SELECT data_json FROM applications WHERE token = :t AND dob = :d LIMIT 1");
+        $stmt = $pdo->prepare("
+            SELECT data_json
+              FROM applications
+             WHERE token = :t
+               AND dob   = :d
+             LIMIT 1
+        ");
         $stmt->execute([':t'=>$token, ':d'=>$dob]);
         if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $json = (string)$row['data_json'];
@@ -303,21 +367,31 @@ function load_application_by_token_and_dob(string $token, string $dob_dmy): ?arr
 
 /**
  * Optional: Token per E-Mail erneut zusenden (wenn verifiziert).
+ *
+ * Im E-Mail-Flow ist `dob_dmy` das Login-Geburtsdatum (aus access_create.php).
  * Gibt true zurück, wenn eine Mail versucht/gesendet wurde.
  */
 function resend_token_if_verified(string $email, string $dob_dmy): bool {
-    if (empty($_SESSION['email_verified'])) return false;
     $dob = (function_exists('norm_date_dmy_to_ymd') ? norm_date_dmy_to_ymd($dob_dmy) : '');
-    if ($email === '' || $dob === '') return false;
+    if ($email === '' || $dob === '') {
+        return false;
+    }
 
     try {
         $pdo = db();
-        $stmt = $pdo->prepare("SELECT token FROM applications WHERE email = :e AND dob = :d AND email_verified = 1 LIMIT 1");
-        $stmt->execute([':e'=>$email, ':d'=>$dob]);
+        $stmt = $pdo->prepare("
+            SELECT token
+              FROM applications
+             WHERE email          = :e
+               AND dob            = :d
+               AND email_verified = 1
+             LIMIT 1
+        ");
+        $stmt->execute([':e' => $email, ':d' => $dob]);
         if ($tok = $stmt->fetchColumn()) {
             if (function_exists('send_verification_email')) {
-                // Re-Use Mailer: einfacher Hinweis mit Token
-                @send_verification_email($email, "Ihr Zugangstoken: ".$tok);
+                // einfache Mail mit dem Token – Text kannst du bei Bedarf anpassen
+                @send_verification_email($email, 'Ihr Zugangstoken: ' . $tok);
                 return true;
             }
         }

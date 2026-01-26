@@ -87,7 +87,6 @@ try {
         }
         if (!idx_exists($admin,$dbName,'applications','uq_token')) {
             // UNIQUE-Index sicherstellen (Name vereinheitlicht)
-            // Falls es bereits einen UNIQUE mit anderem Namen gibt, schlägt das ggf. fehl -> try/catch vermeiden wir hier bewusst.
             $app->exec("ALTER TABLE applications ADD UNIQUE KEY uq_token (token)");
         }
 
@@ -153,9 +152,26 @@ try {
         }
     }
 
+    // ========= settings (Grundeinstellungen) =========
+    $app->exec("
+      CREATE TABLE IF NOT EXISTS settings (
+        setting_key    VARCHAR(100) NOT NULL,
+        setting_value  VARCHAR(255) NOT NULL,
+        description    VARCHAR(255) NULL,
+        updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (setting_key)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ");
+
+    // Standardwert für max. Tokens pro E-Mail (z. B. 5) – Benutzer kann das später ändern
+    $app->exec("
+      INSERT INTO settings (setting_key, setting_value, description)
+      VALUES ('max_tokens_per_email', '5', 'Maximale Anzahl an Bewerbungen (Access-Tokens) pro Login-E-Mail')
+      ON DUPLICATE KEY UPDATE setting_value = setting_value
+    ");
+
     // ========= personal =========
-    // Hinweis: Diese Normalisierungstabelle wird derzeit von euren JSON-Flows nicht beschrieben.
-    // Email bleibt hier NOT NULL – ihr erfasst im No-Email-Flow die E-Mail nicht; diese Tabelle dann erst befüllen, wenn E-Mail vorhanden ist.
+    // Hinweis: E-Mail hier ist die E-Mail des/der Bewerber*in und kann NULL sein.
     $app->exec("
       CREATE TABLE IF NOT EXISTS personal (
         application_id  BIGINT UNSIGNED NOT NULL,
@@ -169,7 +185,7 @@ try {
         plz             CHAR(5) NOT NULL,
         wohnort         VARCHAR(200) NOT NULL,
         telefon         VARCHAR(100) NOT NULL,
-        email           VARCHAR(255) NOT NULL,
+        email           VARCHAR(255) NULL,
         dsgvo_ok        TINYINT(1) NOT NULL DEFAULT 0,
         created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -178,6 +194,12 @@ try {
         CONSTRAINT fk_personal_app FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
+
+    // Migration: falls personal schon existiert und email noch NOT NULL ist → auf NULL-fähig ändern
+    if (table_exists($admin, $dbName, 'personal')) {
+        // Versuchen wir einfach immer – ist idempotent, falls schon NULL-fähig
+        $app->exec("ALTER TABLE personal MODIFY COLUMN email VARCHAR(255) NULL");
+    }
 
     // ========= contacts =========
     $app->exec("

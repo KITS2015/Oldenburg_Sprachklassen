@@ -22,9 +22,14 @@ $lang = strtolower($_GET['lang'] ?? ($_COOKIE['lang'] ?? ''));
 if (!array_key_exists($lang, $languages)) {
   $accept = strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '');
   foreach ($languages as $code => $label) {
-    if (strpos($accept, $code) !== false) { $lang = $code; break; }
+    if (strpos($accept, $code) !== false) {
+      $lang = $code;
+      break;
+    }
   }
-  if (!array_key_exists($lang, $languages)) $lang = 'de';
+  if (!array_key_exists($lang, $languages)) {
+    $lang = 'de';
+  }
 }
 setcookie('lang', $lang, time()+60*60*24*365, '/');
 
@@ -64,7 +69,7 @@ $t = [
     // Buttons
     'btn_noemail'   => 'Ohne E-Mail fortfahren',
     'btn_create'    => 'Zugang mit E-Mail erstellen',
-    'btn_load'      => 'Bewerbung laden',
+    'btn_load'      => 'Zugriff auf Bewerbung/en',
   ],
   'en' => [
     'title' => 'Welcome to the Online Registration – Language Classes',
@@ -93,7 +98,7 @@ $t = [
     ],
     'btn_noemail' => 'Proceed without email',
     'btn_create'  => 'Create access with email',
-    'btn_load'    => 'Load application',
+    'btn_load'    => 'Access your application(s)',
   ],
   'fr' => [
     'title' => 'Bienvenue – Inscription en ligne aux cours de langue',
@@ -271,9 +276,6 @@ $t = [
   ],
 ];
 
-// Für Kürze: Restsprachen aus deinem Snippet übernehmen
-$t += array_intersect_key($GLOBALS['t'] ?? [], array_flip(['fr','uk','ar','ru','tr','fa'])); // falls du sie separat lädst
-
 $text = $t[$lang] ?? $t['de'];
 
 // ---------- Seitentitel & HTML-Parameter für allgemeinen Header ----------
@@ -346,9 +348,15 @@ require APP_APPDIR . '/header.php';        // zeigt Status/Token, wenn vorhanden
 
       <!-- Aktionen -->
       <div class="d-flex flex-column flex-md-row gap-2">
-        <a href="/form_personal.php?mode=noemail" class="btn btn-primary flex-fill"><?= h($text['btn_noemail']) ?></a>
-        <a href="/access_create.php" class="btn btn-outline-primary flex-fill"><?= h($text['btn_create']) ?></a>
-        <a href="/access_login.php" class="btn btn-outline-secondary flex-fill"><?= h($text['btn_load']) ?></a>
+        <a href="/form_personal.php?mode=noemail" class="btn btn-primary flex-fill">
+          <?= h($text['btn_noemail']) ?>
+        </a>
+        <a href="/access_create.php" class="btn btn-outline-primary flex-fill">
+          <?= h($text['btn_create']) ?>
+        </a>
+        <a href="/access_login.php" class="btn btn-outline-secondary flex-fill">
+          <?= h($text['btn_load']) ?>
+        </a>
       </div>
     </div>
   </div>

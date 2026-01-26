@@ -12,20 +12,22 @@ $emailMode    = ($modeParam === 'email');
 
 // --- E-Mail-Flow absichern & vorbereiten ---
 if ($emailMode) {
+    // Prüfen: Access-Session muss da sein, Modus = email, Login-E-Mail vorhanden
     if (empty($_SESSION['access']) || ($_SESSION['access']['mode'] ?? '') !== 'email' || empty($_SESSION['access']['email'])) {
         header('Location: /index.php');
         exit;
     }
+    // Token sicherstellen (Fallback, normalerweise bereits vorhanden)
     if (function_exists('current_access_token') && function_exists('issue_access_token')) {
         if (current_access_token() === '') { issue_access_token(); }
     }
-    $_SESSION['form']['personal']['email'] = (string)$_SESSION['access']['email'];
+    // WICHTIG: KEIN Überschreiben der Bewerber-E-Mail mehr!
+    // $_SESSION['form']['personal']['email'] bleibt unabhängig von der Login-E-Mail.
 }
 
-// --- No-Email: Token sofort erzeugen, wenn noch keiner da ist ---
-if ($noEmailMode && current_access_token() === '') {
-    issue_access_token();
-}
+// --- Wichtig: Im No-Email-Mode KEIN Token mehr vorab erzeugen! ---
+// Der Token wird erst in save_scope_allow_noemail() erzeugt,
+// wenn ein gültiges Geburtsdatum vorhanden ist.
 
 $errors = [];
 $kontakt_errors = [];
@@ -37,7 +39,6 @@ function age_on_reference(string $dmy, int $year): ?int {
     $ref = DateTimeImmutable::createFromFormat('Y-m-d', sprintf('%04d-09-30', $year));
     if (!$ref) return null;
     $diff = $bd->diff($ref);
-    // Wenn Geburtsdatum nach dem 30.09. (Zukunft), diff->invert wäre 1; hier reicht .y
     return $diff->y;
 }
 
@@ -47,31 +48,52 @@ $refYear = (int)date('Y');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_check()) { http_response_code(400); exit('Ungültige Anfrage.'); }
 
-    // Pflichtfelder (E-Mail nur, wenn NICHT im No-Email-Modus)
-    $req = ['name','vorname','geschlecht','geburtsdatum','geburtsort_land','staatsang','strasse','plz','telefon_vorwahl','telefon_nummer','dsgvo_ok'];
-    if (!$noEmailMode) { $req[] = 'email'; }
+    // Pflichtfelder – E-Mail des Bewerbers ist ab jetzt OPTIONAL
+    $req = [
+        'name',
+        'vorname',
+        'geschlecht',
+        'geburtsdatum',
+        'geburtsort_land',
+        'staatsang',
+        'strasse',
+        'plz',
+        'telefon_vorwahl',
+        'telefon_nummer',
+        'dsgvo_ok'
+    ];
 
     foreach ($req as $f) {
         if ($f === 'dsgvo_ok') {
-            if (($_POST['dsgvo_ok'] ?? '') !== '1') $errors['dsgvo_ok'] = 'Erforderlich.';
+            if (($_POST['dsgvo_ok'] ?? '') !== '1') {
+                $errors['dsgvo_ok'] = 'Erforderlich.';
+            }
         } else {
-            if (empty($_POST[$f]) && !($emailMode && $f === 'email')) {
+            if (empty($_POST[$f])) {
                 $errors[$f] = 'Erforderlich.';
             }
         }
     }
 
     // Feldvalidierungen
-    if (!isset($errors['name']) && !preg_match('/^[\p{L} .\'-]+$/u', (string)$_POST['name'])) $errors['name'] = 'Bitte nur Buchstaben.';
-    if (!isset($errors['vorname']) && !preg_match('/^[\p{L} .\'-]+$/u', (string)$_POST['vorname'])) $errors['vorname'] = 'Bitte nur Buchstaben.';
-    if (!in_array(($_POST['geschlecht'] ?? ''), ['m','w','d'], true)) $errors['geschlecht'] = 'Ungültig.';
+    if (!isset($errors['name']) && !preg_match('/^[\p{L} .\'-]+$/u', (string)$_POST['name'])) {
+        $errors['name'] = 'Bitte nur Buchstaben.';
+    }
+    if (!isset($errors['vorname']) && !preg_match('/^[\p{L} .\'-]+$/u', (string)$_POST['vorname'])) {
+        $errors['vorname'] = 'Bitte nur Buchstaben.';
+    }
+    if (!in_array(($_POST['geschlecht'] ?? ''), ['m','w','d'], true)) {
+        $errors['geschlecht'] = 'Ungültig.';
+    }
 
     if (!isset($errors['geburtsdatum'])) {
         if (!preg_match('/^\d{2}\.\d{2}\.\d{4}$/', (string)$_POST['geburtsdatum'])) {
             $errors['geburtsdatum'] = 'TT.MM.JJJJ';
         } else {
             [$t,$m,$j] = explode('.', (string)$_POST['geburtsdatum']);
-            if (!checkdate((int)$m,(int)$t,(int)$j)) $errors['geburtsdatum'] = 'Ungültiges Datum.';
+            if (!checkdate((int)$m,(int)$t,(int)$j)) {
+                $errors['geburtsdatum'] = 'Ungültiges Datum.';
+            }
         }
     }
 
@@ -79,7 +101,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($errors['geburtsdatum'])) {
         $age = age_on_reference((string)$_POST['geburtsdatum'], $refYear);
         if ($age !== null && ($age < 16 || $age > 18)) {
-            // Hinweis zeigen, OK -> weiterleiten und hier abbrechen
             $msg = "Hinweis: Sind Sie am 30.09.$refYear unter 16 oder über 18 Jahre alt, "
                  . "können Sie nicht in die Sprachlernklasse der BBS aufgenommen werden. "
                  . "Bitte bewerben Sie sich für eine andere Klasse einer BBS hier:\nhttps://bbs-ol.de/";
@@ -130,22 +151,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // E-Mail
-    if ($emailMode) {
-        $email_raw = (string)($_SESSION['access']['email'] ?? '');
-        if ($email_raw === '') { $errors['email'] = 'Erforderlich.'; }
-    } else {
-        $email_raw = trim((string)($_POST['email'] ?? ''));
-        if ($email_raw !== '') {
-            if (!filter_var($email_raw, FILTER_VALIDATE_EMAIL)) {
-                $errors['email'] = 'Ungültige E-Mail.';
-            } elseif (preg_match('/@iserv\.de$/i', $email_raw)) {
-                $errors['email'] = 'Bitte private E-Mail (keine IServ).';
-            }
-        } else {
-            if (!$noEmailMode && !isset($errors['email'])) {
-                $errors['email'] = 'Erforderlich.';
-            }
+    // E-Mail des Bewerbers (OPTIONAL, unabhängig von Login-E-Mail)
+    $email_raw = trim((string)($_POST['email'] ?? ''));
+    if ($email_raw !== '') {
+        if (!filter_var($email_raw, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Ungültige E-Mail.';
+        } elseif (preg_match('/@iserv\.de$/i', $email_raw)) {
+            $errors['email'] = 'Bitte private E-Mail (keine IServ).';
         }
     }
 
@@ -196,11 +208,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'telefon_e164'    => $telefon_e164,
             'telefon_vorwahl' => (string)($_POST['telefon_vorwahl'] ?? ''),
             'telefon_nummer'  => (string)($_POST['telefon_nummer'] ?? ''),
+            // Bewerber-E-Mail (optional, unabhängig vom Login)
             'email'           => $email_raw,
             'contacts'        => $contacts,
             'dsgvo_ok'        => (($_POST['dsgvo_ok'] ?? '') === '1' ? '1' : '0'),
         ];
 
+        // HIER wird (falls DOB vorhanden) der Token erzeugt und in applications+data_json geschrieben.
         $save = save_scope_allow_noemail('personal', $_SESSION['form']['personal']);
         $_SESSION['last_save'] = $save;
 
@@ -231,7 +245,7 @@ require APP_APPDIR . '/header.php';
 // UI-Helper
 function sel($a,$b){ return $a===$b ? 'selected' : ''; }
 
-// Vorbelegung für die Kontakte (Session oder aus POST rekonstruieren)
+// Vorbelegung Kontakte
 $prevKontakte = $_SESSION['form']['personal']['contacts'] ?? [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $rc = max(
@@ -261,14 +275,16 @@ if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'
   <?php if ($emailMode): ?>
     <div class="alert alert-success">
       <strong>E-Mail-Login aktiv:</strong>
-      Angemeldet als <code><?= h($_SESSION['access']['email']) ?></code>.
-      Änderungen der E-Mail sind in diesem Schritt nicht möglich.
+      Angemeldet mit der E-Mail-Adresse <code><?= h($_SESSION['access']['email']) ?></code>.<br>
+      Diese E-Mail wird nur für den Zugangscode (Access-Token) und zum Wiederfinden Ihrer Bewerbung verwendet.
+      <br>Unten können Sie eine <strong>E-Mail-Adresse der Schülerin / des Schülers</strong> angeben (falls vorhanden).
     </div>
   <?php endif; ?>
 
   <?php if ($noEmailMode): ?>
     <div class="alert alert-warning">
-      <strong>Hinweis (ohne E-Mail):</strong> Bitte notieren/fotografieren Sie Ihren Zugangscode (Access-Token) oben.
+      <strong>Hinweis (ohne E-Mail):</strong> Bitte notieren/fotografieren Sie Ihren Zugangscode (Access-Token),
+      den Sie nach dem Speichern auf dieser Seite angezeigt bekommen.
       Ohne verifizierte E-Mail ist eine Wiederherstellung nur mit <strong>Token + Geburtsdatum</strong> möglich.
     </div>
   <?php endif; ?>
@@ -360,7 +376,7 @@ if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'
           </div>
         </div>
 
-        <!-- Reihe 5: Telefon (geteilt) / E-Mail -->
+        <!-- Reihe 5: Telefon (geteilt) / Bewerber-E-Mail -->
         <div class="row g-3 mt-0">
           <div class="col-md-6">
             <label class="form-label">Telefonnummer*</label>
@@ -395,17 +411,18 @@ if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'
 
           <div class="col-md-6">
             <label class="form-label">
-              Private E-Mail-Adresse<?= $noEmailMode ? '' : '*' ?> (keine IServ)
+              E-Mail-Adresse der Schülerin / des Schülers (optional, keine IServ-Adresse)
             </label>
-            <?php if ($emailMode): ?>
-              <input name="email" type="email" class="form-control" value="<?= h($_SESSION['access']['email']) ?>" readonly>
-              <div class="form-text">Diese Adresse wurde per Code bestätigt.</div>
-            <?php else: ?>
-              <input name="email" type="email" class="form-control<?= has_err('email',$errors) ?>" value="<?= old('email','personal') ?>" <?= $noEmailMode ? '' : 'required' ?>>
-              <?php if ($noEmailMode): ?>
-                <div class="form-text">Freiwillig. Ohne E-Mail ist Wiederherstellung nur mit Token + Geburtsdatum möglich.</div>
-              <?php endif; ?>
-            <?php endif; ?>
+            <input
+              name="email"
+              type="email"
+              class="form-control<?= has_err('email',$errors) ?>"
+              value="<?= h(old('email','personal')) ?>"
+            >
+            <div class="form-text">
+              Diese E-Mail gehört zur Schülerin / zum Schüler (falls vorhanden)
+              und ist unabhängig von der E-Mail-Adresse für den Zugangscode.
+            </div>
           </div>
         </div>
 
@@ -436,8 +453,18 @@ if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'
                     <td>
                       <select name="kontakt_role[]" class="form-select form-select-sm">
                         <?php
-                          $roles = [''=>'–','Mutter'=>'Mutter','Vater'=>'Vater','Elternteil'=>'Elternteil','Betreuer*in'=>'Betreuer*in','Einrichtung'=>'Einrichtung','Sonstiges'=>'Sonstiges'];
-                          foreach ($roles as $rv=>$rl) echo '<option value="'.h($rv).'" '.($rv === (string)($k['rolle'] ?? '') ? 'selected' : '').'>'.h($rl).'</option>';
+                          $roles = [
+                            ''            =>'–',
+                            'Mutter'      =>'Mutter',
+                            'Vater'       =>'Vater',
+                            'Elternteil'  =>'Elternteil',
+                            'Betreuer*in' =>'Betreuer*in',
+                            'Einrichtung' =>'Einrichtung',
+                            'Sonstiges'   =>'Sonstiges'
+                          ];
+                          foreach ($roles as $rv=>$rl) {
+                              echo '<option value="'.h($rv).'" '.($rv === (string)($k['rolle'] ?? '') ? 'selected' : '').'>'.h($rl).'</option>';
+                          }
                         ?>
                       </select>
                     </td>
@@ -577,4 +604,4 @@ function removeRow(btn){
 })();
 </script>
 
-<?php require __DIR__ . '/partials/footer.php';
+<?php require __DIR__ . '/partials/footer.php'; ?>

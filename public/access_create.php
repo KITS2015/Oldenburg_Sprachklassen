@@ -3,8 +3,8 @@
 // Zugang mit E-Mail erstellen: E-Mail erfassen -> Code versenden -> Code prüfen
 declare(strict_types=1);
 
-require __DIR__ . '/wizard/_common.php';           // startet Session, h(), etc.
-require_once __DIR__ . '/../app/email.php';        // send_verification_email()
+require __DIR__ . '/wizard/_common.php';             // startet Session, h(), etc.
+require_once __DIR__ . '/../app/email.php';          // send_verification_email()
 require_once __DIR__ . '/../app/functions_form.php'; // ensure_record_email_only()
 
 // ------------------------------------------------------------
@@ -25,6 +25,7 @@ $t = [
     'title'         => 'Zugang mit E-Mail erstellen',
     'lead'          => 'Wir senden Ihnen einen 6-stelligen Bestätigungscode an Ihre E-Mail-Adresse.',
     'email_label'   => 'E-Mail-Adresse',
+    'dob_label'     => 'Geburtsdatum (TT.MM.JJJJ)',            // NEU
     'consent_label' => 'Ich stimme zu, dass meine E-Mail für den Anmeldeprozess verwendet wird.',
     'send_btn'      => 'Code senden',
     'code_label'    => 'Bestätigungscode',
@@ -32,6 +33,7 @@ $t = [
     'resend'        => 'Code erneut senden',
     'info_sent'     => 'Wir haben Ihnen einen Code gesendet. Bitte prüfen Sie auch den Spam-Ordner.',
     'error_email'   => 'Bitte geben Sie eine gültige E-Mail-Adresse an.',
+    'error_dob'     => 'Bitte geben Sie ein gültiges Geburtsdatum im Format TT.MM.JJJJ ein.', // NEU
     'error_consent' => 'Bitte stimmen Sie der Nutzung Ihrer E-Mail zu.',
     'error_rate'    => 'Zu viele Versuche. Bitte warten Sie kurz und versuchen Sie es erneut.',
     'error_code'    => 'Der Code ist ungültig oder abgelaufen.',
@@ -39,11 +41,15 @@ $t = [
     'ok_verified'   => 'E-Mail bestätigt. Sie werden weitergeleitet…',
     'back'          => 'Zurück',
     'cancel'        => 'Abbrechen',
+    'error_email_in_use' => // NEU
+      'Diese E-Mail-Adresse wird bereits für einen Zugang verwendet. '
+      .'Bitte nutzen Sie „Zugriff auf Bewerbung/en“, um sich anzumelden.',
   ],
   'en' => [
     'title'         => 'Create access with email',
     'lead'          => 'We will send a 6-digit verification code to your email address.',
     'email_label'   => 'Email address',
+    'dob_label'     => 'Date of birth (DD.MM.YYYY)',          // NEW
     'consent_label' => 'I agree that my email is used for the registration process.',
     'send_btn'      => 'Send code',
     'code_label'    => 'Verification code',
@@ -51,6 +57,7 @@ $t = [
     'resend'        => 'Resend code',
     'info_sent'     => 'We sent you a code. Please also check the spam folder.',
     'error_email'   => 'Please provide a valid email address.',
+    'error_dob'     => 'Please provide a valid date of birth (DD.MM.YYYY).', // NEW
     'error_consent' => 'Please accept the email usage consent.',
     'error_rate'    => 'Too many attempts. Please wait and try again.',
     'error_code'    => 'The code is invalid or expired.',
@@ -58,12 +65,16 @@ $t = [
     'ok_verified'   => 'Email verified. Redirecting…',
     'back'          => 'Back',
     'cancel'        => 'Cancel',
+    'error_email_in_use' => // NEW
+      'This email address is already used for an existing access. '
+      .'Please use “Access your application(s)” to log in.',
   ],
 ];
+
 $text = $t[$lang] ?? $t['en'];
 
 // ------------------------------------------------------------
-// Hilfen: CSRF, Email-Validierung, Code
+// Hilfen: CSRF, Email-Validierung, DOB-Check, Code
 if (empty($_SESSION['csrf'])) { $_SESSION['csrf'] = bin2hex(random_bytes(32)); }
 function csrf_check(): void {
   if (($_POST['csrf'] ?? '') !== ($_SESSION['csrf'] ?? '')) { http_response_code(400); exit('Bad CSRF'); }
@@ -71,7 +82,35 @@ function csrf_check(): void {
 function is_valid_email(string $email): bool {
   return (bool) filter_var($email, FILTER_VALIDATE_EMAIL);
 }
-function make_code(): string { return str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT); }
+function validate_dob_dmy(string $dmy): bool {
+  if (!preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $dmy)) {
+    return false;
+  }
+  [$d,$m,$y] = explode('.', $dmy);
+  return checkdate((int)$m, (int)$d, (int)$y);
+}
+
+// NEU: Prüfen, ob diese E-Mail bereits für einen verifizierten Zugang verwendet wird
+function email_in_use_verified(string $email): bool {
+  try {
+    $pdo = db();
+    $st = $pdo->prepare("
+      SELECT COUNT(*) 
+      FROM applications 
+      WHERE email = :e AND email_verified = 1
+    ");
+    $st->execute([':e' => $email]);
+    return ((int)$st->fetchColumn() > 0);
+  } catch (Throwable $e) {
+    error_log('email_in_use_verified: '.$e->getMessage());
+    // Im Zweifel lieber nicht blockieren
+    return false;
+  }
+}
+
+function make_code(): string {
+  return str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+}
 
 // Rate-Limit (einfach): max 5 Aktionen in 10 Min.
 // Für lokale Tests kann die Funktion auf `return true;` reduziert werden.
@@ -93,26 +132,44 @@ $info   = '';
 if ($step === 'send') {
   csrf_check();
   if (!rate_ok()) { $errors[] = $text['error_rate']; }
+
   $email   = trim((string)($_POST['email'] ?? ''));
+  $dob_dmy = trim((string)($_POST['dob']   ?? ''));
   $consent = isset($_POST['consent']);
 
   if (!isset($_SESSION['email_verify'])) {
-    // Erster Versand: E-Mail + Consent prüfen
-    if (!is_valid_email($email)) { $errors[] = $text['error_email']; }
-    if (!$consent)               { $errors[] = $text['error_consent']; }
+    // Erster Versand: E-Mail + DOB + Consent prüfen
+    if (!is_valid_email($email)) {
+      $errors[] = $text['error_email'];
+    }
+    if (!validate_dob_dmy($dob_dmy)) {
+      $errors[] = $text['error_dob'];
+    }
+    if (!$consent) {
+      $errors[] = $text['error_consent'];
+    }
+
+    // NEU: Wenn E-Mail bereits zu einem verifizierten Zugang gehört -> nicht neu registrieren
+    if (!$errors && email_in_use_verified($email)) {
+      $errors[] = $text['error_email_in_use'];
+    }
   } else {
-    // Bereits im Verify-Schritt: vorhandene E-Mail nutzen
-    $email = (string)($_SESSION['email_verify']['email'] ?? '');
-    if (!is_valid_email($email)) { $errors[] = $text['error_resend']; }
+    // Bereits im Verify-Schritt: vorhandene Daten nutzen
+    $email   = (string)($_SESSION['email_verify']['email'] ?? '');
+    $dob_dmy = (string)($_SESSION['email_verify']['dob_dmy'] ?? '');
+    if (!is_valid_email($email) || !validate_dob_dmy($dob_dmy)) {
+      $errors[] = $text['error_resend'];
+    }
   }
 
   if (!$errors) {
     $code = make_code();
     $_SESSION['email_verify'] = [
-      'email' => $email,
-      'hash'  => password_hash($code, PASSWORD_DEFAULT),
-      'exp'   => time() + 600, // 10 Minuten
-      'tries' => 0,
+      'email'   => $email,
+      'dob_dmy' => $dob_dmy,                 // Login-Geburtsdatum mitführen
+      'hash'    => password_hash($code, PASSWORD_DEFAULT),
+      'exp'     => time() + 600,             // 10 Minuten
+      'tries'   => 0,
     ];
     if (send_verification_email($email, $code, $lang)) {
       $info = $text['info_sent'];
@@ -125,9 +182,12 @@ if ($step === 'send') {
 if ($step === 'resend') {
   csrf_check();
   if (!rate_ok()) { $errors[] = $text['error_rate']; }
-  $st = $_SESSION['email_verify'] ?? null;
-  $email = $st['email'] ?? '';
-  if (!$st || !is_valid_email($email)) {
+
+  $st    = $_SESSION['email_verify'] ?? null;
+  $email = $st['email']   ?? '';
+  $dob   = $st['dob_dmy'] ?? '';
+
+  if (!$st || !is_valid_email($email) || !validate_dob_dmy($dob)) {
     $errors[] = $text['error_resend'];
   } else {
     $code = make_code();
@@ -145,21 +205,30 @@ if ($step === 'resend') {
 if ($step === 'verify') {
   csrf_check();
   if (!rate_ok()) { $errors[] = $text['error_rate']; }
+
   $code = trim((string)($_POST['code'] ?? ''));
   $st   = $_SESSION['email_verify'] ?? null;
+
   if (!$st || time() > (int)($st['exp'] ?? 0)) {
     $errors[] = $text['error_code'];
   } else {
     $_SESSION['email_verify']['tries'] = (int)$st['tries'] + 1;
-    if ($_SESSION['email_verify']['tries'] > 6) { $errors[] = $text['error_rate']; }
+    if ($_SESSION['email_verify']['tries'] > 6) {
+      $errors[] = $text['error_rate'];
+    }
     if (!$errors && !password_verify($code, (string)$st['hash'])) {
       $errors[] = $text['error_code'];
     }
+
     if (!$errors) {
       // Erfolg: E-Mail ist verifiziert
       $_SESSION['email_verified'] = true;
 
-      // Token über eure Helper ermitteln/erzeugen
+      // Login-Geburtsdatum aus dem Verify-Flow holen
+      $email   = (string)($st['email']   ?? '');
+      $dob_dmy = (string)($st['dob_dmy'] ?? '');
+
+      // Token über eure Helper ermitteln/erzeugen (unverändert)
       $token = '';
       if (function_exists('current_access_token')) {
         $token = (string)current_access_token();
@@ -173,20 +242,28 @@ if ($step === 'verify') {
         $_SESSION['access_token'] = $token;
       }
 
-      // Session-Access setzen
+      // Login-Metadaten (E-Mail + Login-Geburtsdatum) in der Session hinterlegen
+      $_SESSION['access_login'] = [
+        'email'   => $email,
+        'dob_dmy' => $dob_dmy,   // TT.MM.JJJJ, kann in ensure_record_email_only nach Y-m-d gewandelt werden
+      ];
+
+      // Session-Access setzen (für den laufenden Wizard)
       $_SESSION['access'] = [
         'mode'    => 'email',
-        'email'   => (string)$st['email'],
+        'email'   => $email,
         'token'   => $token,
         'created' => time(),
       ];
 
-      // Sofort-Persistenz: E-Mail verifiziert, DOB noch NULL
-      // -> schreibt/aktualisiert applications(email, email_verified=1, token, dob=NULL, data_json[optional])
-      ensure_record_email_only((string)$st['email']);
+      // Persistenz-Hook
+      if (function_exists('ensure_record_email_only')) {
+        ensure_record_email_only($email);
+      }
 
       // Aufräumen und weiter
       unset($_SESSION['email_verify']);
+
       header('Location: /form_personal.php?mode=email');
       exit;
     }
@@ -213,7 +290,9 @@ require APP_APPDIR . '/header.php';
       <p class="mb-4"><?= h($text['lead']) ?></p>
 
       <?php if ($errors): ?>
-        <div class="alert alert-danger"><?php foreach ($errors as $e) { echo '<div>'.h($e).'</div>'; } ?></div>
+        <div class="alert alert-danger">
+          <?php foreach ($errors as $e) { echo '<div>'.h($e).'</div>'; } ?>
+        </div>
       <?php endif; ?>
       <?php if ($info): ?>
         <div class="alert alert-success"><?= h($info) ?></div>
@@ -221,7 +300,7 @@ require APP_APPDIR . '/header.php';
 
       <?php $hasSent = isset($_SESSION['email_verify']); ?>
 
-      <?php if (!$hasSent): // Schritt 1: E-Mail erfassen ?>
+      <?php if (!$hasSent): // Schritt 1: E-Mail + DOB erfassen ?>
       <form method="post" class="vstack gap-3">
         <input type="hidden" name="csrf" value="<?= h($_SESSION['csrf']) ?>">
         <input type="hidden" name="step" value="send">
@@ -230,10 +309,24 @@ require APP_APPDIR . '/header.php';
           <label for="email" class="form-label"><?= h($text['email_label']) ?></label>
           <input type="email" class="form-control" name="email" id="email" required>
         </div>
+
+        <div>
+          <label for="dob" class="form-label"><?= h($text['dob_label']) ?></label>
+          <input
+            type="text"
+            class="form-control"
+            name="dob"
+            id="dob"
+            placeholder="TT.MM.JJJJ"
+            required
+          >
+        </div>
+
         <div class="form-check">
           <input class="form-check-input" type="checkbox" value="1" id="consent" name="consent" required>
           <label class="form-check-label" for="consent"><?= h($text['consent_label']) ?></label>
         </div>
+
         <div class="d-flex gap-2">
           <button class="btn btn-primary"><?= h($text['send_btn']) ?></button>
           <a href="/index.php" class="btn btn-outline-secondary"><?= h($text['back']) ?></a>
@@ -244,11 +337,22 @@ require APP_APPDIR . '/header.php';
       <form method="post" class="vstack gap-3">
         <input type="hidden" name="csrf" value="<?= h($_SESSION['csrf']) ?>">
         <input type="hidden" name="step" value="verify">
+
         <div>
           <label for="code" class="form-label"><?= h($text['code_label']) ?></label>
-          <input type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" class="form-control" name="code" id="code" required>
+          <input
+            type="text"
+            inputmode="numeric"
+            pattern="[0-9]{6}"
+            maxlength="6"
+            class="form-control"
+            name="code"
+            id="code"
+            required
+          >
           <div class="form-text"><?= h($text['info_sent']) ?></div>
         </div>
+
         <div class="d-flex gap-2">
           <button class="btn btn-primary"><?= h($text['verify_btn']) ?></button>
 
