@@ -305,7 +305,7 @@ Zeit: <Datum/Uhrzeit>
 | SSL | Let’s Encrypt |
 | Firewall | UFW + Fail2Ban |
 | HTTPS-Erkennung | `X-Forwarded-Proto` |
-| Zugriff | Nur über Proxy (192.168.84.253) |
+| Zugriff | Nur über Proxy (192.168.xx.253) |
 | Repo Update | Automatisch per `git fetch --all` (read-only) |
 
 ---
@@ -327,13 +327,12 @@ und liegt unter `/var/www/xxx.xxx.schule/deploy.sh`.
 
 ### 🧭 Befehlsübersicht
 
-| Befehl | Richtung | Beschreibung |
-|:--------|:----------|:--------------|
-| `./deploy.sh` oder `./deploy.sh sync` | 🔄 **Beide Richtungen** | Synchronisiert Server ↔ GitHub automatisch. Erzeugt Commits bei lokalen Änderungen und pusht oder pullt je nach Status. |
-| `./deploy.sh push "Kommentar"` | ⬆️ **Server → GitHub** | Committet lokale Änderungen (inkl. neuer Dateien) und pusht sie zum Remote. |
-| `./deploy.sh pull` | ⬇️ **GitHub → Server** | Holt Änderungen aus GitHub und führt ggf. Rebase aus. |
-| `./deploy.sh status` | 📋 **Statusabfrage** | Zeigt Remote-URLs, Branch-Status und letzte Commits. |
-| `./deploy.sh help` | ❔ **Hilfe** | Zeigt Kurzbeschreibung aller Befehle. |
+| Befehl                                  | Richtung               | Beschreibung                                                                                                                                                                                                                                                                                                    |
+| :-------------------------------------- | :--------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `./deploy.sh` oder `./deploy.sh deploy` | ⬇️ **GitHub → Server** | Führt ein Deployment aus: `fetch` vom Remote, Checkout des Ziel-Branches und **harte Synchronisation** auf `origin/main`. **Lokale Änderungen auf dem Server werden verworfen** (tracked via `reset --hard`, untracked via `clean -fd`, mit definierten Ausnahmen wie `uploads/`, `logs/`, `.env`, `config.*`). |
+| `./deploy.sh status`                    | 📋 **Statusabfrage**   | Zeigt Remote-URLs, aktuellen Git-Status und die letzten Commits (inkl. Branch/HEAD). Dient zur Diagnose, ob der Server auf dem erwarteten Stand ist.                                                                                                                                                            |
+| `./deploy.sh help`                      | ❔ **Hilfe**            | Zeigt Kurzbeschreibung der verfügbaren Befehle und den Hinweis, dass das Script absichtlich **nur** GitHub → Server unterstützt.                                                                                                                                                                                |
+
 
 ---
 
