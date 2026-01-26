@@ -57,21 +57,23 @@ try {
         // Neuinstallation: dob ist NULL-fähig (für E-Mail-Flow ohne DOB direkt nach Verify)
         $app->exec("
           CREATE TABLE IF NOT EXISTS applications (
-            id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-            token           CHAR(32) NOT NULL,
-            email           VARCHAR(255) NULL,
-            dob             DATE NULL,
-            email_verified  TINYINT(1) NOT NULL DEFAULT 0,
-            data_json       JSON NULL,
-            status          ENUM('draft','submitted','withdrawn') NOT NULL DEFAULT 'draft',
-            created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            submit_ip       VARBINARY(16) NULL,
+            id               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            token            CHAR(32) NOT NULL,
+            email            VARCHAR(255) NULL,
+            dob              DATE NULL,
+            email_verified   TINYINT(1) NOT NULL DEFAULT 0,
+            email_account_id BIGINT UNSIGNED NULL,
+            data_json        JSON NULL,
+            status           ENUM('draft','submitted','withdrawn') NOT NULL DEFAULT 'draft',
+            created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            submit_ip        VARBINARY(16) NULL,
             PRIMARY KEY (id),
             UNIQUE KEY uq_token (token),
             KEY idx_email (email),
             KEY idx_birth (dob),
-            KEY idx_email_dob (email, dob)
+            KEY idx_email_dob (email, dob),
+            KEY idx_email_account_id (email_account_id)
           ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ");
     } else {
@@ -86,7 +88,6 @@ try {
             $app->exec("ALTER TABLE applications ADD COLUMN token CHAR(32) NOT NULL AFTER id");
         }
         if (!idx_exists($admin,$dbName,'applications','uq_token')) {
-            // UNIQUE-Index sicherstellen (Name vereinheitlicht)
             $app->exec("ALTER TABLE applications ADD UNIQUE KEY uq_token (token)");
         }
 
@@ -97,7 +98,6 @@ try {
         if (!col_exists($admin,$dbName,'applications','dob')) {
             $app->exec("ALTER TABLE applications ADD COLUMN dob DATE NULL AFTER email");
         } else {
-            // Sicherstellen, dass dob NULL-fähig ist
             $app->exec("ALTER TABLE applications MODIFY COLUMN dob DATE NULL");
         }
 
@@ -117,17 +117,26 @@ try {
             $app->exec("ALTER TABLE applications ADD COLUMN email_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER dob");
         }
 
-        // e) data_json
-        if (!col_exists($admin,$dbName,'applications','data_json')) {
-            $app->exec("ALTER TABLE applications ADD COLUMN data_json JSON NULL AFTER email_verified");
+        // e) email_account_id (NEU)
+        if (!col_exists($admin,$dbName,'applications','email_account_id')) {
+            // Position: nach email_verified (logisch)
+            $app->exec("ALTER TABLE applications ADD COLUMN email_account_id BIGINT UNSIGNED NULL AFTER email_verified");
+        }
+        if (!idx_exists($admin,$dbName,'applications','idx_email_account_id')) {
+            $app->exec("ALTER TABLE applications ADD KEY idx_email_account_id (email_account_id)");
         }
 
-        // f) status
+        // f) data_json
+        if (!col_exists($admin,$dbName,'applications','data_json')) {
+            $app->exec("ALTER TABLE applications ADD COLUMN data_json JSON NULL AFTER email_account_id");
+        }
+
+        // g) status
         if (!col_exists($admin,$dbName,'applications','status')) {
             $app->exec("ALTER TABLE applications ADD COLUMN status ENUM('draft','submitted','withdrawn') NOT NULL DEFAULT 'draft' AFTER data_json");
         }
 
-        // g) created_at / updated_at
+        // h) created_at / updated_at
         if (!col_exists($admin,$dbName,'applications','created_at')) {
             $app->exec("ALTER TABLE applications ADD COLUMN created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER status");
         }
@@ -135,12 +144,12 @@ try {
             $app->exec("ALTER TABLE applications ADD COLUMN updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at");
         }
 
-        // h) submit_ip
+        // i) submit_ip
         if (!col_exists($admin,$dbName,'applications','submit_ip')) {
             $app->exec("ALTER TABLE applications ADD COLUMN submit_ip VARBINARY(16) NULL AFTER updated_at");
         }
 
-        // i) Indizes
+        // j) Indizes
         if (!idx_exists($admin,$dbName,'applications','idx_email')) {
             $app->exec("ALTER TABLE applications ADD KEY idx_email (email)");
         }
@@ -150,6 +159,70 @@ try {
         if (!idx_exists($admin,$dbName,'applications','idx_email_dob')) {
             $app->exec("ALTER TABLE applications ADD KEY idx_email_dob (email, dob)");
         }
+    }
+
+    // ========= email_accounts (NEU) =========
+    if (!table_exists($admin, $dbName, 'email_accounts')) {
+        $app->exec("
+          CREATE TABLE IF NOT EXISTS email_accounts (
+            id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            email          VARCHAR(255) NOT NULL,
+            password_hash  VARCHAR(255) NOT NULL,
+            email_verified TINYINT(1) NOT NULL DEFAULT 0,
+            max_tokens     INT NOT NULL DEFAULT 5,
+            created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY uq_email (email)
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        ");
+    } else {
+        // Migration: Spalten ergänzen falls Tabelle schon existiert (zukünftige Sicherheit)
+        if (!col_exists($admin,$dbName,'email_accounts','email')) {
+            $app->exec("ALTER TABLE email_accounts ADD COLUMN email VARCHAR(255) NOT NULL");
+        }
+        if (!idx_exists($admin,$dbName,'email_accounts','uq_email')) {
+            $app->exec("ALTER TABLE email_accounts ADD UNIQUE KEY uq_email (email)");
+        }
+        if (!col_exists($admin,$dbName,'email_accounts','password_hash')) {
+            // kein Default -> muss später gefüllt werden
+            $app->exec("ALTER TABLE email_accounts ADD COLUMN password_hash VARCHAR(255) NULL");
+        }
+        if (!col_exists($admin,$dbName,'email_accounts','email_verified')) {
+            $app->exec("ALTER TABLE email_accounts ADD COLUMN email_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER password_hash");
+        }
+        if (!col_exists($admin,$dbName,'email_accounts','max_tokens')) {
+            $app->exec("ALTER TABLE email_accounts ADD COLUMN max_tokens INT NOT NULL DEFAULT 5 AFTER email_verified");
+        }
+        if (!col_exists($admin,$dbName,'email_accounts','created_at')) {
+            $app->exec("ALTER TABLE email_accounts ADD COLUMN created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP");
+        }
+        if (!col_exists($admin,$dbName,'email_accounts','updated_at')) {
+            $app->exec("ALTER TABLE email_accounts ADD COLUMN updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+        }
+
+        // Wenn password_hash NULL ist (durch spätere Migration), setzen wir ein Dummy-Hash,
+        // damit später NOT NULL erzwungen werden kann, ohne bestehenden Betrieb zu brechen.
+        // Hinweis: Besser: in einem separaten Migrationsschritt sauber füllen.
+        $app->exec("
+          UPDATE email_accounts
+          SET password_hash = COALESCE(password_hash, '')
+          WHERE password_hash IS NULL
+        ");
+    }
+
+    // FK von applications.email_account_id -> email_accounts.id (optional, aber empfohlen)
+    // Wir prüfen das über INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS ist möglich, aber aufwändig.
+    // Einfacher: Versuch mit try/catch; falls existiert -> Fehler ignorieren.
+    try {
+        $app->exec("
+          ALTER TABLE applications
+          ADD CONSTRAINT fk_app_email_account
+          FOREIGN KEY (email_account_id) REFERENCES email_accounts(id)
+          ON DELETE SET NULL
+        ");
+    } catch (Throwable $e) {
+        // ignorieren: Constraint existiert ggf. schon oder DB erlaubt es nicht
     }
 
     // ========= settings (Grundeinstellungen) =========
@@ -163,7 +236,7 @@ try {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
 
-    // Standardwert für max. Tokens pro E-Mail (z. B. 5) – Benutzer kann das später ändern
+    // Standardwert für max. Tokens pro E-Mail (z. B. 5)
     $app->exec("
       INSERT INTO settings (setting_key, setting_value, description)
       VALUES ('max_tokens_per_email', '5', 'Maximale Anzahl an Bewerbungen (Access-Tokens) pro Login-E-Mail')
@@ -171,7 +244,6 @@ try {
     ");
 
     // ========= personal =========
-    // Hinweis: E-Mail hier ist die E-Mail des/der Bewerber*in und kann NULL sein.
     $app->exec("
       CREATE TABLE IF NOT EXISTS personal (
         application_id  BIGINT UNSIGNED NOT NULL,
@@ -195,9 +267,7 @@ try {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
 
-    // Migration: falls personal schon existiert und email noch NOT NULL ist → auf NULL-fähig ändern
     if (table_exists($admin, $dbName, 'personal')) {
-        // Versuchen wir einfach immer – ist idempotent, falls schon NULL-fähig
         $app->exec("ALTER TABLE personal MODIFY COLUMN email VARCHAR(255) NULL");
     }
 
