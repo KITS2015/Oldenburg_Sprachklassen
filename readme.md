@@ -153,6 +153,8 @@ sudo dpkg-reconfigure --priority=low unattended-upgrades
 sudo sed -i 's/^upload_max_filesize.*/upload_max_filesize = 16M/' /etc/php/*/apache2/php.ini
 sudo sed -i 's/^post_max_size.*/post_max_size = 32M/' /etc/php/*/apache2/php.ini
 sudo systemctl reload apache2
+
+Sollte es beim hochladen Probleme geben, z.B. wegen der Größe der Datei, bitte das Verzeichnis /etc/php/x.x/fpm prüfen und die php.ini in diesem Verzeichnis anpassen, wie oben!
 ```
 
 ---
