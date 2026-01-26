@@ -1,0 +1,12 @@
+<?php
+return [
+  'transport' => 'smtp',
+  'host'      => 'smtp.xxx.de',
+  'port'      => 587,
+  'username'  => 'no-reply@xxx.xxx.schule',
+  'password'  => 'xxx!',
+  'from'      => ['address' => 'no-reply@xxx.xxx.schule', 'name' => 'Bewerbung Sprachklasse'],
+  'reply_to'  => ['address' => 'info@xxx.xxx.schule', 'name' => 'BBS xxx'],
+  'secure'    => 'STARTTLS',
+  'debug'     => 0,
+];
