@@ -310,7 +310,7 @@ try {
         schule_jahre        TINYINT UNSIGNED NULL,
         seit_monat          TINYINT UNSIGNED NULL,
         seit_jahr           SMALLINT UNSIGNED NULL,
-        deutsch_niveau      ENUM('kein','A1','A2','B1','B2','C1','C2') NULL,
+        deutsch_niveau      ENUM('kein','A0','A1','A2','B1','B2','C1','C2') NULL,
         deutsch_jahre       DECIMAL(3,1) NULL,
         interessen          VARCHAR(500) NULL,
         created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
