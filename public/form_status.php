@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'new_application') {
         $_SESSION = [];
         session_regenerate_id(true);
-        header('Location: /access_create.php');
+        header('Location: /index.php');
         exit;
     }
 
