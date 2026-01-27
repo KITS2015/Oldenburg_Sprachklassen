@@ -23,6 +23,31 @@ function dl_row(string $label, string $value, string $col = 'col-md-6'): string 
     ';
 }
 
+/**
+ * Fallback: hole Feld aus applications.data_json (wenn Session leer/inkonsistent ist)
+ * Erwartet Struktur: {"form":{"personal":{...}}}
+ */
+function datajson_get_personal(PDO $pdo, string $token, string $key): ?string {
+    try {
+        $st = $pdo->prepare("SELECT data_json FROM applications WHERE token = :t LIMIT 1");
+        $st->execute([':t' => $token]);
+        $raw = $st->fetchColumn();
+        if (!$raw) return null;
+
+        $arr = is_string($raw) ? json_decode($raw, true) : null;
+        if (!is_array($arr)) return null;
+
+        $val = $arr['form']['personal'][$key] ?? null;
+        if (!is_string($val)) return null;
+
+        $val = trim($val);
+        return $val !== '' ? $val : null;
+    } catch (Throwable $e) {
+        error_log('form_review datajson_get_personal: '.$e->getMessage());
+        return null;
+    }
+}
+
 // ===== POST-Verarbeitung (Bewerben / Zur Startseite / Neue Bewerbung) =====
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_check()) { http_response_code(400); exit('Ungültige Anfrage.'); }
@@ -127,6 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // ---------- personal ----------
             // Bewerber-E-Mail ist optional (kann leer sein)
             $applicantEmail = trim((string)($p['email'] ?? ''));
+            $applicantEmail = ($applicantEmail !== '') ? $applicantEmail : null;
 
             $geburtsdatumDate = $dobSql;
             if (!$geburtsdatumDate && !empty($p['geburtsdatum']) && function_exists('norm_date_dmy_to_ymd')) {
@@ -136,7 +162,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
+            // weitere_angaben: primär aus Session, fallback aus applications.data_json
             $weitereAngabenToSave = norm_space($p['weitere_angaben'] ?? '');
+            if ($weitereAngabenToSave === '') {
+                $fallback = datajson_get_personal($pdo, $token, 'weitere_angaben');
+                if ($fallback !== null) {
+                    $weitereAngabenToSave = $fallback;
+                }
+            }
+            $weitereAngabenToSave = ($weitereAngabenToSave !== '') ? $weitereAngabenToSave : null;
 
             $insPers = $pdo->prepare("
                 INSERT INTO personal (
@@ -204,7 +238,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':wohnort' => (string)($p['wohnort']         ?? 'Oldenburg (Oldb)'),
                 ':tel'     => (string)($p['telefon']         ?? ''),
                 ':mail'    => $applicantEmail,
-                ':weitere' => $weitereAngabenToSave !== '' ? $weitereAngabenToSave : null,
+                ':weitere' => $weitereAngabenToSave,
                 ':dsgvo'   => (isset($p['dsgvo_ok']) && $p['dsgvo_ok'] === '1') ? 1 : 0,
             ]);
 
@@ -229,8 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         continue;
                     }
 
-                    // Kontakte erwarten name NOT NULL. Falls Rolle/Tel/Mail/Notiz gesetzt aber Name leer ist:
-                    // trotzdem speichern wir NICHT, um DB-Fehler zu vermeiden.
+                    // DB: name NOT NULL
                     if ($nameC === '') {
                         continue;
                     }
@@ -434,7 +467,7 @@ if (!empty($s['schule_label'])) {
 // Seit wann an Schule Anzeige
 $sinceDisplay = '–';
 if (!empty($s['seit_wann_schule'])) {
-    $sinceDisplay = (string)$s['seit_wann_schule';
+    $sinceDisplay = (string)$s['seit_wann_schule'];
 } else {
     $parts = [];
     if (!empty($s['seit_monat'])) $parts[] = (string)$s['seit_monat'];
@@ -443,6 +476,7 @@ if (!empty($s['seit_wann_schule'])) {
 }
 
 // Interessen Anzeige
+global $INTERESSEN;
 $interessenLbls = [];
 if (is_array($s['interessen'] ?? null)) {
     foreach (($s['interessen'] ?? []) as $k) {
