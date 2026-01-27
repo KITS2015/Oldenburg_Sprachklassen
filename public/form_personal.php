@@ -44,6 +44,15 @@ function age_on_reference(string $dmy, int $year): ?int {
 
 $refYear = (int)date('Y');
 
+// UI-Helper: Pflicht-Label + Fehlermeldung
+function req_badge(): string {
+    return ' <span class="badge text-bg-danger align-middle" title="Pflichtfeld">Pflicht</span>';
+}
+function field_error(string $key, array $errors): string {
+    if (empty($errors[$key])) return '';
+    return '<div class="invalid-feedback d-block">'.h((string)$errors[$key]).'</div>';
+}
+
 // ---------- POST: Validierung & Speichern ----------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_check()) { http_response_code(400); exit('Ungültige Anfrage.'); }
@@ -83,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['vorname'] = 'Bitte nur Buchstaben.';
     }
     if (!in_array(($_POST['geschlecht'] ?? ''), ['m','w','d'], true)) {
-        $errors['geschlecht'] = 'Ungültig.';
+        $errors['geschlecht'] = 'Bitte wählen Sie ein Geschlecht aus.';
     }
 
     if (!isset($errors['geburtsdatum'])) {
@@ -161,6 +170,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // Neues Feld: Weitere Angaben (optional)
+    $weitere_angaben_raw = trim((string)($_POST['weitere_angaben'] ?? ''));
+    if ($weitere_angaben_raw !== '') {
+        // Grundschutz: Länge begrenzen + Nullbytes entfernen
+        $weitere_angaben_raw = str_replace("\0", '', $weitere_angaben_raw);
+        if (mb_strlen($weitere_angaben_raw) > 1500) {
+            $errors['weitere_angaben'] = 'Bitte maximal 1500 Zeichen.';
+        }
+    }
+
     // ---------- Strukturierte Zusatzkontakte ----------
     $roles  = $_POST['kontakt_role'] ?? [];
     $names  = $_POST['kontakt_name'] ?? [];
@@ -211,6 +230,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Bewerber-E-Mail (optional, unabhängig vom Login)
             'email'           => $email_raw,
             'contacts'        => $contacts,
+            // Neues Feld
+            'weitere_angaben' => $weitere_angaben_raw,
             'dsgvo_ok'        => (($_POST['dsgvo_ok'] ?? '') === '1' ? '1' : '0'),
         ];
 
@@ -267,6 +288,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'','notiz'=>'']];
+
+$prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POST['weitere_angaben'] ?? '');
 ?>
 
 <div class="container py-4">
@@ -291,7 +314,9 @@ if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'
 
   <div class="card shadow border-0 rounded-4">
     <div class="card-body p-4 p-md-5">
-      <h1 class="h4 mb-3">Schritt 1/4 – Persönliche Daten</h1>
+      <h1 class="h4 mb-2">Schritt 1/4 – Persönliche Daten</h1>
+      <div class="text-muted small mb-3">Pflichtfelder sind mit <span class="badge text-bg-danger">Pflicht</span> gekennzeichnet.</div>
+
       <?php if ($errors): ?>
         <div class="alert alert-danger">Bitte prüfen Sie die markierten Felder.</div>
       <?php endif; ?>
@@ -302,32 +327,43 @@ if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'
         <!-- Reihe 1: Name / Vorname -->
         <div class="row g-3">
           <div class="col-md-6">
-            <label class="form-label">Name*</label>
+            <label class="form-label">Name<?= req_badge() ?></label>
             <input name="name" class="form-control<?= has_err('name',$errors) ?>" value="<?= old('name','personal') ?>" required>
+            <?= field_error('name', $errors) ?>
           </div>
           <div class="col-md-6">
-            <label class="form-label">Vorname*</label>
+            <label class="form-label">Vorname<?= req_badge() ?></label>
             <input name="vorname" class="form-control<?= has_err('vorname',$errors) ?>" value="<?= old('vorname','personal') ?>" required>
+            <?= field_error('vorname', $errors) ?>
           </div>
         </div>
 
         <!-- Reihe 2: Geschlecht / Geburtsdatum -->
         <div class="row g-3 mt-0">
           <div class="col-md-6">
-            <label class="form-label d-block">Geschlecht*</label>
-            <div class="btn-group" role="group">
-              <?php $g = $_SESSION['form']['personal']['geschlecht'] ?? ($_POST['geschlecht'] ?? ''); ?>
+            <label class="form-label d-block">Geschlecht<?= req_badge() ?></label>
+
+            <?php $g = $_SESSION['form']['personal']['geschlecht'] ?? ($_POST['geschlecht'] ?? ''); ?>
+            <?php $gErr = !empty($errors['geschlecht']); ?>
+
+            <div class="btn-group <?= $gErr ? 'border border-danger rounded p-2' : '' ?>" role="group" aria-label="Geschlecht">
               <input type="radio" class="btn-check" name="geschlecht" id="g_m" value="m" <?= $g==='m'?'checked':''; ?> required>
               <label class="btn btn-outline-primary" for="g_m">männlich</label>
+
               <input type="radio" class="btn-check" name="geschlecht" id="g_w" value="w" <?= $g==='w'?'checked':''; ?>>
               <label class="btn btn-outline-primary" for="g_w">weiblich</label>
+
               <input type="radio" class="btn-check" name="geschlecht" id="g_d" value="d" <?= $g==='d'?'checked':''; ?>>
               <label class="btn btn-outline-primary" for="g_d">divers</label>
             </div>
+
+            <?= field_error('geschlecht', $errors) ?>
           </div>
+
           <div class="col-md-6">
-            <label class="form-label">Geboren am* <span class="text-muted">(TT.MM.JJJJ)</span></label>
+            <label class="form-label">Geboren am<?= req_badge() ?> <span class="text-muted">(TT.MM.JJJJ)</span></label>
             <input id="geburtsdatum" name="geburtsdatum" class="form-control<?= has_err('geburtsdatum',$errors) ?>" placeholder="TT.MM.JJJJ" value="<?= old('geburtsdatum','personal') ?>" required>
+            <?= field_error('geburtsdatum', $errors) ?>
             <div class="form-text">
               Hinweis: Sind Sie am 30.09.<?= date('Y') ?> unter 16 oder über 18 Jahre alt,
               können Sie nicht in die Sprachlernklasse der BBS aufgenommen werden.
@@ -340,23 +376,27 @@ if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'
         <!-- Reihe 3: Geburtsort/Geburtsland / Staatsangehörigkeit -->
         <div class="row g-3 mt-0">
           <div class="col-md-6">
-            <label class="form-label">Geburtsort / Geburtsland*</label>
+            <label class="form-label">Geburtsort / Geburtsland<?= req_badge() ?></label>
             <input name="geburtsort_land" class="form-control<?= has_err('geburtsort_land',$errors) ?>" value="<?= old('geburtsort_land','personal') ?>" required>
+            <?= field_error('geburtsort_land', $errors) ?>
           </div>
           <div class="col-md-6">
-            <label class="form-label">Staatsangehörigkeit*</label>
+            <label class="form-label">Staatsangehörigkeit<?= req_badge() ?></label>
             <input name="staatsang" class="form-control<?= has_err('staatsang',$errors) ?>" value="<?= old('staatsang','personal') ?>" required>
+            <?= field_error('staatsang', $errors) ?>
           </div>
         </div>
 
         <!-- Reihe 4: Straße / PLZ / Wohnort -->
         <div class="row g-3 mt-0">
           <div class="col-md-6">
-            <label class="form-label">Straße, Nr.*</label>
+            <label class="form-label">Straße, Nr.<?= req_badge() ?></label>
             <input name="strasse" class="form-control<?= has_err('strasse',$errors) ?>" value="<?= old('strasse','personal') ?>" required>
+            <?= field_error('strasse', $errors) ?>
           </div>
+
           <div class="col-md-3">
-            <label class="form-label">PLZ*</label>
+            <label class="form-label">PLZ<?= req_badge() ?></label>
             <select name="plz" class="form-select<?= has_err('plz',$errors) ?>" required>
               <option value="">– bitte wählen –</option>
               <?php
@@ -368,8 +408,10 @@ if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'
                 }
               ?>
             </select>
+            <?= field_error('plz', $errors) ?>
             <div class="form-text">Nur Oldenburg (Oldb).</div>
           </div>
+
           <div class="col-md-3">
             <label class="form-label">Wohnort</label>
             <input name="wohnort" class="form-control" value="<?= h($_SESSION['form']['personal']['wohnort'] ?? 'Oldenburg (Oldb)') ?>" readonly>
@@ -379,7 +421,7 @@ if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'
         <!-- Reihe 5: Telefon (geteilt) / Bewerber-E-Mail -->
         <div class="row g-3 mt-0">
           <div class="col-md-6">
-            <label class="form-label">Telefonnummer*</label>
+            <label class="form-label">Telefonnummer<?= req_badge() ?></label>
             <div class="row g-2">
               <div class="col-5 col-sm-4">
                 <div class="input-group">
@@ -393,8 +435,10 @@ if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'
                     value="<?= h($_SESSION['form']['personal']['telefon_vorwahl'] ?? ($_POST['telefon_vorwahl'] ?? '')) ?>"
                     required>
                 </div>
+                <?= field_error('telefon_vorwahl', $errors) ?>
                 <div class="form-text">Vorwahl mit/ohne 0</div>
               </div>
+
               <div class="col-7 col-sm-8">
                 <input
                   name="telefon_nummer"
@@ -404,6 +448,7 @@ if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'
                   placeholder="123456"
                   value="<?= h($_SESSION['form']['personal']['telefon_nummer'] ?? ($_POST['telefon_nummer'] ?? '')) ?>"
                   required>
+                <?= field_error('telefon_nummer', $errors) ?>
                 <div class="form-text">Rufnummer</div>
               </div>
             </div>
@@ -419,6 +464,7 @@ if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'
               class="form-control<?= has_err('email',$errors) ?>"
               value="<?= h(old('email','personal')) ?>"
             >
+            <?= field_error('email', $errors) ?>
             <div class="form-text">
               Diese E-Mail gehört zur Schülerin / zum Schüler (falls vorhanden)
               und ist unabhängig von der E-Mail-Adresse für den Zugangscode.
@@ -510,6 +556,20 @@ if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'
           </div>
         </div>
 
+        <!-- NEU: Weitere Angaben -->
+        <div class="row g-3 mt-0">
+          <div class="col-12">
+            <label class="form-label">Weitere Angaben (z. B. Förderstatus):</label>
+            <textarea
+              name="weitere_angaben"
+              class="form-control<?= has_err('weitere_angaben',$errors) ?>"
+              rows="4"
+              placeholder="Hier können Sie z. B. besonderen Förderbedarf, sonderpädagogische Unterstützungsbedarfe oder weitere Hinweise angeben."><?= h((string)$prevWeitereAngaben) ?></textarea>
+            <?= field_error('weitere_angaben', $errors) ?>
+            <div class="form-text">Optional. Maximal 1500 Zeichen.</div>
+          </div>
+        </div>
+
         <!-- DSGVO -->
         <div class="row g-3 mt-0">
           <div class="col-12">
@@ -517,8 +577,9 @@ if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'
               <?php $ok = $_SESSION['form']['personal']['dsgvo_ok'] ?? ($_POST['dsgvo_ok'] ?? ''); ?>
               <input class="form-check-input<?= has_err('dsgvo_ok',$errors) ?>" type="checkbox" id="dsgvo_ok" name="dsgvo_ok" value="1" <?= $ok==='1'?'checked':''; ?> required>
               <label class="form-check-label" for="dsgvo_ok">
-                Ich habe die <a href="/datenschutz.php" target="_blank" rel="noopener">Datenschutzhinweise</a> gelesen und bin einverstanden.*
+                Ich habe die <a href="/datenschutz.php" target="_blank" rel="noopener">Datenschutzhinweise</a> gelesen und bin einverstanden.<?= req_badge() ?>
               </label>
+              <?= field_error('dsgvo_ok', $errors) ?>
             </div>
           </div>
         </div>
