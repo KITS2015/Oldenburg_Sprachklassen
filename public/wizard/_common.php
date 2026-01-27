@@ -22,7 +22,28 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 // -------------------------
+// Projektpfade
+// -------------------------
+define('APP_BASE',    realpath(__DIR__ . '/../../') ?: (__DIR__ . '/../../'));
+define('APP_PUBLIC',  APP_BASE . '/public');
+define('APP_UPLOADS', APP_BASE . '/uploads');
+define('APP_APPDIR',  APP_BASE . '/app');
+
+// Upload-Verzeichnis sicherstellen
+if (!is_dir(APP_UPLOADS)) {
+    @mkdir(APP_UPLOADS, 0775, true);
+}
+
+// Optionale App-Helfer laden (DB, Mail) – hier nur verfügbar machen.
+// Die eigentliche DB-Logik liegt NICHT in dieser Datei.
+$__db_path   = APP_APPDIR . '/db.php';
+$__mail_path = APP_APPDIR . '/email.php';
+if (is_file($__db_path))   require_once $__db_path;
+if (is_file($__mail_path)) require_once $__mail_path;
+
+// -------------------------
 // Sprache (zentral)
+// Priorität: GET > Session > Cookie > Browser > de
 // -------------------------
 if (!function_exists('available_languages')) {
     function available_languages(): array {
@@ -45,23 +66,16 @@ if (!function_exists('is_rtl_lang')) {
     }
 }
 
-/**
- * Sprache ermitteln: Session > GET > Cookie > Browser > de
- * und Session/Cookie konsistent halten.
- *
- * Hinweis: GET wird hier akzeptiert, damit lang-Wechsel auch im Wizard möglich ist,
- * wenn du später z.B. ?lang=fr an Links hängen willst.
- */
 if (!function_exists('current_lang')) {
     function current_lang(): string {
         $langs = available_languages();
 
-        // 1) Session
-        $lang = strtolower((string)($_SESSION['lang'] ?? ''));
+        // 1) GET (höchste Priorität, damit Sprachwechsel immer greift)
+        $lang = strtolower((string)($_GET['lang'] ?? ''));
 
-        // 2) GET (optional)
-        if ($lang === '' && isset($_GET['lang'])) {
-            $lang = strtolower((string)$_GET['lang']);
+        // 2) Session
+        if ($lang === '') {
+            $lang = strtolower((string)($_SESSION['lang'] ?? ''));
         }
 
         // 3) Cookie
@@ -80,6 +94,7 @@ if (!function_exists('current_lang')) {
             }
         }
 
+        // Default
         if ($lang === '' || !array_key_exists($lang, $langs)) {
             $lang = 'de';
         }
@@ -89,38 +104,45 @@ if (!function_exists('current_lang')) {
 
         // Cookie nachziehen (damit es überall gilt)
         if (!isset($_COOKIE['lang']) || (string)$_COOKIE['lang'] !== $lang) {
-            setcookie('lang', $lang, time() + 60*60*24*365, '/');
+            setcookie('lang', $lang, time() + 60 * 60 * 24 * 365, '/');
+            // für den aktuellen Request verfügbar machen
+            $_COOKIE['lang'] = $lang;
         }
 
         return $lang;
     }
 }
 
-// Initialisiere Sprache früh (damit alle Seiten gleich reagieren)
+// Für Header.php: bequem abrufbar
+if (!function_exists('html_lang')) {
+    function html_lang(): string {
+        return current_lang();
+    }
+}
+if (!function_exists('html_dir')) {
+    function html_dir(): string {
+        return is_rtl_lang(current_lang()) ? 'rtl' : 'ltr';
+    }
+}
+
+// Optional hilfreich: Links mit aktueller Sprache bauen (damit ?lang nicht verloren geht)
+if (!function_exists('url_with_lang')) {
+    function url_with_lang(string $path): string {
+        $lang = current_lang();
+        // Wenn bereits Query vorhanden -> & sonst ?
+        $sep = (strpos($path, '?') !== false) ? '&' : '?';
+        // lang nur anhängen, wenn nicht schon vorhanden
+        if (preg_match('/(?:\?|&)lang=/', $path)) return $path;
+        return $path . $sep . 'lang=' . rawurlencode($lang);
+    }
+}
+
+// Sprache früh initialisieren
 current_lang();
 
 // -------------------------
-// Projektpfade
-// -------------------------
-define('APP_BASE',   realpath(__DIR__ . '/../../') ?: __DIR__ . '/../../');
-define('APP_PUBLIC', APP_BASE . '/public');
-define('APP_UPLOADS',APP_BASE . '/uploads');
-define('APP_APPDIR', APP_BASE . '/app');
-
-// Upload-Verzeichnis sicherstellen
-if (!is_dir(APP_UPLOADS)) {
-    @mkdir(APP_UPLOADS, 0775, true);
-}
-
-// Optionale App-Helfer laden (DB, Mail) – hier nur verfügbar machen.
-// Die eigentliche DB-Logik liegt NICHT in dieser Datei.
-$__db_path   = APP_APPDIR . '/db.php';
-$__mail_path = APP_APPDIR . '/email.php';
-if (is_file($__db_path))   require_once $__db_path;
-if (is_file($__mail_path)) require_once $__mail_path;
-
-// -------------------------
 // Domänenspezifische Auswahllisten
+// (Labels bleiben vorerst DE; später können wir sie über i18n-Key mappen.)
 // -------------------------
 $SCHULEN = [
     ''             => 'Bitte wählen …',
@@ -146,7 +168,9 @@ $INTERESSEN = [
 // Utils (UI-Helfer, KEINE DB!)
 // -------------------------
 if (!function_exists('h')) {
-    function h(?string $v): string { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
+    function h(?string $v): string {
+        return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
+    }
 }
 if (!function_exists('old')) {
     // liest zuerst aus Session-Schritt, dann POST – Ausgabe ist escaped
@@ -171,12 +195,12 @@ if (empty($_SESSION['csrf'])) {
 }
 if (!function_exists('csrf_field')) {
     function csrf_field(): void {
-        echo '<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">';
+        echo '<input type="hidden" name="csrf" value="' . h($_SESSION['csrf']) . '">';
     }
 }
 if (!function_exists('csrf_check')) {
     function csrf_check(): bool {
-        return isset($_POST['csrf'], $_SESSION['csrf']) && hash_equals($_SESSION['csrf'], $_POST['csrf']);
+        return isset($_POST['csrf'], $_SESSION['csrf']) && hash_equals($_SESSION['csrf'], (string)$_POST['csrf']);
     }
 }
 
@@ -191,10 +215,12 @@ if (!function_exists('require_step')) {
         $order = ['personal','school','upload','review'];
         $idx = array_search($stepKey, $order, true);
         if ($idx === false) return;
+
         for ($i = 0; $i < $idx; $i++) {
             $need = $order[$i];
             if (empty($_SESSION['form'][$need])) {
-                header('Location: /form_' . $need . '.php');
+                // Sprache behalten (optional)
+                header('Location: ' . url_with_lang('/form_' . $need . '.php'));
                 exit;
             }
         }
@@ -220,7 +246,7 @@ if (!function_exists('render_access_token_badge')) {
     function render_access_token_badge(): void {
         $tok = current_access_token();
         if ($tok !== '') {
-            echo '<div class="mb-2 small text-muted">Access Token: <code>'.h($tok).'</code></div>';
+            echo '<div class="mb-2 small text-muted">Access Token: <code>' . h($tok) . '</code></div>';
         }
     }
 }
@@ -233,7 +259,7 @@ if (!function_exists('norm_date_dmy_to_ymd')) {
     function norm_date_dmy_to_ymd(string $dmy): string {
         if (!preg_match('/^(\d{2})\.(\d{2})\.(\d{4})$/', $dmy, $m)) return '';
         [, $d, $mth, $y] = $m;
-        if (!checkdate((int)$mth,(int)$d,(int)$y)) return '';
+        if (!checkdate((int)$mth, (int)$d, (int)$y)) return '';
         return sprintf('%04d-%02d-%02d', (int)$y, (int)$mth, (int)$d);
     }
 }
@@ -243,7 +269,7 @@ if (!function_exists('norm_date_dmy_to_ymd')) {
 // -------------------------
 if (!function_exists('flash_set')) {
     function flash_set(string $type, string $message): void {
-        $_SESSION['flash'][] = ['type'=>$type, 'msg'=>$message];
+        $_SESSION['flash'][] = ['type' => $type, 'msg' => $message];
     }
 }
 if (!function_exists('flash_render')) {
@@ -252,7 +278,7 @@ if (!function_exists('flash_render')) {
         foreach ($_SESSION['flash'] as $f) {
             $type = h($f['type'] ?? 'info');
             $msg  = h($f['msg'] ?? '');
-            echo '<div class="alert alert-'.$type.'">'.$msg.'</div>';
+            echo '<div class="alert alert-' . $type . '">' . $msg . '</div>';
         }
         unset($_SESSION['flash']);
     }
