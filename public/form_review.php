@@ -299,12 +299,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $nivRaw = trim((string)($s['deutsch_niveau'] ?? ''));
-            $allowedCodes = ['kein','A1','A2','B1','B2','C1','C2'];
+            $allowedCodes = ['kein','A0','A1','A2','B1','B2','C1','C2'];
             $deutsch_niveau = null;
             if ($nivRaw !== '') {
                 if (in_array($nivRaw, $allowedCodes, true)) {
                     $deutsch_niveau = $nivRaw;
-                } elseif (preg_match('/^(kein|A1|A2|B1|B2|C1|C2)\b/u', $nivRaw, $m)) {
+                } elseif (preg_match('/^(kein|A0|A1|A2|B1|B2|C1|C2)\b/u', $nivRaw, $m)) {
                     $deutsch_niveau = $m[1];
                 }
             }
