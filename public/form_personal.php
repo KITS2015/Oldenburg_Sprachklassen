@@ -296,7 +296,7 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
   <div class="card shadow border-0 rounded-4">
     <div class="card-body p-4 p-md-5">
       <h1 class="h4 mb-2">Schritt 1/4 – Persönliche Daten</h1>
-      <div class="text-muted small mb-3">Pflichtfelder sind dezent am Rahmen hervorgehoben.</div>
+      <div class="text-muted small mb-3">Pflichtfelder sind am Rahmen hervorgehoben.</div>
 
       <?php if ($errors): ?>
         <div class="alert alert-danger">Bitte prüfen Sie die markierten Felder.</div>
