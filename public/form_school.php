@@ -272,7 +272,8 @@ if (function_exists('flash_render')) { flash_render(); }
           <div class="col-md-6">
             <div class="vstack gap-3">
               <div>
-                <label class="form-label">Aktuelle Schule*</label>
+                <label class="form-label">Aktuelle Schule
+                </label>
                 <input type="text" id="schuleSearch" class="form-control mb-2" placeholder="Schule suchen … (Name, Straße, PLZ)" autocomplete="off">
                 <select name="schule_aktuell" id="schuleSelect" class="form-select<?= has_err('schule_aktuell',$errors) ?>" required>
                   <?= $optionsHtml ?>
@@ -292,13 +293,13 @@ if (function_exists('flash_render')) { flash_render(); }
               </div>
 
               <div>
-                <label class="form-label">E-Mail der Klassen-/DaZ-Lehrkraft</label>
+                <label class="form-label">E-Mail der verantwortliche*r Lehrer*in</label>
                 <input name="mail_lehrkraft" type="email" class="form-control<?= has_err('mail_lehrkraft',$errors) ?>" value="<?= old('mail_lehrkraft','school') ?>">
                 <?php if (isset($errors['mail_lehrkraft'])): ?><div class="text-danger small mt-1"><?= h($errors['mail_lehrkraft']) ?></div><?php endif; ?>
               </div>
 
               <div>
-                <label class="form-label d-block">Haben Sie im Herkunftsland die Schule besucht?*</label>
+                <label class="form-label d-block">Haben Sie im Herkunftsland die Schule besucht?</label>
                 <div class="btn-group" role="group">
                   <input type="radio" class="btn-check" name="schule_herkunft" id="s_j" value="ja"   <?= $herk==='ja'?'checked':''; ?> required>
                   <label class="btn btn-outline-primary" for="s_j">Ja</label>
@@ -347,14 +348,14 @@ if (function_exists('flash_render')) { flash_render(); }
               </div>
 
               <div>
-                <label class="form-label">Seit wie vielen Jahren sind Sie in Deutschland?*</label>
+                <label class="form-label">Seit wie vielen Jahren sind Sie in Deutschland?</label>
                 <input name="jahre_in_de" inputmode="numeric" class="form-control<?= has_err('jahre_in_de',$errors) ?>" value="<?= old('jahre_in_de','school') ?>" required>
                 <?php if (isset($errors['jahre_in_de'])): ?><div class="text-danger small mt-1"><?= h($errors['jahre_in_de']) ?></div><?php endif; ?>
                 <div class="form-text">Hinweis: &gt; 3 Jahre → Bitte reguläre BBS-Bewerbung über <a href="https://bbs-ol.de/" target="_blank" rel="noopener">bbs-ol.de</a>.</div>
               </div>
 
               <div>
-                <label class="form-label">Familiensprache / Erstsprache*</label>
+                <label class="form-label">Familiensprache / Erstsprache</label>
                 <input name="familiensprache" class="form-control<?= has_err('familiensprache',$errors) ?>" value="<?= old('familiensprache','school') ?>" required>
                 <?php if (isset($errors['familiensprache'])): ?><div class="text-danger small mt-1"><?= h($errors['familiensprache']) ?></div><?php endif; ?>
               </div>
