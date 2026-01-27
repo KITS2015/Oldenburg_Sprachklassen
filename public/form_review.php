@@ -383,12 +383,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $pdo->commit();
 
-            // Session komplett leeren & zurück zur Startseite
-            $_SESSION = [];
-            session_regenerate_id(true);
+            // Nach Submit: auf Status-Seite umleiten (Session NICHT komplett killen,
+            // damit wir Token/Readonly & PDF-Download anbieten können)
+            $_SESSION['application_readonly'] = true;
+            $_SESSION['application_submitted'] = [
+                'app_id' => $appId,
+                'ts'     => time(),
+            ];
 
-            header('Location: /index.php');
-            exit;
+// Optional: Form-Daten wegwerfen, damit nichts mehr „editierbar“ ist
+unset($_SESSION['form']);
+unset($_SESSION['last_save']);
+
+// (Wichtig) Token in der Session lassen (für Status/PDF). KEIN kompletter Reset hier.
+session_regenerate_id(true);
+
+header('Location: /form_status.php');
+exit;
 
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) {
