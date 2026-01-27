@@ -187,19 +187,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ");
 
             $insPers->execute([
-                ’:id’      => $appId,
-                ’:name’    => (string)($p['name']            ?? ''),
-                ’:vorname’ => (string)($p['vorname']         ?? ''),
-                ’:g’       => (string)($p['geschlecht']      ?? ''),
-                ’:gebdat’  => $geburtsdatumDate,
-                ’:ort’     => (string)($p['geburtsort_land'] ?? ''),
-                ’:staat’   => (string)($p['staatsang']       ?? ''),
-                ’:strasse’ => (string)($p['strasse']         ?? ''),
-                ’:plz’     => (string)($p['plz']             ?? ''),
-                ’:wohnort’ => (string)($p['wohnort']         ?? 'Oldenburg (Oldb)'),
-                ’:tel’     => (string)($p['telefon']         ?? ''),
-                ’:mail’    => $applicantEmail,
-                ’:dsgvo’   => (isset($p['dsgvo_ok']) && $p['dsgvo_ok'] === '1') ? 1 : 0,
+                ':id'      => $appId,
+                ':name'    => (string)($p['name']            ?? ''),
+                ':vorname' => (string)($p['vorname']         ?? ''),
+                ':g'       => (string)($p['geschlecht']      ?? ''),
+                ':gebdat'  => $geburtsdatumDate,
+                ':ort'     => (string)($p['geburtsort_land'] ?? ''),
+                ':staat'   => (string)($p['staatsang']       ?? ''),
+                ':strasse' => (string)($p['strasse']         ?? ''),
+                ':plz'     => (string)($p['plz']             ?? ''),
+                ':wohnort' => (string)($p['wohnort']         ?? 'Oldenburg (Oldb)'),
+                ':tel'     => (string)($p['telefon']         ?? ''),
+                ':mail'    => $applicantEmail,
+                ':dsgvo'   => (isset($p['dsgvo_ok']) && $p['dsgvo_ok'] === '1') ? 1 : 0,
             ]);
 
             // ---------- contacts ----------
