@@ -12,27 +12,19 @@ $emailMode    = ($modeParam === 'email');
 
 // --- E-Mail-Flow absichern & vorbereiten ---
 if ($emailMode) {
-    // Prüfen: Access-Session muss da sein, Modus = email, Login-E-Mail vorhanden
     if (empty($_SESSION['access']) || ($_SESSION['access']['mode'] ?? '') !== 'email' || empty($_SESSION['access']['email'])) {
         header('Location: /index.php');
         exit;
     }
-    // Token sicherstellen (Fallback, normalerweise bereits vorhanden)
     if (function_exists('current_access_token') && function_exists('issue_access_token')) {
         if (current_access_token() === '') { issue_access_token(); }
     }
-    // WICHTIG: KEIN Überschreiben der Bewerber-E-Mail mehr!
-    // $_SESSION['form']['personal']['email'] bleibt unabhängig von der Login-E-Mail.
+    // Bewerber-E-Mail bleibt unabhängig von der Login-E-Mail.
 }
-
-// --- Wichtig: Im No-Email-Mode KEIN Token mehr vorab erzeugen! ---
-// Der Token wird erst in save_scope_allow_noemail() erzeugt,
-// wenn ein gültiges Geburtsdatum vorhanden ist.
 
 $errors = [];
 $kontakt_errors = [];
 
-// Kleine Helper
 function age_on_reference(string $dmy, int $year): ?int {
     $bd = DateTimeImmutable::createFromFormat('d.m.Y', $dmy);
     if (!$bd) return null;
@@ -42,22 +34,18 @@ function age_on_reference(string $dmy, int $year): ?int {
     return $diff->y;
 }
 
-$refYear = (int)date('Y');
-
-// UI-Helper: Pflicht-Label + Fehlermeldung
-function req_badge(): string {
-    return ' <span class="badge text-bg-danger align-middle" title="Pflichtfeld">Pflicht</span>';
-}
 function field_error(string $key, array $errors): string {
     if (empty($errors[$key])) return '';
     return '<div class="invalid-feedback d-block">'.h((string)$errors[$key]).'</div>';
 }
 
+$refYear = (int)date('Y');
+
 // ---------- POST: Validierung & Speichern ----------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_check()) { http_response_code(400); exit('Ungültige Anfrage.'); }
 
-    // Pflichtfelder – E-Mail des Bewerbers ist ab jetzt OPTIONAL
+    // Pflichtfelder – Bewerber-E-Mail ist OPTIONAL
     $req = [
         'name',
         'vorname',
@@ -160,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // E-Mail des Bewerbers (OPTIONAL, unabhängig von Login-E-Mail)
+    // E-Mail des Bewerbers (OPTIONAL)
     $email_raw = trim((string)($_POST['email'] ?? ''));
     if ($email_raw !== '') {
         if (!filter_var($email_raw, FILTER_VALIDATE_EMAIL)) {
@@ -170,10 +158,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Neues Feld: Weitere Angaben (optional)
+    // NEU: Weitere Angaben (optional)
     $weitere_angaben_raw = trim((string)($_POST['weitere_angaben'] ?? ''));
     if ($weitere_angaben_raw !== '') {
-        // Grundschutz: Länge begrenzen + Nullbytes entfernen
         $weitere_angaben_raw = str_replace("\0", '', $weitere_angaben_raw);
         if (mb_strlen($weitere_angaben_raw) > 1500) {
             $errors['weitere_angaben'] = 'Bitte maximal 1500 Zeichen.';
@@ -227,15 +214,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'telefon_e164'    => $telefon_e164,
             'telefon_vorwahl' => (string)($_POST['telefon_vorwahl'] ?? ''),
             'telefon_nummer'  => (string)($_POST['telefon_nummer'] ?? ''),
-            // Bewerber-E-Mail (optional, unabhängig vom Login)
             'email'           => $email_raw,
             'contacts'        => $contacts,
-            // Neues Feld
             'weitere_angaben' => $weitere_angaben_raw,
             'dsgvo_ok'        => (($_POST['dsgvo_ok'] ?? '') === '1' ? '1' : '0'),
         ];
 
-        // HIER wird (falls DOB vorhanden) der Token erzeugt und in applications+data_json geschrieben.
         $save = save_scope_allow_noemail('personal', $_SESSION['form']['personal']);
         $_SESSION['last_save'] = $save;
 
@@ -255,16 +239,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// ---------- Header-Infos ----------
+// ---------- Header ----------
 $title     = 'Schritt 1/4 – Persönliche Daten';
 $html_lang = 'de';
 $html_dir  = 'ltr';
 
 require __DIR__ . '/partials/header.php';
 require APP_APPDIR . '/header.php';
-
-// UI-Helper
-function sel($a,$b){ return $a===$b ? 'selected' : ''; }
 
 // Vorbelegung Kontakte
 $prevKontakte = $_SESSION['form']['personal']['contacts'] ?? [];
@@ -315,7 +296,7 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
   <div class="card shadow border-0 rounded-4">
     <div class="card-body p-4 p-md-5">
       <h1 class="h4 mb-2">Schritt 1/4 – Persönliche Daten</h1>
-      <div class="text-muted small mb-3">Pflichtfelder sind mit <span class="badge text-bg-danger">Pflicht</span> gekennzeichnet.</div>
+      <div class="text-muted small mb-3">Pflichtfelder sind dezent am Rahmen hervorgehoben.</div>
 
       <?php if ($errors): ?>
         <div class="alert alert-danger">Bitte prüfen Sie die markierten Felder.</div>
@@ -327,13 +308,13 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
         <!-- Reihe 1: Name / Vorname -->
         <div class="row g-3">
           <div class="col-md-6">
-            <label class="form-label">Name<?= req_badge() ?></label>
-            <input name="name" class="form-control<?= has_err('name',$errors) ?>" value="<?= old('name','personal') ?>" required>
+            <label class="form-label">Name</label>
+            <input name="name" class="form-control is-required<?= has_err('name',$errors) ?>" value="<?= old('name','personal') ?>" required>
             <?= field_error('name', $errors) ?>
           </div>
           <div class="col-md-6">
-            <label class="form-label">Vorname<?= req_badge() ?></label>
-            <input name="vorname" class="form-control<?= has_err('vorname',$errors) ?>" value="<?= old('vorname','personal') ?>" required>
+            <label class="form-label">Vorname</label>
+            <input name="vorname" class="form-control is-required<?= has_err('vorname',$errors) ?>" value="<?= old('vorname','personal') ?>" required>
             <?= field_error('vorname', $errors) ?>
           </div>
         </div>
@@ -341,28 +322,29 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
         <!-- Reihe 2: Geschlecht / Geburtsdatum -->
         <div class="row g-3 mt-0">
           <div class="col-md-6">
-            <label class="form-label d-block">Geschlecht<?= req_badge() ?></label>
-
+            <label class="form-label d-block">Geschlecht</label>
             <?php $g = $_SESSION['form']['personal']['geschlecht'] ?? ($_POST['geschlecht'] ?? ''); ?>
             <?php $gErr = !empty($errors['geschlecht']); ?>
 
-            <div class="btn-group <?= $gErr ? 'border border-danger rounded p-2' : '' ?>" role="group" aria-label="Geschlecht">
-              <input type="radio" class="btn-check" name="geschlecht" id="g_m" value="m" <?= $g==='m'?'checked':''; ?> required>
-              <label class="btn btn-outline-primary" for="g_m">männlich</label>
+            <div class="<?= $gErr ? 'border border-danger rounded p-2' : 'is-required-group' ?>" role="group" aria-label="Geschlecht">
+              <div class="btn-group" role="group">
+                <input type="radio" class="btn-check" name="geschlecht" id="g_m" value="m" <?= $g==='m'?'checked':''; ?> required>
+                <label class="btn btn-outline-primary" for="g_m">männlich</label>
 
-              <input type="radio" class="btn-check" name="geschlecht" id="g_w" value="w" <?= $g==='w'?'checked':''; ?>>
-              <label class="btn btn-outline-primary" for="g_w">weiblich</label>
+                <input type="radio" class="btn-check" name="geschlecht" id="g_w" value="w" <?= $g==='w'?'checked':''; ?>>
+                <label class="btn btn-outline-primary" for="g_w">weiblich</label>
 
-              <input type="radio" class="btn-check" name="geschlecht" id="g_d" value="d" <?= $g==='d'?'checked':''; ?>>
-              <label class="btn btn-outline-primary" for="g_d">divers</label>
+                <input type="radio" class="btn-check" name="geschlecht" id="g_d" value="d" <?= $g==='d'?'checked':''; ?>>
+                <label class="btn btn-outline-primary" for="g_d">divers</label>
+              </div>
             </div>
 
             <?= field_error('geschlecht', $errors) ?>
           </div>
 
           <div class="col-md-6">
-            <label class="form-label">Geboren am<?= req_badge() ?> <span class="text-muted">(TT.MM.JJJJ)</span></label>
-            <input id="geburtsdatum" name="geburtsdatum" class="form-control<?= has_err('geburtsdatum',$errors) ?>" placeholder="TT.MM.JJJJ" value="<?= old('geburtsdatum','personal') ?>" required>
+            <label class="form-label">Geboren am <span class="text-muted">(TT.MM.JJJJ)</span></label>
+            <input id="geburtsdatum" name="geburtsdatum" class="form-control is-required<?= has_err('geburtsdatum',$errors) ?>" placeholder="TT.MM.JJJJ" value="<?= old('geburtsdatum','personal') ?>" required>
             <?= field_error('geburtsdatum', $errors) ?>
             <div class="form-text">
               Hinweis: Sind Sie am 30.09.<?= date('Y') ?> unter 16 oder über 18 Jahre alt,
@@ -376,13 +358,13 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
         <!-- Reihe 3: Geburtsort/Geburtsland / Staatsangehörigkeit -->
         <div class="row g-3 mt-0">
           <div class="col-md-6">
-            <label class="form-label">Geburtsort / Geburtsland<?= req_badge() ?></label>
-            <input name="geburtsort_land" class="form-control<?= has_err('geburtsort_land',$errors) ?>" value="<?= old('geburtsort_land','personal') ?>" required>
+            <label class="form-label">Geburtsort / Geburtsland</label>
+            <input name="geburtsort_land" class="form-control is-required<?= has_err('geburtsort_land',$errors) ?>" value="<?= old('geburtsort_land','personal') ?>" required>
             <?= field_error('geburtsort_land', $errors) ?>
           </div>
           <div class="col-md-6">
-            <label class="form-label">Staatsangehörigkeit<?= req_badge() ?></label>
-            <input name="staatsang" class="form-control<?= has_err('staatsang',$errors) ?>" value="<?= old('staatsang','personal') ?>" required>
+            <label class="form-label">Staatsangehörigkeit</label>
+            <input name="staatsang" class="form-control is-required<?= has_err('staatsang',$errors) ?>" value="<?= old('staatsang','personal') ?>" required>
             <?= field_error('staatsang', $errors) ?>
           </div>
         </div>
@@ -390,14 +372,14 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
         <!-- Reihe 4: Straße / PLZ / Wohnort -->
         <div class="row g-3 mt-0">
           <div class="col-md-6">
-            <label class="form-label">Straße, Nr.<?= req_badge() ?></label>
-            <input name="strasse" class="form-control<?= has_err('strasse',$errors) ?>" value="<?= old('strasse','personal') ?>" required>
+            <label class="form-label">Straße, Nr.</label>
+            <input name="strasse" class="form-control is-required<?= has_err('strasse',$errors) ?>" value="<?= old('strasse','personal') ?>" required>
             <?= field_error('strasse', $errors) ?>
           </div>
 
           <div class="col-md-3">
-            <label class="form-label">PLZ<?= req_badge() ?></label>
-            <select name="plz" class="form-select<?= has_err('plz',$errors) ?>" required>
+            <label class="form-label">PLZ</label>
+            <select name="plz" class="form-select is-required<?= has_err('plz',$errors) ?>" required>
               <option value="">– bitte wählen –</option>
               <?php
                 $plzList = ['26121','26122','26123','26125','26127','26129','26131','26133','26135'];
@@ -421,14 +403,14 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
         <!-- Reihe 5: Telefon (geteilt) / Bewerber-E-Mail -->
         <div class="row g-3 mt-0">
           <div class="col-md-6">
-            <label class="form-label">Telefonnummer<?= req_badge() ?></label>
+            <label class="form-label">Telefonnummer</label>
             <div class="row g-2">
               <div class="col-5 col-sm-4">
                 <div class="input-group">
                   <span class="input-group-text">+49</span>
                   <input
                     name="telefon_vorwahl"
-                    class="form-control<?= has_err('telefon_vorwahl',$errors) ?>"
+                    class="form-control is-required<?= has_err('telefon_vorwahl',$errors) ?>"
                     inputmode="numeric"
                     pattern="^0?\d{2,6}$"
                     placeholder="(0)441"
@@ -442,7 +424,7 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
               <div class="col-7 col-sm-8">
                 <input
                   name="telefon_nummer"
-                  class="form-control<?= has_err('telefon_nummer',$errors) ?>"
+                  class="form-control is-required<?= has_err('telefon_nummer',$errors) ?>"
                   inputmode="numeric"
                   pattern="^\d[\d\s\-\/()]{2,}$"
                   placeholder="123456"
@@ -573,11 +555,13 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
         <!-- DSGVO -->
         <div class="row g-3 mt-0">
           <div class="col-12">
-            <div class="form-check">
-              <?php $ok = $_SESSION['form']['personal']['dsgvo_ok'] ?? ($_POST['dsgvo_ok'] ?? ''); ?>
+            <?php $ok = $_SESSION['form']['personal']['dsgvo_ok'] ?? ($_POST['dsgvo_ok'] ?? ''); ?>
+            <?php $dsgvoErr = !empty($errors['dsgvo_ok']); ?>
+
+            <div class="form-check <?= $dsgvoErr ? 'border border-danger rounded p-2' : 'is-required-check' ?>">
               <input class="form-check-input<?= has_err('dsgvo_ok',$errors) ?>" type="checkbox" id="dsgvo_ok" name="dsgvo_ok" value="1" <?= $ok==='1'?'checked':''; ?> required>
               <label class="form-check-label" for="dsgvo_ok">
-                Ich habe die <a href="/datenschutz.php" target="_blank" rel="noopener">Datenschutzhinweise</a> gelesen und bin einverstanden.<?= req_badge() ?>
+                Ich habe die <a href="/datenschutz.php" target="_blank" rel="noopener">Datenschutzhinweise</a> gelesen und bin einverstanden.
               </label>
               <?= field_error('dsgvo_ok', $errors) ?>
             </div>
@@ -632,7 +616,7 @@ function removeRow(btn){
   }
   function checkAgeAndMaybeRedirect(dstr){
     const dob = parseDMY(dstr);
-    if(!dob) return true; // Format wird separat geprüft
+    if(!dob) return true;
     const age = ageOnRef(dob);
     if (age < 16 || age > 18) {
       if (confirm(msg)) {
