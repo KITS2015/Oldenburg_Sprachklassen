@@ -286,7 +286,7 @@ if (function_exists('flash_render')) { flash_render(); }
               </div>
 
               <div>
-                <label class="form-label">Klassenlehrer*in*</label>
+                <label class="form-label">verantwortliche*r Lehrer*in</label>
                 <input name="klassenlehrer" class="form-control<?= has_err('klassenlehrer',$errors) ?>" value="<?= old('klassenlehrer','school') ?>" required>
                 <?php if (isset($errors['klassenlehrer'])): ?><div class="text-danger small mt-1"><?= h($errors['klassenlehrer']) ?></div><?php endif; ?>
               </div>
