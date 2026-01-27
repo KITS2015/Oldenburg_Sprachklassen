@@ -22,6 +22,84 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 // -------------------------
+// Sprache (zentral)
+// -------------------------
+if (!function_exists('available_languages')) {
+    function available_languages(): array {
+        return [
+            'de' => 'Deutsch',
+            'en' => 'English',
+            'fr' => 'Français',
+            'uk' => 'Українська',
+            'ar' => 'العربية',
+            'ru' => 'Русский',
+            'tr' => 'Türkçe',
+            'fa' => 'فارسی',
+        ];
+    }
+}
+
+if (!function_exists('is_rtl_lang')) {
+    function is_rtl_lang(string $lang): bool {
+        return in_array($lang, ['ar','fa'], true);
+    }
+}
+
+/**
+ * Sprache ermitteln: Session > GET > Cookie > Browser > de
+ * und Session/Cookie konsistent halten.
+ *
+ * Hinweis: GET wird hier akzeptiert, damit lang-Wechsel auch im Wizard möglich ist,
+ * wenn du später z.B. ?lang=fr an Links hängen willst.
+ */
+if (!function_exists('current_lang')) {
+    function current_lang(): string {
+        $langs = available_languages();
+
+        // 1) Session
+        $lang = strtolower((string)($_SESSION['lang'] ?? ''));
+
+        // 2) GET (optional)
+        if ($lang === '' && isset($_GET['lang'])) {
+            $lang = strtolower((string)$_GET['lang']);
+        }
+
+        // 3) Cookie
+        if ($lang === '') {
+            $lang = strtolower((string)($_COOKIE['lang'] ?? ''));
+        }
+
+        // 4) Browser Accept-Language
+        if ($lang === '' || !array_key_exists($lang, $langs)) {
+            $accept = strtolower((string)($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? ''));
+            foreach ($langs as $code => $_label) {
+                if ($code !== '' && strpos($accept, $code) !== false) {
+                    $lang = $code;
+                    break;
+                }
+            }
+        }
+
+        if ($lang === '' || !array_key_exists($lang, $langs)) {
+            $lang = 'de';
+        }
+
+        // Session setzen
+        $_SESSION['lang'] = $lang;
+
+        // Cookie nachziehen (damit es überall gilt)
+        if (!isset($_COOKIE['lang']) || (string)$_COOKIE['lang'] !== $lang) {
+            setcookie('lang', $lang, time() + 60*60*24*365, '/');
+        }
+
+        return $lang;
+    }
+}
+
+// Initialisiere Sprache früh (damit alle Seiten gleich reagieren)
+current_lang();
+
+// -------------------------
 // Projektpfade
 // -------------------------
 define('APP_BASE',   realpath(__DIR__ . '/../../') ?: __DIR__ . '/../../');
@@ -156,7 +234,7 @@ if (!function_exists('norm_date_dmy_to_ymd')) {
         if (!preg_match('/^(\d{2})\.(\d{2})\.(\d{4})$/', $dmy, $m)) return '';
         [, $d, $mth, $y] = $m;
         if (!checkdate((int)$mth,(int)$d,(int)$y)) return '';
-        return sprintf('%04d-%02d-%02d', $y, $mth, $d);
+        return sprintf('%04d-%02d-%02d', (int)$y, (int)$mth, (int)$d);
     }
 }
 
