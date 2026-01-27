@@ -60,4 +60,3 @@ body {
   border-color: var(--bs-danger) !important;
 }
 
-.is-required { outline: 3px solid magenta !important; }
