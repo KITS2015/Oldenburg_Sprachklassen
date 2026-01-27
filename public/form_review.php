@@ -10,7 +10,6 @@ require_step('review');
 $readonly = !empty($_SESSION['application_readonly']);
 
 // UI Helper
-function yesno(bool $b): string { return $b ? 'Ja' : 'Nein'; }
 function show_val(string $v): string { return trim($v) !== '' ? h($v) : '–'; }
 function norm_space(?string $v): string { return trim((string)$v); }
 
@@ -282,13 +281,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // ---------- school ----------
             global $INTERESSEN;
 
-            $schule_besucht = 1;
-
-            $schule_jahre = null;
-            if (($s['jahre_in_de'] ?? '') !== '' && ctype_digit((string)$s['jahre_in_de'])) {
-                $schule_jahre = (int)$s['jahre_in_de'];
-            }
-
+            // seit_monat / seit_jahr
             $seit_monat = null;
             if (($s['seit_monat'] ?? '') !== '' && ctype_digit((string)$s['seit_monat'])) {
                 $seit_monat = (int)$s['seit_monat'];
@@ -298,6 +291,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $seit_jahr = (int)$s['seit_jahr'];
             }
 
+            // jahre_in_de (numerisch)
+            $jahre_in_de = null;
+            if (($s['jahre_in_de'] ?? '') !== '' && ctype_digit((string)$s['jahre_in_de'])) {
+                $jahre_in_de = (int)$s['jahre_in_de'];
+            }
+
+            // schule_herkunft / jahre_schule_herkunft
+            $schule_herkunft = null;
+            $sh = trim((string)($s['schule_herkunft'] ?? ''));
+            if ($sh !== '') {
+                // Erwartet: 'ja'/'nein'
+                if ($sh === 'ja' || $sh === 'nein') {
+                    $schule_herkunft = $sh;
+                }
+            }
+
+            $jahre_schule_herkunft = null;
+            if (($s['jahre_schule_herkunft'] ?? '') !== '' && ctype_digit((string)$s['jahre_schule_herkunft'])) {
+                $jahre_schule_herkunft = (int)$s['jahre_schule_herkunft'];
+            }
+            // Wenn schule_herkunft == 'nein' -> Jahre leer
+            if ($schule_herkunft === 'nein') {
+                $jahre_schule_herkunft = null;
+            }
+
+            // deutsch_niveau inkl. A0
             $nivRaw = trim((string)($s['deutsch_niveau'] ?? ''));
             $allowedCodes = ['kein','A0','A1','A2','B1','B2','C1','C2'];
             $deutsch_niveau = null;
@@ -309,8 +328,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            $deutsch_jahre = null;
-
+            // interessen: aus Keys -> Labels
             $interessenArr = $s['interessen'] ?? [];
             $interessenLabels = [];
             if (is_array($interessenArr)) {
@@ -321,50 +339,87 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $interessenStr = $interessenLabels ? implode(', ', $interessenLabels) : null;
 
+            // Freitext-Felder
+            $schule_aktuell  = norm_space($s['schule_aktuell'] ?? '');
+            $schule_freitext = norm_space($s['schule_freitext'] ?? '');
+            $schule_label    = norm_space($s['schule_label'] ?? '');
+            $klassenlehrer   = norm_space($s['klassenlehrer'] ?? '');
+            $mail_lehrkraft  = norm_space($s['mail_lehrkraft'] ?? '');
+            $seit_text       = norm_space($s['seit_text'] ?? '');
+            $familiensprache = norm_space($s['familiensprache'] ?? '');
+
             $insSchool = $pdo->prepare("
                 INSERT INTO school (
                     application_id,
-                    schule_besucht,
-                    schule_jahre,
+                    schule_aktuell,
+                    schule_freitext,
+                    schule_label,
+                    klassenlehrer,
+                    mail_lehrkraft,
                     seit_monat,
                     seit_jahr,
+                    seit_text,
+                    jahre_in_de,
+                    schule_herkunft,
+                    jahre_schule_herkunft,
+                    familiensprache,
                     deutsch_niveau,
-                    deutsch_jahre,
                     interessen,
                     created_at,
                     updated_at
                 ) VALUES (
                     :id,
-                    :besucht,
-                    :jahre,
-                    :monat,
-                    :jahr,
-                    :niv,
-                    :dj,
-                    :ints,
+                    :schule_aktuell,
+                    :schule_freitext,
+                    :schule_label,
+                    :klassenlehrer,
+                    :mail_lehrkraft,
+                    :seit_monat,
+                    :seit_jahr,
+                    :seit_text,
+                    :jahre_in_de,
+                    :schule_herkunft,
+                    :jahre_schule_herkunft,
+                    :familiensprache,
+                    :deutsch_niveau,
+                    :interessen,
                     NOW(),
                     NOW()
                 )
                 ON DUPLICATE KEY UPDATE
-                    schule_besucht = VALUES(schule_besucht),
-                    schule_jahre   = VALUES(schule_jahre),
-                    seit_monat     = VALUES(seit_monat),
-                    seit_jahr      = VALUES(seit_jahr),
-                    deutsch_niveau = VALUES(deutsch_niveau),
-                    deutsch_jahre  = VALUES(deutsch_jahre),
-                    interessen     = VALUES(interessen),
-                    updated_at     = NOW()
+                    schule_aktuell        = VALUES(schule_aktuell),
+                    schule_freitext       = VALUES(schule_freitext),
+                    schule_label          = VALUES(schule_label),
+                    klassenlehrer         = VALUES(klassenlehrer),
+                    mail_lehrkraft        = VALUES(mail_lehrkraft),
+                    seit_monat            = VALUES(seit_monat),
+                    seit_jahr             = VALUES(seit_jahr),
+                    seit_text             = VALUES(seit_text),
+                    jahre_in_de           = VALUES(jahre_in_de),
+                    schule_herkunft       = VALUES(schule_herkunft),
+                    jahre_schule_herkunft = VALUES(jahre_schule_herkunft),
+                    familiensprache       = VALUES(familiensprache),
+                    deutsch_niveau        = VALUES(deutsch_niveau),
+                    interessen            = VALUES(interessen),
+                    updated_at            = NOW()
             ");
 
             $insSchool->execute([
-                ':id'      => $appId,
-                ':besucht' => $schule_besucht,
-                ':jahre'   => $schule_jahre,
-                ':monat'   => $seit_monat,
-                ':jahr'    => $seit_jahr,
-                ':niv'     => $deutsch_niveau,
-                ':dj'      => $deutsch_jahre,
-                ':ints'    => $interessenStr,
+                ':id'                   => $appId,
+                ':schule_aktuell'        => $schule_aktuell !== '' ? $schule_aktuell : null,
+                ':schule_freitext'       => $schule_freitext !== '' ? $schule_freitext : null,
+                ':schule_label'          => $schule_label !== '' ? $schule_label : null,
+                ':klassenlehrer'         => $klassenlehrer !== '' ? $klassenlehrer : null,
+                ':mail_lehrkraft'        => $mail_lehrkraft !== '' ? $mail_lehrkraft : null,
+                ':seit_monat'            => $seit_monat,
+                ':seit_jahr'             => $seit_jahr,
+                ':seit_text'             => $seit_text !== '' ? $seit_text : null,
+                ':jahre_in_de'           => $jahre_in_de,
+                ':schule_herkunft'       => $schule_herkunft,
+                ':jahre_schule_herkunft' => $jahre_schule_herkunft,
+                ':familiensprache'       => $familiensprache !== '' ? $familiensprache : null,
+                ':deutsch_niveau'        => $deutsch_niveau,
+                ':interessen'            => $interessenStr,
             ]);
 
             // ---------- audit_log ----------
@@ -383,23 +438,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $pdo->commit();
 
-            // Nach Submit: auf Status-Seite umleiten (Session NICHT komplett killen,
-            // damit wir Token/Readonly & PDF-Download anbieten können)
+            // Nach Submit: auf Status-Seite umleiten (Session NICHT komplett killen)
             $_SESSION['application_readonly'] = true;
             $_SESSION['application_submitted'] = [
                 'app_id' => $appId,
                 'ts'     => time(),
             ];
 
-// Optional: Form-Daten wegwerfen, damit nichts mehr „editierbar“ ist
-unset($_SESSION['form']);
-unset($_SESSION['last_save']);
+            // Optional: Form-Daten wegwerfen, damit nichts mehr „editierbar“ ist
+            unset($_SESSION['form'], $_SESSION['last_save']);
 
-// (Wichtig) Token in der Session lassen (für Status/PDF). KEIN kompletter Reset hier.
-session_regenerate_id(true);
+            // Token/Access in der Session lassen (für Status/PDF)
+            session_regenerate_id(true);
 
-header('Location: /form_status.php');
-exit;
+            header('Location: /form_status.php');
+            exit;
 
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) {
