@@ -136,6 +136,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
+            $weitereAngabenToSave = norm_space($p['weitere_angaben'] ?? '');
+
             $insPers = $pdo->prepare("
                 INSERT INTO personal (
                     application_id,
@@ -150,6 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     wohnort,
                     telefon,
                     email,
+                    weitere_angaben,
                     dsgvo_ok,
                     created_at,
                     updated_at
@@ -166,6 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     :wohnort,
                     :tel,
                     :mail,
+                    :weitere,
                     :dsgvo,
                     NOW(),
                     NOW()
@@ -182,6 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     wohnort         = VALUES(wohnort),
                     telefon         = VALUES(telefon),
                     email           = VALUES(email),
+                    weitere_angaben = VALUES(weitere_angaben),
                     dsgvo_ok        = VALUES(dsgvo_ok),
                     updated_at      = NOW()
             ");
@@ -199,6 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':wohnort' => (string)($p['wohnort']         ?? 'Oldenburg (Oldb)'),
                 ':tel'     => (string)($p['telefon']         ?? ''),
                 ':mail'    => $applicantEmail,
+                ':weitere' => $weitereAngabenToSave !== '' ? $weitereAngabenToSave : null,
                 ':dsgvo'   => (isset($p['dsgvo_ok']) && $p['dsgvo_ok'] === '1') ? 1 : 0,
             ]);
 
@@ -220,6 +226,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $rolle = trim((string)($c['rolle']?? ''));
 
                     if ($rolle === '' && $nameC === '' && $telC === '' && $mailC === '' && $notiz === '') {
+                        continue;
+                    }
+
+                    // Kontakte erwarten name NOT NULL. Falls Rolle/Tel/Mail/Notiz gesetzt aber Name leer ist:
+                    // trotzdem speichern wir NICHT, um DB-Fehler zu vermeiden.
+                    if ($nameC === '') {
                         continue;
                     }
 
@@ -422,7 +434,7 @@ if (!empty($s['schule_label'])) {
 // Seit wann an Schule Anzeige
 $sinceDisplay = '–';
 if (!empty($s['seit_wann_schule'])) {
-    $sinceDisplay = (string)$s['seit_wann_schule'];
+    $sinceDisplay = (string)$s['seit_wann_schule';
 } else {
     $parts = [];
     if (!empty($s['seit_monat'])) $parts[] = (string)$s['seit_monat'];
