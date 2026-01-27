@@ -2,152 +2,312 @@
 // public/application_pdf.php
 declare(strict_types=1);
 
+/**
+ * Bewerbungs-PDF (Download/Print)
+ *
+ * Erwartet eine laufende Session mit Access-Token (current_access_token()).
+ * Datenquelle: applications.data_json (Fallback: Tabellen personal/contacts/school/uploads).
+ *
+ * Composer: "tecnickcom/tcpdf"
+ * Aufruf z.B.: /application_pdf.php
+ */
+
 require __DIR__ . '/wizard/_common.php';
 require_once __DIR__ . '/../app/db.php';
 
-// TCPDF laden (Pfad ggf. anpassen!)
-require_once __DIR__ . '/../vendor/autoload.php';
+// Composer Autoload (TCPDF via vendor)
+$autoload = __DIR__ . '/../vendor/autoload.php';
+if (!is_file($autoload)) {
+    http_response_code(500);
+    exit('Composer Autoload nicht gefunden. Bitte composer install ausführen.');
+}
+require_once $autoload;
 
-$token = current_access_token();
-$readonly  = !empty($_SESSION['application_readonly']);
-$submitted = $_SESSION['application_submitted'] ?? null;
+use TCPDF;
 
-if (!$token || !$readonly || !$submitted) {
-    http_response_code(403);
-    exit('Kein Zugriff.');
+function s(?string $v): string { return trim((string)$v); }
+function dash(?string $v): string { $t = trim((string)$v); return $t !== '' ? $t : '–'; }
+function join_nonempty(array $parts, string $sep = ' '): string {
+    $p = [];
+    foreach ($parts as $x) {
+        $x = trim((string)$x);
+        if ($x !== '') $p[] = $x;
+    }
+    return $p ? implode($sep, $p) : '';
 }
 
-$appId = (int)($submitted['app_id'] ?? 0);
-if ($appId <= 0) {
-    http_response_code(400);
-    exit('Ungültige Bewerbung.');
+function fetch_application(PDO $pdo, string $token): array {
+    $st = $pdo->prepare("SELECT id, token, email, dob, status, data_json, created_at, updated_at
+                         FROM applications WHERE token = :t LIMIT 1");
+    $st->execute([':t' => $token]);
+    $row = $st->fetch(PDO::FETCH_ASSOC);
+    return $row ?: [];
+}
+
+function fetch_personal(PDO $pdo, int $appId): array {
+    $st = $pdo->prepare("SELECT * FROM personal WHERE application_id = :id LIMIT 1");
+    $st->execute([':id' => $appId]);
+    return $st->fetch(PDO::FETCH_ASSOC) ?: [];
+}
+
+function fetch_contacts(PDO $pdo, int $appId): array {
+    $st = $pdo->prepare("SELECT rolle, name, tel, mail, notiz, created_at
+                         FROM contacts WHERE application_id = :id ORDER BY id ASC");
+    $st->execute([':id' => $appId]);
+    return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+}
+
+function fetch_school(PDO $pdo, int $appId): array {
+    $st = $pdo->prepare("SELECT * FROM school WHERE application_id = :id LIMIT 1");
+    $st->execute([':id' => $appId]);
+    return $st->fetch(PDO::FETCH_ASSOC) ?: [];
+}
+
+function fetch_uploads(PDO $pdo, int $appId): array {
+    $st = $pdo->prepare("SELECT typ, filename, mime, size_bytes, uploaded_at
+                         FROM uploads WHERE application_id = :id ORDER BY typ ASC");
+    $st->execute([':id' => $appId]);
+    return $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+}
+
+$token = current_access_token();
+if ($token === '') {
+    http_response_code(403);
+    exit('Kein gültiger Zugangscode. Bitte beginnen Sie den Vorgang neu.');
 }
 
 try {
     $pdo = db();
-
-    // application prüfen
-    $st = $pdo->prepare("SELECT id, status, email, dob, created_at, updated_at FROM applications WHERE id = :id AND token = :t LIMIT 1");
-    $st->execute([':id' => $appId, ':t' => $token]);
-    $app = $st->fetch(PDO::FETCH_ASSOC);
-    if (!$app || ($app['status'] ?? '') !== 'submitted') {
-        http_response_code(403);
-        exit('Bewerbung nicht verfügbar.');
+    $app = fetch_application($pdo, $token);
+    if (!$app) {
+        http_response_code(404);
+        exit('Bewerbung nicht gefunden.');
     }
 
-    // personal
-    $st = $pdo->prepare("SELECT * FROM personal WHERE application_id = :id LIMIT 1");
-    $st->execute([':id' => $appId]);
-    $p = $st->fetch(PDO::FETCH_ASSOC) ?: [];
+    $appId  = (int)$app['id'];
+    $status = (string)($app['status'] ?? 'draft');
 
-    // contacts
-    $st = $pdo->prepare("SELECT rolle, name, tel, mail, notiz FROM contacts WHERE application_id = :id ORDER BY id ASC");
-    $st->execute([':id' => $appId]);
-    $contacts = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
-
-    // school
-    $st = $pdo->prepare("SELECT * FROM school WHERE application_id = :id LIMIT 1");
-    $st->execute([':id' => $appId]);
-    $s = $st->fetch(PDO::FETCH_ASSOC) ?: [];
-
-    // uploads (nur Status)
-    $st = $pdo->prepare("SELECT typ FROM uploads WHERE application_id = :id");
-    $st->execute([':id' => $appId]);
-    $ups = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
-    $hasZeugnis = false;
-    $hasLebenslauf = false;
-    foreach ($ups as $u) {
-        if (($u['typ'] ?? '') === 'zeugnis') $hasZeugnis = true;
-        if (($u['typ'] ?? '') === 'lebenslauf') $hasLebenslauf = true;
+    // --- Daten aus data_json (Primärquelle) ---
+    $dataJson = $app['data_json'] ?? null;
+    $dj = [];
+    if ($dataJson !== null && $dataJson !== '') {
+        if (is_string($dataJson)) {
+            $tmp = json_decode($dataJson, true);
+            if (is_array($tmp)) $dj = $tmp;
+        } elseif (is_array($dataJson)) {
+            $dj = $dataJson;
+        }
     }
+
+    $p = $dj['form']['personal'] ?? [];
+    $scl = $dj['form']['school'] ?? [];
+    $upl = $dj['form']['upload'] ?? [];
+
+    // --- Fallbacks aus Tabellen, falls data_json leer/inkomplett ist ---
+    $pDb = fetch_personal($pdo, $appId);
+    if (!is_array($p) || !$p) {
+        $p = $pDb ?: [];
+    }
+
+    $contacts = $p['contacts'] ?? [];
+    if (!is_array($contacts) || count($contacts) === 0) {
+        $contacts = fetch_contacts($pdo, $appId);
+    }
+
+    $schoolDb = fetch_school($pdo, $appId);
+    if (!is_array($scl) || !$scl) {
+        $scl = $schoolDb ?: [];
+    }
+
+    $uploads = fetch_uploads($pdo, $appId);
+
+    // --- PDF erstellen ---
+    $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+    $pdf->SetCreator('BBS Bewerbungssystem');
+    $pdf->SetAuthor('BBS Bewerbungssystem');
+    $pdf->SetTitle('Bewerbung – Zusammenfassung');
+    $pdf->SetSubject('Bewerbung');
+    $pdf->SetMargins(15, 15, 15);
+    $pdf->SetAutoPageBreak(true, 15);
+    $pdf->AddPage();
+
+    // Font: DejaVu unterstützt Umlaute sauber
+    $pdf->SetFont('dejavusans', '', 11);
+
+    $generatedAt = (new DateTimeImmutable('now'))->format('d.m.Y H:i');
+
+    // Header
+    $pdf->SetFont('dejavusans', 'B', 16);
+    $pdf->MultiCell(0, 8, 'Bewerbung – Zusammenfassung', 0, 'L', false, 1);
+    $pdf->SetFont('dejavusans', '', 10);
+    $pdf->MultiCell(0, 6, "Erstellt am: {$generatedAt}", 0, 'L', false, 1);
+    $pdf->MultiCell(0, 6, "Status: " . ($status ?: 'draft'), 0, 'L', false, 1);
+
+    // Platzhalter-Textbaustein (Kunde liefert finalen Text)
+    $pdf->Ln(2);
+    $pdf->SetFillColor(245, 245, 245);
+    $pdf->SetFont('dejavusans', 'B', 11);
+    $pdf->MultiCell(0, 7, 'Hinweis (Platzhalter)', 0, 'L', true, 1);
+    $pdf->SetFont('dejavusans', '', 10);
+    $pdf->MultiCell(
+        0,
+        6,
+        "<<< TEXTBAUSTEIN VOM KUNDEN FOLGT >>>\nDiese Bewerbung wurde gespeichert. Bitte bewahren Sie dieses Dokument für Ihre Unterlagen auf.",
+        0,
+        'L',
+        false,
+        1
+    );
+
+    // Abschnitt: Persönliche Daten
+    $pdf->Ln(3);
+    $pdf->SetFont('dejavusans', 'B', 12);
+    $pdf->MultiCell(0, 7, '1) Persönliche Daten', 0, 'L', false, 1);
+    $pdf->SetFont('dejavusans', '', 10);
+
+    $rowsPersonal = [
+        ['Name', dash($p['name'] ?? ($pDb['name'] ?? null))],
+        ['Vorname', dash($p['vorname'] ?? ($pDb['vorname'] ?? null))],
+        ['Geschlecht', dash($p['geschlecht'] ?? ($pDb['geschlecht'] ?? null))],
+        ['Geburtsdatum', dash($p['geburtsdatum'] ?? ($pDb['geburtsdatum'] ?? null))],
+        ['Geburtsort/Land', dash($p['geburtsort_land'] ?? ($pDb['geburtsort_land'] ?? null))],
+        ['Staatsangehörigkeit', dash($p['staatsang'] ?? ($pDb['staatsang'] ?? null))],
+        ['Straße, Nr.', dash($p['strasse'] ?? ($pDb['strasse'] ?? null))],
+        ['PLZ / Wohnort', dash(join_nonempty([
+            $p['plz'] ?? ($pDb['plz'] ?? null),
+            $p['wohnort'] ?? ($pDb['wohnort'] ?? null),
+        ]))],
+        ['Telefon', dash($p['telefon'] ?? ($pDb['telefon'] ?? null))],
+        ['E-Mail (Schüler*in)', dash($p['email'] ?? ($pDb['email'] ?? null))],
+        ['Weitere Angaben', dash($p['weitere_angaben'] ?? ($pDb['weitere_angaben'] ?? null))],
+    ];
+
+    // simple "table" via MultiCell
+    foreach ($rowsPersonal as [$k, $v]) {
+        $pdf->SetFont('dejavusans', 'B', 10);
+        $pdf->MultiCell(45, 6, $k . ':', 0, 'L', false, 0);
+        $pdf->SetFont('dejavusans', '', 10);
+        $pdf->MultiCell(0, 6, (string)$v, 0, 'L', false, 1);
+    }
+
+    // Abschnitt: Kontakte
+    $pdf->Ln(2);
+    $pdf->SetFont('dejavusans', 'B', 12);
+    $pdf->MultiCell(0, 7, '2) Weitere Kontaktdaten', 0, 'L', false, 1);
+    $pdf->SetFont('dejavusans', '', 10);
+
+    if (is_array($contacts) && count($contacts) > 0) {
+        foreach ($contacts as $idx => $c) {
+            $rolle = dash($c['rolle'] ?? null);
+            $name  = dash($c['name'] ?? null);
+            $tel   = dash($c['tel'] ?? null);
+            $mail  = dash($c['mail'] ?? null);
+            $notiz = dash($c['notiz'] ?? null);
+
+            $pdf->SetFont('dejavusans', 'B', 10);
+            $pdf->MultiCell(0, 6, 'Kontakt ' . ($idx + 1), 0, 'L', false, 1);
+            $pdf->SetFont('dejavusans', '', 10);
+
+            $pdf->MultiCell(45, 6, 'Rolle:', 0, 'L', false, 0);
+            $pdf->MultiCell(0, 6, $rolle, 0, 'L', false, 1);
+
+            $pdf->MultiCell(45, 6, 'Name/Einrichtung:', 0, 'L', false, 0);
+            $pdf->MultiCell(0, 6, $name, 0, 'L', false, 1);
+
+            $pdf->MultiCell(45, 6, 'Telefon:', 0, 'L', false, 0);
+            $pdf->MultiCell(0, 6, $tel, 0, 'L', false, 1);
+
+            $pdf->MultiCell(45, 6, 'E-Mail:', 0, 'L', false, 0);
+            $pdf->MultiCell(0, 6, $mail, 0, 'L', false, 1);
+
+            $pdf->MultiCell(45, 6, 'Notiz:', 0, 'L', false, 0);
+            $pdf->MultiCell(0, 6, $notiz, 0, 'L', false, 1);
+
+            $pdf->Ln(1);
+        }
+    } else {
+        $pdf->MultiCell(0, 6, '–', 0, 'L', false, 1);
+    }
+
+    // Abschnitt: Schule & Interessen
+    $pdf->Ln(2);
+    $pdf->SetFont('dejavusans', 'B', 12);
+    $pdf->MultiCell(0, 7, '3) Schule & Interessen', 0, 'L', false, 1);
+    $pdf->SetFont('dejavusans', '', 10);
+
+    $schoolLabel = s($scl['schule_label'] ?? '') !== '' ? (string)$scl['schule_label'] : (string)($scl['schule_freitext'] ?? ($scl['schule_aktuell'] ?? ''));
+    $since = s($scl['seit_wann_schule'] ?? '') !== '' ? (string)$scl['seit_wann_schule'] : join_nonempty([$scl['seit_monat'] ?? '', $scl['seit_jahr'] ?? ''], '.');
+
+    $interessen = $scl['interessen'] ?? null;
+    if (is_array($interessen)) {
+        $interessen = implode(', ', array_map('strval', $interessen));
+    } else {
+        $interessen = (string)($scl['interessen'] ?? '');
+    }
+
+    $rowsSchool = [
+        ['Aktuelle Schule', dash($schoolLabel)],
+        ['Lehrer*in', dash($scl['klassenlehrer'] ?? null)],
+        ['E-Mail Lehrkraft', dash($scl['mail_lehrkraft'] ?? null)],
+        ['Seit wann an der Schule', dash($since)],
+        ['Jahre in Deutschland', dash($scl['jahre_in_de'] ?? null)],
+        ['Schule im Herkunftsland', dash($scl['schule_herkunft'] ?? null)],
+        ['Jahre Schule im Herkunftsland', dash($scl['jahre_schule_herkunft'] ?? null)],
+        ['Familiensprache', dash($scl['familiensprache'] ?? null)],
+        ['Deutsch-Niveau', dash($scl['deutsch_niveau'] ?? null)],
+        ['Interessen', dash((string)$interessen)],
+    ];
+
+    foreach ($rowsSchool as [$k, $v]) {
+        $pdf->SetFont('dejavusans', 'B', 10);
+        $pdf->MultiCell(55, 6, $k . ':', 0, 'L', false, 0);
+        $pdf->SetFont('dejavusans', '', 10);
+        $pdf->MultiCell(0, 6, (string)$v, 0, 'L', false, 1);
+    }
+
+    // Abschnitt: Unterlagen
+    $pdf->Ln(2);
+    $pdf->SetFont('dejavusans', 'B', 12);
+    $pdf->MultiCell(0, 7, '4) Unterlagen', 0, 'L', false, 1);
+    $pdf->SetFont('dejavusans', '', 10);
+
+    $upMap = ['zeugnis' => 'Halbjahreszeugnis', 'lebenslauf' => 'Lebenslauf'];
+    $has = ['zeugnis' => false, 'lebenslauf' => false];
+
+    foreach ($uploads as $urow) {
+        $typ = (string)($urow['typ'] ?? '');
+        if (isset($has[$typ])) $has[$typ] = true;
+    }
+
+    foreach ($upMap as $typ => $label) {
+        $pdf->SetFont('dejavusans', 'B', 10);
+        $pdf->MultiCell(55, 6, $label . ':', 0, 'L', false, 0);
+        $pdf->SetFont('dejavusans', '', 10);
+        $pdf->MultiCell(0, 6, $has[$typ] ? 'hochgeladen' : 'nicht hochgeladen', 0, 'L', false, 1);
+    }
+
+    $zeugnisSpaeter = (string)($upl['zeugnis_spaeter'] ?? '');
+    $pdf->SetFont('dejavusans', 'B', 10);
+    $pdf->MultiCell(55, 6, 'Zeugnis später nachreichen:', 0, 'L', false, 0);
+    $pdf->SetFont('dejavusans', '', 10);
+    $pdf->MultiCell(0, 6, ($zeugnisSpaeter === '1') ? 'Ja' : 'Nein', 0, 'L', false, 1);
+
+    // Footer/Meta
+    $pdf->Ln(4);
+    $pdf->SetFont('dejavusans', '', 9);
+    $pdf->SetTextColor(90, 90, 90);
+    $pdf->MultiCell(0, 5, 'Dieses Dokument ist eine automatisch erzeugte Zusammenfassung der eingegebenen Daten.', 0, 'L', false, 1);
+
+    // Download-Name
+    $safeName = preg_replace('/[^a-z0-9_\-]+/i', '_', s(($p['name'] ?? '') . '_' . ($p['vorname'] ?? ''))) ?: 'bewerbung';
+    $fileName = 'Bewerbung_' . $safeName . '_' . $appId . '.pdf';
+
+    // Inline im Browser anzeigen (I) oder Download erzwingen (D)
+    $pdf->Output($fileName, 'I');
+    exit;
 
 } catch (Throwable $e) {
-    error_log('application_pdf: '.$e->getMessage());
+    error_log('application_pdf.php: ' . $e->getMessage());
     http_response_code(500);
-    exit('Serverfehler.');
+    exit('Serverfehler beim Erzeugen des PDFs.');
 }
-
-// -------- PDF bauen --------
-$pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
-$pdf->SetCreator('Bewerbungsportal');
-$pdf->SetAuthor('Bewerbungsportal');
-$pdf->SetTitle('Bewerbung '.$appId);
-$pdf->SetMargins(15, 15, 15);
-$pdf->SetAutoPageBreak(true, 15);
-$pdf->AddPage();
-
-$pdf->SetFont('helvetica', 'B', 14);
-$pdf->Write(0, 'Bewerbung – Zusammenfassung', '', 0, 'L', true);
-
-$pdf->SetFont('helvetica', '', 10);
-$pdf->Ln(2);
-$pdf->Write(0, 'Bewerbung #'.$appId, '', 0, 'L', true);
-$pdf->Write(0, 'Status: '.$app['status'], '', 0, 'L', true);
-$pdf->Write(0, 'Erstellt: '.($app['created_at'] ?? ''), '', 0, 'L', true);
-$pdf->Write(0, 'Abgesendet: '.($app['updated_at'] ?? ''), '', 0, 'L', true);
-
-$pdf->Ln(4);
-$pdf->SetFont('helvetica', 'B', 12);
-$pdf->Write(0, '1) Persönliche Daten', '', 0, 'L', true);
-$pdf->SetFont('helvetica', '', 10);
-
-$lines = [
-    'Name: ' . trim(($p['name'] ?? '').' '.($p['vorname'] ?? '')),
-    'Geschlecht: ' . ($p['geschlecht'] ?? ''),
-    'Geburtsdatum: ' . ($p['geburtsdatum'] ?? ''),
-    'Geburtsort/Land: ' . ($p['geburtsort_land'] ?? ''),
-    'Staatsangehörigkeit: ' . ($p['staatsang'] ?? ''),
-    'Adresse: ' . trim(($p['strasse'] ?? '').', '.($p['plz'] ?? '').' '.($p['wohnort'] ?? '')),
-    'Telefon: ' . ($p['telefon'] ?? ''),
-    'E-Mail (Schüler*in): ' . ($p['email'] ?? ''),
-];
-foreach ($lines as $l) {
-    $pdf->Write(0, $l, '', 0, 'L', true);
-}
-
-$pdf->Ln(2);
-$pdf->SetFont('helvetica', 'B', 10);
-$pdf->Write(0, 'Weitere Angaben:', '', 0, 'L', true);
-$pdf->SetFont('helvetica', '', 10);
-$pdf->MultiCell(0, 0, (string)($p['weitere_angaben'] ?? ''), 0, 'L', false, 1);
-
-$pdf->Ln(2);
-$pdf->SetFont('helvetica', 'B', 12);
-$pdf->Write(0, '2) Weitere Kontakte', '', 0, 'L', true);
-$pdf->SetFont('helvetica', '', 10);
-
-if (!$contacts) {
-    $pdf->Write(0, '–', '', 0, 'L', true);
-} else {
-    foreach ($contacts as $c) {
-        $pdf->SetFont('helvetica', 'B', 10);
-        $pdf->Write(0, (string)($c['rolle'] ?? 'Kontakt'), '', 0, 'L', true);
-        $pdf->SetFont('helvetica', '', 10);
-        $pdf->Write(0, 'Name/Einrichtung: '.($c['name'] ?? ''), '', 0, 'L', true);
-        $pdf->Write(0, 'Telefon: '.($c['tel'] ?? ''), '', 0, 'L', true);
-        $pdf->Write(0, 'E-Mail: '.($c['mail'] ?? ''), '', 0, 'L', true);
-        $pdf->Write(0, 'Notiz: '.($c['notiz'] ?? ''), '', 0, 'L', true);
-        $pdf->Ln(1);
-    }
-}
-
-$pdf->Ln(2);
-$pdf->SetFont('helvetica', 'B', 12);
-$pdf->Write(0, '3) Schule & Interessen', '', 0, 'L', true);
-$pdf->SetFont('helvetica', '', 10);
-
-$pdf->Write(0, 'Jahre in Deutschland: '.($s['schule_jahre'] ?? ''), '', 0, 'L', true);
-$pdf->Write(0, 'Seit (Monat/Jahr): '.trim((string)($s['seit_monat'] ?? '').' / '.(string)($s['seit_jahr'] ?? '')), '', 0, 'L', true);
-$pdf->Write(0, 'Deutsch-Niveau: '.($s['deutsch_niveau'] ?? ''), '', 0, 'L', true);
-$pdf->Write(0, 'Interessen: '.($s['interessen'] ?? ''), '', 0, 'L', true);
-
-$pdf->Ln(2);
-$pdf->SetFont('helvetica', 'B', 12);
-$pdf->Write(0, '4) Unterlagen', '', 0, 'L', true);
-$pdf->SetFont('helvetica', '', 10);
-$pdf->Write(0, 'Halbjahreszeugnis: '.($hasZeugnis ? 'hochgeladen' : 'nicht hochgeladen'), '', 0, 'L', true);
-$pdf->Write(0, 'Lebenslauf: '.($hasLebenslauf ? 'hochgeladen' : 'nicht hochgeladen'), '', 0, 'L', true);
-
-$filename = 'bewerbung_'.$appId.'.pdf';
-$pdf->Output($filename, 'I');
-exit;
