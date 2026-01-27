@@ -12,19 +12,22 @@ $emailMode    = ($modeParam === 'email');
 
 // --- E-Mail-Flow absichern & vorbereiten ---
 if ($emailMode) {
+    // Prüfen: Access-Session muss da sein, Modus = email, Login-E-Mail vorhanden
     if (empty($_SESSION['access']) || ($_SESSION['access']['mode'] ?? '') !== 'email' || empty($_SESSION['access']['email'])) {
         header('Location: /index.php');
         exit;
     }
+    // Token sicherstellen (Fallback, normalerweise bereits vorhanden)
     if (function_exists('current_access_token') && function_exists('issue_access_token')) {
         if (current_access_token() === '') { issue_access_token(); }
     }
-    // Bewerber-E-Mail bleibt unabhängig von der Login-E-Mail.
+    // WICHTIG: KEIN Überschreiben der Bewerber-E-Mail!
 }
 
 $errors = [];
 $kontakt_errors = [];
 
+// Helper
 function age_on_reference(string $dmy, int $year): ?int {
     $bd = DateTimeImmutable::createFromFormat('d.m.Y', $dmy);
     if (!$bd) return null;
@@ -45,7 +48,7 @@ $refYear = (int)date('Y');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_check()) { http_response_code(400); exit('Ungültige Anfrage.'); }
 
-    // Pflichtfelder – Bewerber-E-Mail ist OPTIONAL
+    // Pflichtfelder – E-Mail des Bewerbers ist OPTIONAL
     $req = [
         'name',
         'vorname',
@@ -121,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Telefon: +49 fix, Vorwahl mit/ohne führende 0 erlaubt; normalisiert auf E.164 (+49 ohne 0)
+    // Telefon: +49 fix; normalisiert auf E.164 (+49 ohne 0)
     $telefon_pretty = '';
     $telefon_e164   = '';
     if (!isset($errors['telefon_vorwahl']) || !isset($errors['telefon_nummer'])) {
@@ -239,7 +242,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// ---------- Header ----------
+// ---------- Header-Infos ----------
 $title     = 'Schritt 1/4 – Persönliche Daten';
 $html_lang = 'de';
 $html_dir  = 'ltr';
@@ -296,7 +299,7 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
   <div class="card shadow border-0 rounded-4">
     <div class="card-body p-4 p-md-5">
       <h1 class="h4 mb-2">Schritt 1/4 – Persönliche Daten</h1>
-      <div class="text-muted small mb-3">Pflichtfelder sind am Rahmen hervorgehoben.</div>
+      <div class="text-muted small mb-3">Pflichtfelder sind blau am Rahmen hervorgehoben.</div>
 
       <?php if ($errors): ?>
         <div class="alert alert-danger">Bitte prüfen Sie die markierten Felder.</div>
@@ -470,25 +473,30 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
                     <th style="width:20rem">Name / Einrichtung</th>
                     <th style="width:16rem">Telefon</th>
                     <th style="width:20rem">E-Mail</th>
-                    <th>Notiz</th>
                     <th style="width:4rem"></th>
                   </tr>
+                  <tr>
+                    <th colspan="5" class="text-muted fw-normal">Notiz</th>
+                  </tr>
                 </thead>
+
                 <tbody id="contacts-body">
                 <?php foreach ($prevKontakte as $idx => $k):
-                  $rowHasErr = isset($kontakt_errors[$idx]); ?>
-                  <tr class="<?= $rowHasErr ? 'row-error' : '' ?>">
+                  $rowHasErr = isset($kontakt_errors[$idx]);
+                  $rowClass  = $rowHasErr ? 'table-danger' : '';
+                ?>
+                  <tr class="contact-main <?= $rowClass ?>">
                     <td>
                       <select name="kontakt_role[]" class="form-select form-select-sm">
                         <?php
                           $roles = [
-                            ''            =>'–',
-                            'Mutter'      =>'Mutter',
-                            'Vater'       =>'Vater',
-                            'Elternteil'  =>'Elternteil',
-                            'Betreuer*in' =>'Betreuer*in',
-                            'Einrichtung' =>'Einrichtung',
-                            'Sonstiges'   =>'Sonstiges'
+                            ''            => '–',
+                            'Mutter'      => 'Mutter',
+                            'Vater'       => 'Vater',
+                            'Elternteil'  => 'Elternteil',
+                            'Betreuer*in' => 'Betreuer*in',
+                            'Einrichtung' => 'Einrichtung',
+                            'Sonstiges'   => 'Sonstiges'
                           ];
                           foreach ($roles as $rv=>$rl) {
                               echo '<option value="'.h($rv).'" '.($rv === (string)($k['rolle'] ?? '') ? 'selected' : '').'>'.h($rl).'</option>';
@@ -499,8 +507,13 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
                     <td><input name="kontakt_name[]" class="form-control form-control-sm" value="<?= h((string)($k['name'] ?? '')) ?>" placeholder="Name oder Bezeichnung"></td>
                     <td><input name="kontakt_tel[]"  class="form-control form-control-sm" value="<?= h((string)($k['tel'] ?? ''))  ?>" placeholder="+49 …"></td>
                     <td><input name="kontakt_mail[]" class="form-control form-control-sm" value="<?= h((string)($k['mail'] ?? '')) ?>" placeholder="name@example.org"></td>
-                    <td><input name="kontakt_notiz[]" class="form-control form-control-sm" value="<?= h((string)($k['notiz'] ?? '')) ?>" placeholder="z. B. Erreichbarkeit, Sprache"></td>
-                    <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)" title="Zeile entfernen">&times;</button></td>
+                    <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)" title="Kontakt entfernen">&times;</button></td>
+                  </tr>
+
+                  <tr class="contact-note <?= $rowClass ?>">
+                    <td colspan="5">
+                      <textarea name="kontakt_notiz[]" class="form-control form-control-sm" rows="3" placeholder="z. B. Erreichbarkeit, Sprache, Hinweise"><?= h((string)($k['notiz'] ?? '')) ?></textarea>
+                    </td>
                   </tr>
                 <?php endforeach; ?>
                 </tbody>
@@ -510,7 +523,7 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
             <button type="button" class="btn btn-outline-primary btn-sm" onclick="addRow()">+ Kontakt hinzufügen</button>
 
             <template id="row-template">
-              <tr>
+              <tr class="contact-main">
                 <td>
                   <select name="kontakt_role[]" class="form-select form-select-sm">
                     <option value="">–</option>
@@ -525,8 +538,12 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
                 <td><input name="kontakt_name[]" class="form-control form-control-sm" placeholder="Name oder Bezeichnung"></td>
                 <td><input name="kontakt_tel[]"  class="form-control form-control-sm" placeholder="+49 …"></td>
                 <td><input name="kontakt_mail[]" class="form-control form-control-sm" placeholder="name@example.org"></td>
-                <td><input name="kontakt_notiz[]" class="form-control form-control-sm" placeholder="z. B. Erreichbarkeit, Sprache"></td>
                 <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">&times;</button></td>
+              </tr>
+              <tr class="contact-note">
+                <td colspan="5">
+                  <textarea name="kontakt_notiz[]" class="form-control form-control-sm" rows="3" placeholder="z. B. Erreichbarkeit, Sprache, Hinweise"></textarea>
+                </td>
               </tr>
             </template>
 
@@ -583,12 +600,28 @@ function addRow(){
   const tbody = document.getElementById('contacts-body');
   tbody.appendChild(tpl.content.cloneNode(true));
 }
+
 function removeRow(btn){
-  const tr = btn.closest('tr');
-  if (!tr) return;
-  const tbody = tr.parentNode;
-  if (tbody.querySelectorAll('tr').length > 1) tr.remove();
-  else Array.from(tr.querySelectorAll('input,select')).forEach(el => el.value='');
+  const main = btn.closest('tr');
+  if (!main) return;
+
+  const tbody = main.parentNode;
+  const note = main.nextElementSibling;
+  const hasNote = note && note.classList && note.classList.contains('contact-note');
+
+  // Anzahl "Kontakt-Blöcke" = Anzahl main-rows
+  const mainRows = tbody.querySelectorAll('tr.contact-main');
+  if (mainRows.length > 1) {
+    if (hasNote) note.remove();
+    main.remove();
+    return;
+  }
+
+  // Letzter Kontakt: nur leeren (main + note)
+  main.querySelectorAll('input,select').forEach(el => el.value = '');
+  if (hasNote) {
+    note.querySelectorAll('textarea').forEach(el => el.value = '');
+  }
 }
 
 // --- Clientseitige Alters-Plausibelprüfung ---
