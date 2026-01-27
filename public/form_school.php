@@ -80,7 +80,7 @@ $SCHULEN = [
   '45524' => ['OBS Paulus', 'Margaretenstr. 46', '26121', 'Oldenburg'],
 ];
 
-$GERMAN_LEVELS = $GERMAN_LEVELS ?? ['kein','A1','A2','B1','B2','C1','C2'];
+$GERMAN_LEVELS = $GERMAN_LEVELS ?? ['kein','A0','A1','A2','B1','B2','C1','C2'];
 
 $INTERESSEN = [
   'wirtschaft'     => 'Wirtschaft',
