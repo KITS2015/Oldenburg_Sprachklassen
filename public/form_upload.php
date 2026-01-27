@@ -228,7 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit('Ungültige Anfrage.');
     }
 
-    // Nur Meta-Infos (z.B. Zeugnis später) speichern
+    // Nur Meta-Infos speichern
     $uploadScope = [
         'zeugnis_spaeter' => isset($_POST['zeugnis_spaeter']) ? '1' : '0',
     ];
@@ -272,12 +272,9 @@ require APP_APPDIR . '/header.php';
   <div class="card shadow border-0 rounded-4">
     <div class="card-body p-4 p-md-5">
       <h1 class="h4 mb-3">Schritt 3/4 – Unterlagen (optional)</h1>
-      <?php if ($errors): ?>
-        <div class="alert alert-danger">Bitte prüfen Sie die markierten Felder.</div>
-      <?php endif; ?>
 
       <p class="mb-3">
-        Bitte laden Sie Ihre wichtigsten Unterlagen hoch. Erlaubte Formate sind
+        Sie können hier Unterlagen hochladen. Erlaubte Formate sind
         <strong>PDF</strong>, <strong>JPG</strong> und <strong>PNG</strong>. Die maximale Dateigröße
         beträgt <strong>5&nbsp;MB</strong> pro Datei.
       </p>
@@ -360,8 +357,9 @@ require APP_APPDIR . '/header.php';
     const delBtn    = document.getElementById('btn-del-'+field);
     const progBar   = document.getElementById('prog-'+field);
     const info      = document.getElementById('info-'+field);
+    const box       = document.getElementById('box-'+field);
 
-    if (!fileInput || !delBtn || !progBar || !info) return;
+    if (!fileInput || !delBtn || !progBar || !info || !box) return;
 
     function setProgress(pct){
       progBar.style.width = pct + '%';
@@ -371,11 +369,15 @@ require APP_APPDIR . '/header.php';
     function showError(msg){
       info.textContent = msg;
       info.classList.add('text-danger');
+      box.classList.add('border-danger');
+      box.classList.remove('border');
     }
 
     function showInfo(html){
       info.innerHTML = html;
       info.classList.remove('text-danger');
+      box.classList.remove('border-danger');
+      box.classList.add('border');
     }
 
     function uploadFile(file){
@@ -423,12 +425,12 @@ require APP_APPDIR . '/header.php';
       };
 
       setProgress(0);
+      showInfo('Upload wird durchgeführt …');
       xhr.send(formData);
     }
 
     fileInput.addEventListener('change', () => {
       if (!fileInput.files || !fileInput.files[0]) return;
-      showInfo('Upload wird durchgeführt …');
       uploadFile(fileInput.files[0]);
     });
 
