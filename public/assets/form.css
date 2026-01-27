@@ -31,3 +31,30 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantar
 .is-invalid {
   border-color: var(--bs-danger) !important;
 }
+
+/* Sichtbare Pflichtfeld-Markierung (auch ohne Fokus) */
+.is-required:not(.is-invalid) {
+  border: 2px solid #b6d4fe !important;  /* hellblau, sichtbar */
+  background-color: rgba(13, 110, 253, 0.03) !important; /* optional, sehr dezent */
+}
+
+/* Fokus-Zustand etwas stärker */
+.is-required:not(.is-invalid):focus {
+  border-color: #6ea8fe !important;
+  box-shadow: 0 0 0 .2rem rgba(13,110,253,.10) !important;
+}
+
+/* Pflichtgruppen (Radio/Checkbox Wrapper) */
+.is-required-group {
+  border: 2px solid #b6d4fe !important;
+  border-radius: .5rem;
+  padding: .5rem;
+  background-color: rgba(13, 110, 253, 0.03) !important; /* optional */
+}
+
+.is-required-check {
+  border: 2px solid #b6d4fe !important;
+  border-radius: .5rem;
+  padding: .5rem .75rem;
+  background-color: rgba(13, 110, 253, 0.03) !important; /* optional */
+}
