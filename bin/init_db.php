@@ -60,6 +60,7 @@ try {
             id               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             token            CHAR(32) NOT NULL,
             email            VARCHAR(255) NULL,
+            weitere_angaben  TEXT NULL,
             dob              DATE NULL,
             email_verified   TINYINT(1) NOT NULL DEFAULT 0,
             email_account_id BIGINT UNSIGNED NULL,
@@ -270,6 +271,12 @@ try {
     if (table_exists($admin, $dbName, 'personal')) {
         $app->exec("ALTER TABLE personal MODIFY COLUMN email VARCHAR(255) NULL");
     }
+
+    // personal: weitere_angaben (NEU)
+if (!col_exists($admin, $dbName, 'personal', 'weitere_angaben')) {
+    $app->exec("ALTER TABLE personal ADD COLUMN weitere_angaben TEXT NULL AFTER email");
+}
+
 
     // ========= contacts =========
     $app->exec("
