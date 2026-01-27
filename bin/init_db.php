@@ -6,13 +6,14 @@ declare(strict_types=1);
 require __DIR__ . '/../app/config.php';
 
 /**
- * Kleine Helpers
+ * Helpers
  */
 function pdo_admin(): PDO {
     return pdo(DB_ADMIN_DSN, DB_ADMIN_USER, DB_ADMIN_PASS, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     ]);
 }
+
 function pdo_app(string $dbName): PDO {
     return pdo("mysql:host=127.0.0.1;dbname=$dbName;port=3306;charset=utf8mb4", APP_DB_USER, APP_DB_PASS, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -20,18 +21,21 @@ function pdo_app(string $dbName): PDO {
         PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
     ]);
 }
+
 function col_exists(PDO $pdo, string $db, string $table, string $col): bool {
     $q = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=? LIMIT 1";
     $st = $pdo->prepare($q);
     $st->execute([$db, $table, $col]);
     return (bool)$st->fetchColumn();
 }
+
 function idx_exists(PDO $pdo, string $db, string $table, string $idx): bool {
     $q = "SELECT 1 FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND INDEX_NAME=? LIMIT 1";
     $st = $pdo->prepare($q);
     $st->execute([$db, $table, $idx]);
     return (bool)$st->fetchColumn();
 }
+
 function table_exists(PDO $pdo, string $db, string $table): bool {
     $q = "SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=? AND TABLE_NAME=? LIMIT 1";
     $st = $pdo->prepare($q);
@@ -55,10 +59,10 @@ try {
     // 3) Mit App-User verbinden
     $app = pdo_app($dbName);
 
-    // ========= applications =========
+    // ============================
+    // applications
+    // ============================
     if (!table_exists($admin, $dbName, 'applications')) {
-        // Neuinstallation: dob ist NULL-fähig (für E-Mail-Flow ohne DOB direkt nach Verify)
-        // WICHTIG: KEINE separate weitere_angaben-Spalte hier; das steckt in data_json und wird beim Submit in personal persistiert.
         $app->exec("
           CREATE TABLE IF NOT EXISTS applications (
             id               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -81,14 +85,12 @@ try {
           ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ");
     } else {
-        // Migrations/Ergänzungen ohne Datenverlust
-
-        // a) retrieval_token -> token
+        // retrieval_token -> token
         if (col_exists($admin, $dbName, 'applications', 'retrieval_token') && !col_exists($admin, $dbName, 'applications', 'token')) {
             $app->exec("ALTER TABLE applications CHANGE COLUMN retrieval_token token CHAR(32) NOT NULL");
         }
 
-        // Token-Spalte erzeugen, falls komplett fehlt + UNIQUE
+        // token + unique
         if (!col_exists($admin, $dbName, 'applications', 'token')) {
             $app->exec("ALTER TABLE applications ADD COLUMN token CHAR(32) NOT NULL AFTER id");
         }
@@ -96,7 +98,7 @@ try {
             $app->exec("ALTER TABLE applications ADD UNIQUE KEY uq_token (token)");
         }
 
-        // b) geburtsdatum -> dob
+        // geburtsdatum -> dob
         if (col_exists($admin, $dbName, 'applications', 'geburtsdatum') && !col_exists($admin, $dbName, 'applications', 'dob')) {
             $app->exec("ALTER TABLE applications CHANGE COLUMN geburtsdatum dob DATE NULL");
         }
@@ -106,7 +108,7 @@ try {
             $app->exec("ALTER TABLE applications MODIFY COLUMN dob DATE NULL");
         }
 
-        // c) email (NULL erlauben)
+        // email nullable
         if (col_exists($admin, $dbName, 'applications', 'email')) {
             $st = $app->query("
                 SELECT IS_NULLABLE
@@ -115,20 +117,19 @@ try {
                   AND TABLE_NAME='applications'
                   AND COLUMN_NAME='email'
             ");
-            $nullable = ($st->fetchColumn() === 'YES');
-            if (!$nullable) {
+            if (($st->fetchColumn() ?? '') !== 'YES') {
                 $app->exec("ALTER TABLE applications MODIFY COLUMN email VARCHAR(255) NULL");
             }
         } else {
             $app->exec("ALTER TABLE applications ADD COLUMN email VARCHAR(255) NULL AFTER token");
         }
 
-        // d) email_verified
+        // email_verified
         if (!col_exists($admin, $dbName, 'applications', 'email_verified')) {
             $app->exec("ALTER TABLE applications ADD COLUMN email_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER dob");
         }
 
-        // e) email_account_id
+        // email_account_id + index
         if (!col_exists($admin, $dbName, 'applications', 'email_account_id')) {
             $app->exec("ALTER TABLE applications ADD COLUMN email_account_id BIGINT UNSIGNED NULL AFTER email_verified");
         }
@@ -136,17 +137,17 @@ try {
             $app->exec("ALTER TABLE applications ADD KEY idx_email_account_id (email_account_id)");
         }
 
-        // f) data_json
+        // data_json
         if (!col_exists($admin, $dbName, 'applications', 'data_json')) {
             $app->exec("ALTER TABLE applications ADD COLUMN data_json JSON NULL AFTER email_account_id");
         }
 
-        // g) status
+        // status
         if (!col_exists($admin, $dbName, 'applications', 'status')) {
             $app->exec("ALTER TABLE applications ADD COLUMN status ENUM('draft','submitted','withdrawn') NOT NULL DEFAULT 'draft' AFTER data_json");
         }
 
-        // h) created_at / updated_at
+        // created_at / updated_at
         if (!col_exists($admin, $dbName, 'applications', 'created_at')) {
             $app->exec("ALTER TABLE applications ADD COLUMN created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER status");
         }
@@ -154,12 +155,12 @@ try {
             $app->exec("ALTER TABLE applications ADD COLUMN updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at");
         }
 
-        // i) submit_ip
+        // submit_ip
         if (!col_exists($admin, $dbName, 'applications', 'submit_ip')) {
             $app->exec("ALTER TABLE applications ADD COLUMN submit_ip VARBINARY(16) NULL AFTER updated_at");
         }
 
-        // j) Indizes
+        // indices
         if (!idx_exists($admin, $dbName, 'applications', 'idx_email')) {
             $app->exec("ALTER TABLE applications ADD KEY idx_email (email)");
         }
@@ -169,12 +170,11 @@ try {
         if (!idx_exists($admin, $dbName, 'applications', 'idx_email_dob')) {
             $app->exec("ALTER TABLE applications ADD KEY idx_email_dob (email, dob)");
         }
-
-        // Hinweis: Falls in einer früheren Version fälschlich "applications.weitere_angaben" existiert,
-        // lassen wir sie bewusst bestehen (keine destruktiven Änderungen im init).
     }
 
-    // ========= email_accounts =========
+    // ============================
+    // email_accounts
+    // ============================
     if (!table_exists($admin, $dbName, 'email_accounts')) {
         $app->exec("
           CREATE TABLE IF NOT EXISTS email_accounts (
@@ -212,6 +212,7 @@ try {
             $app->exec("ALTER TABLE email_accounts ADD COLUMN updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
         }
 
+        // safety for older installs
         $app->exec("
           UPDATE email_accounts
           SET password_hash = COALESCE(password_hash, '')
@@ -219,7 +220,7 @@ try {
         ");
     }
 
-    // FK von applications.email_account_id -> email_accounts.id
+    // FK applications.email_account_id -> email_accounts.id (try/catch idempotent enough)
     try {
         $app->exec("
           ALTER TABLE applications
@@ -228,10 +229,12 @@ try {
           ON DELETE SET NULL
         ");
     } catch (Throwable $e) {
-        // ignorieren (existiert ggf. schon)
+        // ignore
     }
 
-    // ========= settings =========
+    // ============================
+    // settings
+    // ============================
     $app->exec("
       CREATE TABLE IF NOT EXISTS settings (
         setting_key    VARCHAR(100) NOT NULL,
@@ -248,8 +251,9 @@ try {
       ON DUPLICATE KEY UPDATE setting_value = setting_value
     ");
 
-    // ========= personal =========
-    // Neuinstallation: enthält bereits weitere_angaben
+    // ============================
+    // personal (inkl. weitere_angaben)
+    // ============================
     $app->exec("
       CREATE TABLE IF NOT EXISTS personal (
         application_id   BIGINT UNSIGNED NOT NULL,
@@ -274,18 +278,19 @@ try {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
 
-    // Migration/Absicherung: email NULL + weitere_angaben existiert
+    // migrations/guarantees
     if (table_exists($admin, $dbName, 'personal')) {
         $app->exec("ALTER TABLE personal MODIFY COLUMN email VARCHAR(255) NULL");
         if (!col_exists($admin, $dbName, 'personal', 'weitere_angaben')) {
             $app->exec("ALTER TABLE personal ADD COLUMN weitere_angaben TEXT NULL AFTER email");
         } else {
-            // Typ/Nullability absichern (idempotent genug)
             $app->exec("ALTER TABLE personal MODIFY COLUMN weitere_angaben TEXT NULL");
         }
     }
 
-    // ========= contacts =========
+    // ============================
+    // contacts
+    // ============================
     $app->exec("
       CREATE TABLE IF NOT EXISTS contacts (
         id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -302,36 +307,97 @@ try {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
 
-    // ========= school =========
+    // ============================
+    // school (OHNE deutsch_jahre)
+    // ============================
     $app->exec("
       CREATE TABLE IF NOT EXISTS school (
-        application_id      BIGINT UNSIGNED NOT NULL,
-        schule_besucht      TINYINT(1) NOT NULL DEFAULT 0,
-        schule_jahre        TINYINT UNSIGNED NULL,
-        seit_monat          TINYINT UNSIGNED NULL,
-        seit_jahr           SMALLINT UNSIGNED NULL,
-        deutsch_niveau      ENUM('kein','A0','A1','A2','B1','B2','C1','C2') NULL,
-        deutsch_jahre       DECIMAL(3,1) NULL,
-        interessen          VARCHAR(500) NULL,
-        created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        application_id         BIGINT UNSIGNED NOT NULL,
+
+        schule_aktuell         VARCHAR(50)  NULL,
+        schule_freitext        VARCHAR(255) NULL,
+        schule_label           VARCHAR(500) NULL,
+
+        klassenlehrer          VARCHAR(200) NULL,
+        mail_lehrkraft         VARCHAR(255) NULL,
+
+        seit_monat             TINYINT UNSIGNED NULL,
+        seit_jahr              SMALLINT UNSIGNED NULL,
+        seit_text              VARCHAR(50) NULL,
+
+        jahre_in_de            TINYINT UNSIGNED NULL,
+        schule_herkunft        ENUM('ja','nein') NULL,
+        jahre_schule_herkunft  TINYINT UNSIGNED NULL,
+        familiensprache        VARCHAR(200) NULL,
+
+        deutsch_niveau         ENUM('kein','A0','A1','A2','B1','B2','C1','C2') NULL,
+        interessen             VARCHAR(500) NULL,
+
+        created_at             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
         PRIMARY KEY (application_id),
         CONSTRAINT fk_school_app FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
 
-    // school.deutsch_niveau: A0 zusätzlich erlauben
-try {
-    $app->exec("
-      ALTER TABLE school
-      MODIFY COLUMN deutsch_niveau ENUM('kein','A0','A1','A2','B1','B2','C1','C2') NULL
-    ");
-} catch (Throwable $e) {
-    // ignorieren (z.B. wenn schon geändert)
-}
+    // migrations for school columns (idempotent)
+    if (!col_exists($admin, $dbName, 'school', 'schule_aktuell')) {
+        $app->exec("ALTER TABLE school ADD COLUMN schule_aktuell VARCHAR(50) NULL AFTER application_id");
+    }
+    if (!col_exists($admin, $dbName, 'school', 'schule_freitext')) {
+        $app->exec("ALTER TABLE school ADD COLUMN schule_freitext VARCHAR(255) NULL AFTER schule_aktuell");
+    }
+    if (!col_exists($admin, $dbName, 'school', 'schule_label')) {
+        $app->exec("ALTER TABLE school ADD COLUMN schule_label VARCHAR(500) NULL AFTER schule_freitext");
+    }
+    if (!col_exists($admin, $dbName, 'school', 'klassenlehrer')) {
+        $app->exec("ALTER TABLE school ADD COLUMN klassenlehrer VARCHAR(200) NULL AFTER schule_label");
+    }
+    if (!col_exists($admin, $dbName, 'school', 'mail_lehrkraft')) {
+        $app->exec("ALTER TABLE school ADD COLUMN mail_lehrkraft VARCHAR(255) NULL AFTER klassenlehrer");
+    }
+    if (!col_exists($admin, $dbName, 'school', 'seit_monat')) {
+        $app->exec("ALTER TABLE school ADD COLUMN seit_monat TINYINT UNSIGNED NULL AFTER mail_lehrkraft");
+    }
+    if (!col_exists($admin, $dbName, 'school', 'seit_jahr')) {
+        $app->exec("ALTER TABLE school ADD COLUMN seit_jahr SMALLINT UNSIGNED NULL AFTER seit_monat");
+    }
+    if (!col_exists($admin, $dbName, 'school', 'seit_text')) {
+        $app->exec("ALTER TABLE school ADD COLUMN seit_text VARCHAR(50) NULL AFTER seit_jahr");
+    }
+    if (!col_exists($admin, $dbName, 'school', 'jahre_in_de')) {
+        $app->exec("ALTER TABLE school ADD COLUMN jahre_in_de TINYINT UNSIGNED NULL AFTER seit_text");
+    }
+    if (!col_exists($admin, $dbName, 'school', 'schule_herkunft')) {
+        $app->exec("ALTER TABLE school ADD COLUMN schule_herkunft ENUM('ja','nein') NULL AFTER jahre_in_de");
+    }
+    if (!col_exists($admin, $dbName, 'school', 'jahre_schule_herkunft')) {
+        $app->exec("ALTER TABLE school ADD COLUMN jahre_schule_herkunft TINYINT UNSIGNED NULL AFTER schule_herkunft");
+    }
+    if (!col_exists($admin, $dbName, 'school', 'familiensprache')) {
+        $app->exec("ALTER TABLE school ADD COLUMN familiensprache VARCHAR(200) NULL AFTER jahre_schule_herkunft");
+    }
+    if (!col_exists($admin, $dbName, 'school', 'deutsch_niveau')) {
+        $app->exec("ALTER TABLE school ADD COLUMN deutsch_niveau ENUM('kein','A0','A1','A2','B1','B2','C1','C2') NULL AFTER familiensprache");
+    }
+    if (!col_exists($admin, $dbName, 'school', 'interessen')) {
+        $app->exec("ALTER TABLE school ADD COLUMN interessen VARCHAR(500) NULL AFTER deutsch_niveau");
+    }
 
+    // remove legacy column deutsch_jahre if it exists? -> NO destructive changes in init_db
+    // but make sure legacy installs accept A0
+    try {
+        $app->exec("ALTER TABLE school MODIFY COLUMN deutsch_niveau ENUM('kein','A0','A1','A2','B1','B2','C1','C2') NULL");
+    } catch (Throwable $e) {
+        // ignore
+    }
 
-    // ========= uploads =========
+    // legacy clean-up: if old schema had deutsch_jahre, we leave it (no destructive changes)
+
+    // ============================
+    // uploads
+    // ============================
     $app->exec("
       CREATE TABLE IF NOT EXISTS uploads (
         id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -348,7 +414,9 @@ try {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
 
-    // ========= audit_log =========
+    // ============================
+    // audit_log
+    // ============================
     $app->exec("
       CREATE TABLE IF NOT EXISTS audit_log (
         id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
