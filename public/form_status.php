@@ -5,13 +5,37 @@ declare(strict_types=1);
 require __DIR__ . '/wizard/_common.php';
 require_once __DIR__ . '/../app/db.php';
 
-// Diese Seite soll nur nach einem Submit erreichbar sein
+// ========= POST: Reset / Neue Bewerbung =========
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!csrf_check()) { http_response_code(400); exit('Ungültige Anfrage.'); }
+
+    $action = (string)($_POST['action'] ?? '');
+
+    if ($action === 'reset') {
+        $_SESSION = [];
+        session_regenerate_id(true);
+        header('Location: /index.php');
+        exit;
+    }
+
+    if ($action === 'new_application') {
+        $_SESSION = [];
+        session_regenerate_id(true);
+        header('Location: /access_create.php');
+        exit;
+    }
+
+    // unbekannte Aktion -> Startseite
+    header('Location: /index.php');
+    exit;
+}
+
+// ========= Zugriffsschutz =========
 $readonly  = !empty($_SESSION['application_readonly']);
 $submitted = $_SESSION['application_submitted'] ?? null;
 
 $token = current_access_token();
 if (!$readonly || !$submitted || !$token) {
-    // Fallback: wenn jemand direkt aufruft -> Startseite
     header('Location: /index.php');
     exit;
 }
@@ -22,12 +46,18 @@ if ($appId <= 0) {
     exit;
 }
 
-// Status aus DB prüfen (optional, aber sinnvoll)
+// ========= Status aus DB prüfen =========
 try {
     $pdo = db();
-    $st  = $pdo->prepare("SELECT status, created_at, updated_at FROM applications WHERE id = :id AND token = :t LIMIT 1");
+    $st  = $pdo->prepare("
+        SELECT status, created_at, updated_at
+        FROM applications
+        WHERE id = :id AND token = :t
+        LIMIT 1
+    ");
     $st->execute([':id' => $appId, ':t' => $token]);
     $row = $st->fetch(PDO::FETCH_ASSOC);
+
     if (!$row || ($row['status'] ?? '') !== 'submitted') {
         header('Location: /index.php');
         exit;
@@ -38,9 +68,13 @@ try {
     exit;
 }
 
-$title     = 'Bewerbung erfolgreich gespeichert';
-$html_lang = 'de';
-$html_dir  = 'ltr';
+// ========= Header-Infos (wie bei form_review) =========
+$hdr = [
+    'title'   => 'Bewerbung erfolgreich gespeichert',
+    'status'  => 'success',
+    'message' => 'Ihre Bewerbung wurde übermittelt.',
+    'token'   => $token,
+];
 
 require __DIR__ . '/partials/header.php';
 require APP_APPDIR . '/header.php';
@@ -59,23 +93,21 @@ require APP_APPDIR . '/header.php';
       <!-- Platzhalter für Kunden-Textbaustein -->
       <div class="alert alert-info">
         <div class="fw-semibold mb-1">Wichtiger Hinweis</div>
-        <div>
-          <em>[PLATZHALTER: Textbaustein vom Kunden folgt]</em>
-        </div>
+        <div><em>[PLATZHALTER: Textbaustein vom Kunden folgt]</em></div>
       </div>
 
       <div class="d-flex flex-wrap gap-2 mt-4">
-        <a class="btn btn-outline-primary" href="/application_pdf.php">
+        <a class="btn btn-outline-primary" href="/application_pdf.php" target="_blank" rel="noopener">
           PDF herunterladen / drucken
         </a>
 
-        <form method="post" action="/form_review.php" class="d-inline">
+        <form method="post" action="/form_status.php" class="d-inline">
           <?php csrf_field(); ?>
           <input type="hidden" name="action" value="new_application">
           <button class="btn btn-primary">Weitere Bewerbung starten</button>
         </form>
 
-        <form method="post" action="/form_review.php" class="d-inline">
+        <form method="post" action="/form_status.php" class="d-inline">
           <?php csrf_field(); ?>
           <input type="hidden" name="action" value="reset">
           <button class="btn btn-outline-secondary">Zur Startseite</button>
