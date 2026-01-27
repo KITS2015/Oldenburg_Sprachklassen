@@ -320,7 +320,7 @@ if (function_exists('flash_render')) { flash_render(); }
           <div class="col-md-6">
             <div class="vstack gap-3">
               <div>
-                <label class="form-label">Seit wann an der Schule?*</label>
+                <label class="form-label">Seit wann an einer Schule in Deutschland?</label>
                 <div class="row g-2">
                   <div class="col-5">
                     <?php $malt = $_SESSION['form']['school']['seit_monat'] ?? ($_POST['seit_monat'] ?? ''); ?>
