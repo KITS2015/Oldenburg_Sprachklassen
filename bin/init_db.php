@@ -320,6 +320,17 @@ try {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
 
+    // school.deutsch_niveau: A0 zusätzlich erlauben
+try {
+    $app->exec("
+      ALTER TABLE school
+      MODIFY COLUMN deutsch_niveau ENUM('kein','A0','A1','A2','B1','B2','C1','C2') NULL
+    ");
+} catch (Throwable $e) {
+    // ignorieren (z.B. wenn schon geändert)
+}
+
+
     // ========= uploads =========
     $app->exec("
       CREATE TABLE IF NOT EXISTS uploads (
