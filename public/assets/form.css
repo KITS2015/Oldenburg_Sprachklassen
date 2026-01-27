@@ -2,3 +2,32 @@
 body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", "Helvetica Neue", Arial; background:#f7f7f7; }
 .card { border-radius: 1rem; }
 .btn-primary { background: var(--brand-primary); border-color: var(--brand-primary); }
+
+/* Pflichtfelder: dezente Hervorhebung (ohne Stern/Badge) */
+.is-required:not(.is-invalid) {
+  border-color: rgba(13, 110, 253, .25); /* sehr mildes Blau */
+}
+
+.is-required:not(.is-invalid):focus {
+  border-color: rgba(13, 110, 253, .55);
+  box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .10);
+}
+
+/* Pflicht-Gruppen (z.B. Radio-Gruppen) */
+.is-required-group {
+  border: 1px solid rgba(13, 110, 253, .25);
+  border-radius: .5rem;
+  padding: .5rem;
+}
+
+/* Pflicht-Checkbox Bereich */
+.is-required-check {
+  border: 1px solid rgba(13, 110, 253, .25);
+  border-radius: .5rem;
+  padding: .5rem .75rem;
+}
+
+/* Wenn Fehler: Bootstrap (is-invalid) soll immer gewinnen */
+.is-invalid {
+  border-color: var(--bs-danger) !important;
+}
