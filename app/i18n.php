@@ -431,7 +431,27 @@ function i18n_dict(): array {
             // Fallback Anzeige
             'review.value.empty' => '–',
 
-
+            // ------------------------
+            // DE: form_status.php
+            // ------------------------
+            'status.hdr_title'   => 'Bewerbung erfolgreich gespeichert',
+            'status.hdr_message' => 'Ihre Bewerbung wurde übermittelt.',
+            
+            'status.h1' => 'Ihre Bewerbung wurde erfolgreich gespeichert.',
+            
+            'status.success.title' => 'Vielen Dank!',
+            'status.success.body'  => 'Ihre Bewerbung wurde übermittelt und wird nun bearbeitet.',
+            
+            'status.info.title' => 'Wichtiger Hinweis',
+            'status.info.body'  => '<em>[PLATZHALTER: Textbaustein vom Kunden folgt]</em>',
+            
+            'status.btn.pdf'     => 'PDF herunterladen / drucken',
+            'status.btn.newapp'  => 'Weitere Bewerbung starten',
+            'status.btn.home'    => 'Zur Startseite',
+            
+            'status.ref' => 'Referenz: Bewerbung #{id}',
+            
+            'status.err.invalid_request' => 'Ungültige Anfrage.',
         
         ],
 
