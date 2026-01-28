@@ -571,6 +571,33 @@ function i18n_dict(): array {
             'access_create.mail_subject' => 'Ihr Passwort für die Online-Anmeldung',
             'access_create.mail_body'    => "Ihr Zugang wurde erstellt.\n\nE-Mail: {email}\nPasswort: {password}\n\nBitte bewahren Sie das Passwort sicher auf.",
             
+            // ------------------------
+            // DE: access_portal.php
+            // ------------------------
+            'access_portal.title'         => 'Meine Bewerbungen',
+            'access_portal.lead'          => 'Hier sehen Sie Ihre Bewerbungen. Sie können eine bestehende Bewerbung fortsetzen oder eine neue starten.',
+            'access_portal.max_hint'      => '{email} · max. {max} Bewerbungen',
+            
+            'access_portal.btn_new'       => 'Neue Bewerbung starten',
+            'access_portal.btn_open'      => 'Öffnen',
+            'access_portal.btn_logout'    => 'Abmelden',
+            
+            'access_portal.th_ref'        => 'ID',
+            'access_portal.th_status'     => 'Status',
+            'access_portal.th_created'    => 'Erstellt',
+            'access_portal.th_updated'    => 'Aktualisiert',
+            'access_portal.th_token'      => 'Token',
+            'access_portal.th_action'     => 'Aktion',
+            
+            'access_portal.status_draft'     => 'Entwurf',
+            'access_portal.status_submitted' => 'Abgeschickt',
+            'access_portal.status_withdrawn' => 'Zurückgezogen',
+            
+            'access_portal.limit_reached' => 'Sie haben die maximale Anzahl an Bewerbungen für diese E-Mail erreicht.',
+            'access_portal.no_apps'       => 'Noch keine Bewerbungen vorhanden.',
+            'access_portal.err_generic'   => 'Es ist ein Fehler aufgetreten.',
+            
+            'access_portal.csrf_invalid'  => 'Ungültige Anfrage.',
 
         
         ],
