@@ -6,8 +6,17 @@ declare(strict_types=1);
 require __DIR__ . '/wizard/_common.php';
 require_once __DIR__ . '/../app/functions_form.php';
 
-// Step-Guard
+// Step-Guard (personal + school müssen existieren)
 require_step('upload');
+
+// i18n helper: {var} Platzhalter ersetzen (Strings)
+function tr(string $key, array $vars = []): string {
+    $s = t($key);
+    foreach ($vars as $k => $v) {
+        $s = str_replace('{' . $k . '}', (string)$v, $s);
+    }
+    return $s;
+}
 
 // Kleine JSON-Helfer
 function json_response(array $data, int $code = 200): void {
@@ -19,13 +28,11 @@ function json_response(array $data, int $code = 200): void {
 
 // Aktuelle Application-ID zu aktuellem Access-Token ermitteln
 function current_application_id(): ?int {
-    if (!function_exists('current_access_token')) {
-        return null;
-    }
+    if (!function_exists('current_access_token')) return null;
+
     $token = current_access_token();
-    if ($token === '') {
-        return null;
-    }
+    if ($token === '') return null;
+
     try {
         $pdo = db();
         $st = $pdo->prepare("SELECT id FROM applications WHERE token = :t LIMIT 1");
@@ -33,7 +40,7 @@ function current_application_id(): ?int {
         $id = $st->fetchColumn();
         return $id !== false ? (int)$id : null;
     } catch (Throwable $e) {
-        error_log('current_application_id: '.$e->getMessage());
+        error_log('current_application_id: ' . $e->getMessage());
         return null;
     }
 }
@@ -41,9 +48,9 @@ function current_application_id(): ?int {
 $appId = current_application_id();
 if ($appId === null) {
     if (function_exists('flash_set')) {
-        flash_set('warning', 'Kein gültiger Zugang gefunden. Bitte beginnen Sie die Anmeldung neu.');
+        flash_set('warning', t('upload.flash.no_access'));
     }
-    header('Location: /index.php');
+    header('Location: ' . url_with_lang('/index.php'));
     exit;
 }
 
@@ -60,11 +67,14 @@ $allowedMime = [
     'image/png',
 ];
 $allowedExt = ['pdf','jpg','jpeg','png'];
-$maxSizeBytes = 5 * 1024 * 1024; // 5 MB
 
+$maxSizeBytes = 5 * 1024 * 1024; // 5 MB
+$maxMb = 5;
+
+// Upload-Typen (Keys bleiben DB-konform, Label via i18n)
 $types = [
-    'zeugnis'    => 'Letztes Halbjahreszeugnis (PDF/JPG/PNG, max. 5 MB)',
-    'lebenslauf' => 'Lebenslauf (PDF/JPG/PNG, max. 5 MB)',
+    'zeugnis'    => tr('upload.type.zeugnis') . ' ' . tr('upload.type_hint', ['max_mb' => $maxMb]),
+    'lebenslauf' => tr('upload.type.lebenslauf') . ' ' . tr('upload.type_hint', ['max_mb' => $maxMb]),
 ];
 
 // Bestehende Uploads laden
@@ -78,7 +88,7 @@ function load_existing_uploads(int $appId): array {
             $existing[$row['typ']] = $row;
         }
     } catch (Throwable $e) {
-        error_log('form_upload – select uploads: '.$e->getMessage());
+        error_log('form_upload – select uploads: ' . $e->getMessage());
     }
     return $existing;
 }
@@ -88,21 +98,20 @@ function load_existing_uploads(int $appId): array {
 // --------------------------------------------------------
 if (($_GET['ajax'] ?? '') === '1') {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        json_response(['ok' => false, 'error' => 'Ungültige Methode'], 405);
+        json_response(['ok' => false, 'error' => t('upload.ajax.invalid_method')], 405);
     }
     if (!csrf_check()) {
-        json_response(['ok' => false, 'error' => 'Ungültiges CSRF-Token'], 400);
+        json_response(['ok' => false, 'error' => t('upload.ajax.invalid_csrf')], 400);
     }
-
     if ($appId === null) {
-        json_response(['ok' => false, 'error' => 'Kein gültiger Zugang.'], 400);
+        json_response(['ok' => false, 'error' => t('upload.ajax.no_access')], 400);
     }
 
-    $action = $_POST['action'] ?? '';
-    $field  = $_POST['field']  ?? '';
+    $action = (string)($_POST['action'] ?? '');
+    $field  = (string)($_POST['field']  ?? '');
 
-    if (!in_array($field, array_keys($types), true)) {
-        json_response(['ok' => false, 'error' => 'Ungültiges Feld'], 400);
+    if (!array_key_exists($field, $types)) {
+        json_response(['ok' => false, 'error' => t('upload.ajax.invalid_field')], 400);
     }
 
     try {
@@ -111,29 +120,30 @@ if (($_GET['ajax'] ?? '') === '1') {
         // Datei hochladen
         if ($action === 'upload') {
             if (!isset($_FILES['file'])) {
-                json_response(['ok' => false, 'error' => 'Keine Datei gesendet'], 400);
+                json_response(['ok' => false, 'error' => t('upload.ajax.no_file_sent')], 400);
             }
             $f = $_FILES['file'];
 
-            if ($f['error'] === UPLOAD_ERR_NO_FILE) {
-                json_response(['ok' => false, 'error' => 'Keine Datei ausgewählt'], 400);
+            if (($f['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+                json_response(['ok' => false, 'error' => t('upload.ajax.no_file_selected')], 400);
             }
-            if ($f['error'] !== UPLOAD_ERR_OK) {
-                json_response(['ok' => false, 'error' => 'Upload-Fehler (Code '.$f['error'].')'], 400);
+            if (($f['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
+                $code = (int)$f['error'];
+                json_response(['ok' => false, 'error' => tr('upload.ajax.upload_error', ['code' => $code])], 400);
             }
 
-            $tmp  = $f['tmp_name'];
-            $name = $f['name'] ?? '';
-            $size = (int)$f['size'];
+            $tmp  = (string)($f['tmp_name'] ?? '');
+            $name = (string)($f['name'] ?? '');
+            $size = (int)($f['size'] ?? 0);
 
             if ($size > $maxSizeBytes) {
-                json_response(['ok' => false, 'error' => 'Datei größer als 5 MB'], 400);
+                json_response(['ok' => false, 'error' => tr('upload.ajax.too_large', ['max_mb' => $maxMb])], 400);
             }
 
             $finfo = new finfo(FILEINFO_MIME_TYPE);
-            $mime  = $finfo->file($tmp) ?: ($f['type'] ?? '');
+            $mime  = $finfo->file($tmp) ?: (string)($f['type'] ?? '');
             if ($mime && !in_array($mime, $allowedMime, true)) {
-                json_response(['ok' => false, 'error' => 'Nur PDF, JPG oder PNG erlaubt'], 400);
+                json_response(['ok' => false, 'error' => t('upload.ajax.mime_only')], 400);
             }
 
             $ext = strtolower((string)pathinfo($name, PATHINFO_EXTENSION));
@@ -141,12 +151,12 @@ if (($_GET['ajax'] ?? '') === '1') {
                 $ext = ($mime === 'application/pdf') ? 'pdf' : 'bin';
             }
             if (!in_array($ext, $allowedExt, true)) {
-                json_response(['ok' => false, 'error' => 'Ungültige Dateiendung (nur pdf/jpg/jpeg/png)'], 400);
+                json_response(['ok' => false, 'error' => t('upload.ajax.ext_only')], 400);
             }
 
             $safeExt = preg_replace('/[^a-z0-9]+/i', '', $ext) ?: 'bin';
             $now     = (new DateTimeImmutable('now'))->format('Y-m-d H:i:s');
-            $newName = 'app_'.$appId.'_'.$field.'_'.time().'_'.bin2hex(random_bytes(4)).'.'.$safeExt;
+            $newName = 'app_' . $appId . '_' . $field . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $safeExt;
 
             if (!is_dir($uploadDir)) {
                 @mkdir($uploadDir, 0775, true);
@@ -154,7 +164,7 @@ if (($_GET['ajax'] ?? '') === '1') {
             $target = $uploadDir . '/' . $newName;
 
             if (!move_uploaded_file($tmp, $target)) {
-                json_response(['ok' => false, 'error' => 'Konnte Datei nicht speichern'], 500);
+                json_response(['ok' => false, 'error' => t('upload.ajax.cannot_save')], 500);
             }
 
             // Alte Datei gleichen Typs löschen
@@ -162,9 +172,7 @@ if (($_GET['ajax'] ?? '') === '1') {
             $stOld->execute([':id' => $appId, ':typ' => $field]);
             if ($oldFn = $stOld->fetchColumn()) {
                 $oldPath = $uploadDir . '/' . $oldFn;
-                if (is_file($oldPath)) {
-                    @unlink($oldPath);
-                }
+                if (is_file($oldPath)) @unlink($oldPath);
             }
 
             // DB upsert
@@ -186,11 +194,22 @@ if (($_GET['ajax'] ?? '') === '1') {
                 ':up'   => $now,
             ]);
 
+            $sizeKb = round($size / 1024, 1);
+            $sizeKbStr = str_replace('.', ',', (string)$sizeKb);
+
+            // Info-HTML serverseitig i18n-fest bauen (JS muss nicht basteln)
+            $infoHtml = tr('upload.saved_html', [
+                'filename'    => $newName,
+                'size_kb'     => $sizeKbStr,
+                'uploaded_at' => $now,
+            ]);
+
             json_response([
                 'ok'          => true,
                 'filename'    => $newName,
-                'size_kb'     => round($size / 1024, 1),
+                'size_kb'     => $sizeKb,
                 'uploaded_at' => $now,
+                'info_html'   => $infoHtml,
             ]);
         }
 
@@ -203,18 +222,16 @@ if (($_GET['ajax'] ?? '') === '1') {
                     ->execute([':id' => $appId, ':typ' => $field]);
 
                 $full = $uploadDir . '/' . $fn;
-                if (is_file($full)) {
-                    @unlink($full);
-                }
+                if (is_file($full)) @unlink($full);
             }
             json_response(['ok' => true]);
         }
 
-        json_response(['ok' => false, 'error' => 'Unbekannte Aktion'], 400);
+        json_response(['ok' => false, 'error' => t('upload.ajax.unknown_action')], 400);
 
     } catch (Throwable $e) {
-        error_log('form_upload – ajax: '.$e->getMessage());
-        json_response(['ok' => false, 'error' => 'Serverfehler beim Upload'], 500);
+        error_log('form_upload – ajax: ' . $e->getMessage());
+        json_response(['ok' => false, 'error' => t('upload.ajax.server_error')], 500);
     }
 }
 
@@ -239,14 +256,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (function_exists('flash_set')) {
         if ($save['ok'] ?? false) {
-            flash_set('success', 'Upload-Informationen gespeichert.');
+            flash_set('success', t('upload.flash.saved'));
         } else {
             $msg = $save['err'] ?? 'Zwischenspeicherung in der Session.';
             flash_set('info', $msg);
         }
     }
 
-    header('Location: /form_review.php');
+    header('Location: ' . url_with_lang('/form_review.php'));
     exit;
 }
 
@@ -258,25 +275,32 @@ $uploadMeta   = $_SESSION['form']['upload'] ?? [];
 $zeugnisLater = ($uploadMeta['zeugnis_spaeter'] ?? '0') === '1';
 
 // Header-Infos
-$title     = 'Schritt 3/4 – Unterlagen (optional)';
-$html_lang = 'de';
-$html_dir  = 'ltr';
+$title     = t('upload.page_title');
+$html_lang = html_lang();
+$html_dir  = html_dir();
 
 require __DIR__ . '/partials/header.php';
 require APP_APPDIR . '/header.php';
-?>
 
+// JS-Strings (i18n) als sichere Konstanten
+$JS = [
+    'uploading'      => t('upload.js.uploading'),
+    'unexpected'     => t('upload.js.unexpected'),
+    'upload_failed'  => t('upload.js.upload_failed'),
+    'delete_confirm' => t('upload.js.delete_confirm'),
+    'delete_failed'  => t('upload.js.delete_failed'),
+    'empty'          => t('upload.empty'),
+];
+?>
 <div class="container py-4">
   <?php if (function_exists('flash_render')) { flash_render(); } ?>
 
   <div class="card shadow border-0 rounded-4">
     <div class="card-body p-4 p-md-5">
-      <h1 class="h4 mb-3">Schritt 3/4 – Unterlagen (optional)</h1>
+      <h1 class="h4 mb-3"><?= h(t('upload.h1')) ?></h1>
 
       <p class="mb-3">
-        Sie können hier Unterlagen hochladen. Erlaubte Formate sind
-        <strong>PDF</strong>, <strong>JPG</strong> und <strong>PNG</strong>. Die maximale Dateigröße
-        beträgt <strong>5&nbsp;MB</strong> pro Datei.
+        <?= tr('upload.intro', ['max_mb' => $maxMb]) /* enthält <strong> bewusst unge-escaped */ ?>
       </p>
 
       <form method="post" action="" novalidate>
@@ -295,6 +319,7 @@ require APP_APPDIR . '/header.php';
                     type="file"
                     class="form-control"
                     <?= $row ? 'disabled' : '' ?>
+                    accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
                   >
                   <button
                     id="btn-del-<?= h($typ) ?>"
@@ -302,20 +327,25 @@ require APP_APPDIR . '/header.php';
                     class="btn btn-outline-danger"
                     <?= $row ? '' : 'disabled' ?>
                   >
-                    Entfernen
+                    <?= h(t('upload.btn.remove')) ?>
                   </button>
                 </div>
                 <div class="progress" style="height:8px;">
                   <div id="prog-<?= h($typ) ?>" class="progress-bar" role="progressbar" style="width:0%"></div>
                 </div>
+
                 <div class="form-text mt-2" id="info-<?= h($typ) ?>">
                   <?php if ($row): ?>
-                    Bereits gespeichert:
-                    <strong><?= h($row['filename']) ?></strong>,
-                    <?= number_format((int)$row['size_bytes'] / 1024, 1, ',', '.') ?> KB,
-                    hochgeladen am <?= h($row['uploaded_at']) ?>
+                    <?php
+                      $sizeKb = number_format((int)$row['size_bytes'] / 1024, 1, ',', '.');
+                      echo tr('upload.saved_html', [
+                        'filename'    => (string)$row['filename'],
+                        'size_kb'     => $sizeKb,
+                        'uploaded_at' => (string)$row['uploaded_at'],
+                      ]);
+                    ?>
                   <?php else: ?>
-                    Noch keine Datei hochgeladen.
+                    <?= h(t('upload.empty')) ?>
                   <?php endif; ?>
                 </div>
               </div>
@@ -334,14 +364,14 @@ require APP_APPDIR . '/header.php';
               <?= $zeugnisLater ? 'checked' : '' ?>
             >
             <label class="form-check-label" for="zeugnis_spaeter">
-              Ich reiche das Halbjahreszeugnis nach der Zusage nach.
+              <?= h(t('upload.checkbox.zeugnis_spaeter')) ?>
             </label>
           </div>
         </div>
 
         <div class="mt-4 d-flex gap-2">
-          <a href="/form_school.php" class="btn btn-outline-secondary">Zurück</a>
-          <button class="btn btn-primary">Weiter</button>
+          <a href="<?= h(url_with_lang('/form_school.php')) ?>" class="btn btn-outline-secondary"><?= h(t('upload.btn.back')) ?></a>
+          <button class="btn btn-primary"><?= h(t('upload.btn.next')) ?></button>
         </div>
       </form>
     </div>
@@ -351,6 +381,8 @@ require APP_APPDIR . '/header.php';
 <script>
 (function(){
   const csrf = document.getElementById('csrf_token').value;
+
+  const I18N = <?= json_encode($JS, JSON_UNESCAPED_UNICODE) ?>;
 
   function setup(field){
     const fileInput = document.getElementById('file-'+field);
@@ -399,33 +431,25 @@ require APP_APPDIR . '/header.php';
         try {
           const res = JSON.parse(xhr.responseText);
           if (xhr.status === 200 && res.ok) {
-            const size = res.size_kb ? res.size_kb.toString().replace('.', ',') : '';
-            const date = res.uploaded_at || '';
-            showInfo(
-              'Bereits gespeichert: <strong>' +
-              (res.filename || file.name) +
-              '</strong>' +
-              (size ? ', ' + size + ' KB' : '') +
-              (date ? ', hochgeladen am ' + date : '')
-            );
+            showInfo(res.info_html || I18N.upload_failed);
             fileInput.value = '';
             fileInput.disabled = true;
             delBtn.disabled = false;
             setProgress(100);
           } else {
-            showError(res.error || 'Upload fehlgeschlagen.');
+            showError(res.error || I18N.upload_failed);
             setProgress(0);
             fileInput.value = '';
           }
         } catch(e){
-          showError('Unerwartete Antwort vom Server.');
+          showError(I18N.unexpected);
           setProgress(0);
           fileInput.value = '';
         }
       };
 
       setProgress(0);
-      showInfo('Upload wird durchgeführt …');
+      showInfo(I18N.uploading);
       xhr.send(formData);
     }
 
@@ -435,7 +459,7 @@ require APP_APPDIR . '/header.php';
     });
 
     delBtn.addEventListener('click', () => {
-      if (!confirm('Hochgeladene Datei wirklich entfernen?')) return;
+      if (!confirm(I18N.delete_confirm)) return;
 
       const formData = new FormData();
       formData.append('action','delete');
@@ -448,16 +472,16 @@ require APP_APPDIR . '/header.php';
         try {
           const res = JSON.parse(xhr.responseText);
           if (xhr.status === 200 && res.ok) {
-            showInfo('Noch keine Datei hochgeladen.');
+            showInfo(I18N.empty);
             fileInput.disabled = false;
             delBtn.disabled = true;
             setProgress(0);
             fileInput.value = '';
           } else {
-            showError(res.error || 'Löschen fehlgeschlagen.');
+            showError(res.error || I18N.delete_failed);
           }
         } catch(e){
-          showError('Unerwartete Antwort vom Server.');
+          showError(I18N.unexpected);
         }
       };
       xhr.send(formData);
