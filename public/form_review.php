@@ -4,20 +4,37 @@ declare(strict_types=1);
 
 require __DIR__ . '/wizard/_common.php';
 require_once __DIR__ . '/../app/db.php';
+
 require_step('review');
 
 // Readonly, wenn bereits eingereichte Bewerbung geladen wurde
 $readonly = !empty($_SESSION['application_readonly']);
 
-// UI Helper
-function show_val(string $v): string { return trim($v) !== '' ? h($v) : '–'; }
-function norm_space(?string $v): string { return trim((string)$v); }
+// i18n helper: {var} Platzhalter ersetzen (Strings)
+function tr(string $key, array $vars = []): string {
+    $s = t($key);
+    foreach ($vars as $k => $v) {
+        $s = str_replace('{' . $k . '}', (string)$v, $s);
+    }
+    return $s;
+}
 
-function dl_row(string $label, string $value, string $col = 'col-md-6'): string {
+// UI Helper
+function show_val(string $v): string {
+    $v = trim($v);
+    return $v !== '' ? h($v) : h(t('review.value.empty'));
+}
+function norm_space(?string $v): string {
+    return trim((string)$v);
+}
+function dl_row(string $label, string $valueHtml, string $col = 'col-md-6'): string {
+    $empty = h(t('review.value.empty'));
+    $val   = trim($valueHtml) !== '' ? $valueHtml : $empty;
+
     return '
-      <div class="'.$col.'">
+      <div class="'.h($col).'">
         <div class="small text-muted">'.h($label).'</div>
-        <div class="fw-semibold">'.($value !== '' ? $value : '–').'</div>
+        <div class="fw-semibold">'.$val.'</div>
       </div>
     ';
 }
@@ -42,14 +59,14 @@ function datajson_get_personal(PDO $pdo, string $token, string $key): ?string {
         $val = trim($val);
         return $val !== '' ? $val : null;
     } catch (Throwable $e) {
-        error_log('form_review datajson_get_personal: '.$e->getMessage());
+        error_log('form_review datajson_get_personal: ' . $e->getMessage());
         return null;
     }
 }
 
 // ===== POST-Verarbeitung (Bewerben / Zur Startseite / Neue Bewerbung) =====
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!csrf_check()) { http_response_code(400); exit('Ungültige Anfrage.'); }
+    if (!csrf_check()) { http_response_code(400); exit(t('review.err.invalid_request')); }
 
     $action = (string)($_POST['action'] ?? 'submit');
 
@@ -57,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'reset') {
         $_SESSION = [];
         session_regenerate_id(true);
-        header('Location: /index.php');
+        header('Location: ' . url_with_lang('/index.php'));
         exit;
     }
 
@@ -65,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'new_application') {
         $_SESSION = [];
         session_regenerate_id(true);
-        header('Location: /access_create.php');
+        header('Location: ' . url_with_lang('/access_create.php'));
         exit;
     }
 
@@ -74,9 +91,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Bewerbung ist bereits eingereicht -> nicht noch einmal abschicken
         if ($readonly) {
             if (function_exists('flash_set')) {
-                flash_set('info', 'Diese Bewerbung wurde bereits abgeschickt und kann nicht erneut eingereicht oder geändert werden.');
+                flash_set('info', t('review.flash.already_submitted'));
             }
-            header('Location: /form_review.php');
+            header('Location: ' . url_with_lang('/form_review.php'));
             exit;
         }
 
@@ -91,9 +108,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($token === '') {
             error_log('form_review – kein Access-Token in Session');
             if (function_exists('flash_set')) {
-                flash_set('danger', 'Kein gültiger Zugangscode. Bitte starten Sie den Vorgang neu.');
+                flash_set('danger', t('review.flash.no_token'));
             }
-            header('Location: /index.php');
+            header('Location: ' . url_with_lang('/index.php'));
             exit;
         }
 
@@ -105,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $st->execute([':t' => $token]);
             $appRow = $st->fetch(PDO::FETCH_ASSOC);
             if (!$appRow) {
-                throw new RuntimeException('Bewerbung zu diesem Token nicht gefunden.');
+                throw new RuntimeException(t('review.err.not_found_token'));
             }
             $appId = (int)$appRow['id'];
 
@@ -113,9 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $dobSql = $appRow['dob'] ?? null;
             if (!$dobSql && !empty($p['geburtsdatum']) && function_exists('norm_date_dmy_to_ymd')) {
                 $dobTmp = norm_date_dmy_to_ymd((string)$p['geburtsdatum']);
-                if ($dobTmp !== '') {
-                    $dobSql = $dobTmp;
-                }
+                if ($dobTmp !== '') $dobSql = $dobTmp;
             }
 
             $accessEmail = trim((string)($_SESSION['access']['email'] ?? ''));
@@ -149,25 +164,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
             // ---------- personal ----------
-            // Bewerber-E-Mail ist optional (kann leer sein)
             $applicantEmail = trim((string)($p['email'] ?? ''));
             $applicantEmail = ($applicantEmail !== '') ? $applicantEmail : null;
 
             $geburtsdatumDate = $dobSql;
             if (!$geburtsdatumDate && !empty($p['geburtsdatum']) && function_exists('norm_date_dmy_to_ymd')) {
                 $dobTmp = norm_date_dmy_to_ymd((string)$p['geburtsdatum']);
-                if ($dobTmp !== '') {
-                    $geburtsdatumDate = $dobTmp;
-                }
+                if ($dobTmp !== '') $geburtsdatumDate = $dobTmp;
             }
 
             // weitere_angaben: primär aus Session, fallback aus applications.data_json
             $weitereAngabenToSave = norm_space($p['weitere_angaben'] ?? '');
             if ($weitereAngabenToSave === '') {
                 $fallback = datajson_get_personal($pdo, $token, 'weitere_angaben');
-                if ($fallback !== null) {
-                    $weitereAngabenToSave = $fallback;
-                }
+                if ($fallback !== null) $weitereAngabenToSave = $fallback;
             }
             $weitereAngabenToSave = ($weitereAngabenToSave !== '') ? $weitereAngabenToSave : null;
 
@@ -258,14 +268,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $notiz = trim((string)($c['notiz']?? ''));
                     $rolle = trim((string)($c['rolle']?? ''));
 
-                    if ($rolle === '' && $nameC === '' && $telC === '' && $mailC === '' && $notiz === '') {
-                        continue;
-                    }
-
-                    // DB: name NOT NULL
-                    if ($nameC === '') {
-                        continue;
-                    }
+                    if ($rolle === '' && $nameC === '' && $telC === '' && $mailC === '' && $notiz === '') continue;
+                    if ($nameC === '') continue; // DB: name NOT NULL
 
                     $insC->execute([
                         ':id'    => $appId,
@@ -281,54 +285,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // ---------- school ----------
             global $INTERESSEN;
 
-            // seit_monat / seit_jahr
             $seit_monat = null;
-            if (($s['seit_monat'] ?? '') !== '' && ctype_digit((string)$s['seit_monat'])) {
-                $seit_monat = (int)$s['seit_monat'];
-            }
+            if (($s['seit_monat'] ?? '') !== '' && ctype_digit((string)$s['seit_monat'])) $seit_monat = (int)$s['seit_monat'];
+
             $seit_jahr = null;
-            if (($s['seit_jahr'] ?? '') !== '' && ctype_digit((string)$s['seit_jahr'])) {
-                $seit_jahr = (int)$s['seit_jahr'];
-            }
+            if (($s['seit_jahr'] ?? '') !== '' && ctype_digit((string)$s['seit_jahr'])) $seit_jahr = (int)$s['seit_jahr'];
 
-            // jahre_in_de (numerisch)
             $jahre_in_de = null;
-            if (($s['jahre_in_de'] ?? '') !== '' && ctype_digit((string)$s['jahre_in_de'])) {
-                $jahre_in_de = (int)$s['jahre_in_de'];
-            }
+            if (($s['jahre_in_de'] ?? '') !== '' && ctype_digit((string)$s['jahre_in_de'])) $jahre_in_de = (int)$s['jahre_in_de'];
 
-            // schule_herkunft / jahre_schule_herkunft
             $schule_herkunft = null;
             $sh = trim((string)($s['schule_herkunft'] ?? ''));
-            if ($sh !== '') {
-                // Erwartet: 'ja'/'nein'
-                if ($sh === 'ja' || $sh === 'nein') {
-                    $schule_herkunft = $sh;
-                }
-            }
+            if ($sh === 'ja' || $sh === 'nein') $schule_herkunft = $sh;
 
             $jahre_schule_herkunft = null;
             if (($s['jahre_schule_herkunft'] ?? '') !== '' && ctype_digit((string)$s['jahre_schule_herkunft'])) {
                 $jahre_schule_herkunft = (int)$s['jahre_schule_herkunft'];
             }
-            // Wenn schule_herkunft == 'nein' -> Jahre leer
-            if ($schule_herkunft === 'nein') {
-                $jahre_schule_herkunft = null;
-            }
+            if ($schule_herkunft === 'nein') $jahre_schule_herkunft = null;
 
-            // deutsch_niveau inkl. A0
             $nivRaw = trim((string)($s['deutsch_niveau'] ?? ''));
             $allowedCodes = ['kein','A0','A1','A2','B1','B2','C1','C2'];
             $deutsch_niveau = null;
             if ($nivRaw !== '') {
-                if (in_array($nivRaw, $allowedCodes, true)) {
-                    $deutsch_niveau = $nivRaw;
-                } elseif (preg_match('/^(kein|A0|A1|A2|B1|B2|C1|C2)\b/u', $nivRaw, $m)) {
-                    $deutsch_niveau = $m[1];
-                }
+                if (in_array($nivRaw, $allowedCodes, true)) $deutsch_niveau = $nivRaw;
+                elseif (preg_match('/^(kein|A0|A1|A2|B1|B2|C1|C2)\b/u', $nivRaw, $m)) $deutsch_niveau = $m[1];
             }
 
-            // interessen: aus Keys -> Labels
             $interessenArr = $s['interessen'] ?? [];
             $interessenLabels = [];
             if (is_array($interessenArr)) {
@@ -339,7 +322,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $interessenStr = $interessenLabels ? implode(', ', $interessenLabels) : null;
 
-            // Freitext-Felder
             $schule_aktuell  = norm_space($s['schule_aktuell'] ?? '');
             $schule_freitext = norm_space($s['schule_freitext'] ?? '');
             $schule_label    = norm_space($s['schule_label'] ?? '');
@@ -451,16 +433,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Token/Access in der Session lassen (für Status/PDF)
             session_regenerate_id(true);
 
-            header('Location: /form_status.php');
+            header('Location: ' . url_with_lang('/form_status.php'));
             exit;
 
         } catch (Throwable $e) {
-            if ($pdo->inTransaction()) {
-                $pdo->rollBack();
-            }
-            error_log('form_review – submit error: '.$e->getMessage());
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            error_log('form_review – submit error: ' . $e->getMessage());
             if (function_exists('flash_set')) {
-                flash_set('danger', 'Beim Übermitteln ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.');
+                flash_set('danger', t('review.flash.submit_error'));
             }
         }
     }
@@ -490,53 +470,45 @@ try {
             $st2->execute([':id' => $appId]);
             while ($row = $st2->fetch(PDO::FETCH_ASSOC)) {
                 $typ = (string)($row['typ'] ?? '');
-                if ($typ === 'zeugnis') {
-                    $hasZeugnis = true;
-                } elseif ($typ === 'lebenslauf') {
-                    $hasLebenslauf = true;
-                }
+                if ($typ === 'zeugnis') $hasZeugnis = true;
+                elseif ($typ === 'lebenslauf') $hasLebenslauf = true;
             }
         }
     }
 } catch (Throwable $e) {
-    error_log('form_review uploads-check: '.$e->getMessage());
+    error_log('form_review uploads-check: ' . $e->getMessage());
 }
 
-// Header-Infos (Status/Token)
-$saveInfo = $_SESSION['last_save'] ?? null;
-$hdr = [
-  'title'   => 'Schritt 4/4 – Zusammenfassung & Bewerbung',
-  'status'  => ($saveInfo && ($saveInfo['ok'] ?? false)) ? 'success' : null,
-  'message' => ($saveInfo && ($saveInfo['ok'] ?? false)) ? 'Daten gespeichert.' : null,
-  'token'   => current_access_token() ?: null,
-];
+// Header
+$title     = t('review.page_title');
+$html_lang = html_lang();
+$html_dir  = html_dir();
+
 require __DIR__ . '/partials/header.php';
 require APP_APPDIR . '/header.php';
 
-// Geschlecht-Label
-$gMap = ['m' => 'männlich', 'w' => 'weiblich', 'd' => 'divers'];
+// Geschlecht-Label (i18n)
 $gKey = (string)($p['geschlecht'] ?? '');
-$gLbl = $gMap[$gKey] ?? ($gKey !== '' ? $gKey : '–');
-
-// Schule Anzeige (nutze Session-Label/Freitext)
-$schoolDisplay = '–';
-if (!empty($s['schule_label'])) {
-    $schoolDisplay = (string)$s['schule_label'];
-} elseif (!empty($s['schule_freitext'])) {
-    $schoolDisplay = (string)$s['schule_freitext'];
-} elseif (!empty($s['schule_aktuell'])) {
-    $schoolDisplay = (string)$s['schule_aktuell'];
+$gLbl = ($gKey !== '') ? t('review.gender.' . $gKey) : t('review.value.empty');
+if ($gLbl === 'review.gender.' . $gKey) { // falls Key nicht existiert
+    $gLbl = ($gKey !== '') ? $gKey : t('review.value.empty');
 }
 
+// Schule Anzeige (nutze Session-Label/Freitext)
+$schoolDisplay = t('review.value.empty');
+if (!empty($s['schule_label'])) $schoolDisplay = (string)$s['schule_label'];
+elseif (!empty($s['schule_freitext'])) $schoolDisplay = (string)$s['schule_freitext'];
+elseif (!empty($s['schule_aktuell'])) $schoolDisplay = (string)$s['schule_aktuell'];
+
 // Seit wann an Schule Anzeige
-$sinceDisplay = '–';
+$sinceDisplay = t('review.value.empty');
 if (!empty($s['seit_wann_schule'])) {
     $sinceDisplay = (string)$s['seit_wann_schule'];
 } else {
     $parts = [];
     if (!empty($s['seit_monat'])) $parts[] = (string)$s['seit_monat'];
     if (!empty($s['seit_jahr']))  $parts[] = (string)$s['seit_jahr'];
-    $sinceDisplay = $parts ? implode('.', $parts) : '–';
+    $sinceDisplay = $parts ? implode('.', $parts) : t('review.value.empty');
 }
 
 // Interessen Anzeige
@@ -545,14 +517,17 @@ $interessenLbls = [];
 if (is_array($s['interessen'] ?? null)) {
     foreach (($s['interessen'] ?? []) as $k) {
         $kStr = (string)$k;
-        if (isset($INTERESSEN[$kStr])) $interessenLbls[] = $INTERESSEN[$kStr];
-        else $interessenLbls[] = $kStr;
+        $interessenLbls[] = $INTERESSEN[$kStr] ?? $kStr;
     }
 }
-$interessenDisplay = $interessenLbls ? implode(', ', $interessenLbls) : '–';
+$interessenDisplay = $interessenLbls ? implode(', ', $interessenLbls) : t('review.value.empty');
 
 // Neue Felder Schritt 1
 $weitereAngaben = norm_space($p['weitere_angaben'] ?? '');
+
+// Badges Upload
+$badgeUploaded = '<span class="badge text-bg-success">'.h(t('review.badge.uploaded')).'</span>';
+$badgeNot      = '<span class="badge text-bg-secondary">'.h(t('review.badge.not_uploaded')).'</span>';
 
 ?>
 <div class="container py-4">
@@ -560,33 +535,25 @@ $weitereAngaben = norm_space($p['weitere_angaben'] ?? '');
     <div class="card-body p-4 p-md-5">
       <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
         <div>
-          <h1 class="h4 mb-1">Schritt 4/4 – Zusammenfassung &amp; Bewerbung</h1>
-          <div class="text-muted">Bitte prüfen Sie Ihre Angaben. Mit „Bewerben“ senden Sie die Daten ab.</div>
+          <h1 class="h4 mb-1"><?= h(t('review.h1')) ?></h1>
+          <div class="text-muted"><?= h(t('review.subhead')) ?></div>
         </div>
       </div>
 
       <?php if ($readonly): ?>
         <div class="alert alert-warning">
-          Diese Bewerbung wurde bereits abgeschickt. Die Angaben können nur noch angesehen,
-          aber nicht mehr geändert oder erneut eingereicht werden.
+          <?= h(t('review.readonly_alert')) ?>
         </div>
       <?php endif; ?>
 
       <div class="alert alert-info">
-        <p class="mb-2">Liebe Schülerin, lieber Schüler,</p>
-        <p class="mb-2">
-          wenn Sie auf <strong>„bewerben“</strong> klicken, haben Sie sich für die
-          <strong>BES Sprache und Integration</strong> an einer Oldenburger BBS beworben.
-        </p>
-        <p class="mb-2">
-          Es handelt sich noch nicht um eine finale Anmeldung, sondern um eine <strong>Bewerbung</strong>.
-          Nach dem <strong>20.02.</strong> erhalten Sie die Information, ob / an welcher BBS Sie aufgenommen werden.
-          Bitte prüfen Sie regelmäßig Ihren Briefkasten und Ihr E-Mail-Postfach. Bitte achten Sie darauf, dass am
-          Briefkasten Ihr Name sichtbar ist, damit Sie Briefe bekommen können.
-        </p>
-        <p class="mb-1">Sie erhalten mit der Zusage der Schule die Aufforderung, diese Dateien nachzureichen
-          (falls Sie es heute noch nicht hochgeladen haben):</p>
-        <ul class="mb-0"><li>letztes Halbjahreszeugnis</li></ul>
+        <p class="mb-2"><?= h(t('review.info.p1')) ?></p>
+        <p class="mb-2"><?= t('review.info.p2') /* enthält <strong> */ ?></p>
+        <p class="mb-2"><?= t('review.info.p3') /* enthält <strong> */ ?></p>
+        <p class="mb-1"><?= h(t('review.info.p4')) ?></p>
+        <ul class="mb-0">
+          <li><?= h(t('review.info.li1')) ?></li>
+        </ul>
       </div>
 
       <div class="accordion" id="reviewAccordion">
@@ -595,34 +562,37 @@ $weitereAngaben = norm_space($p['weitere_angaben'] ?? '');
         <div class="accordion-item">
           <h2 class="accordion-header" id="hPersonal">
             <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#cPersonal" aria-expanded="true" aria-controls="cPersonal">
-              Persönliche Daten
+              <?= h(t('review.acc.personal')) ?>
             </button>
           </h2>
           <div id="cPersonal" class="accordion-collapse collapse show" aria-labelledby="hPersonal" data-bs-parent="#reviewAccordion">
             <div class="accordion-body">
               <div class="row g-3">
-                <?= dl_row('Name', show_val((string)($p['name'] ?? ''))) ?>
-                <?= dl_row('Vorname', show_val((string)($p['vorname'] ?? ''))) ?>
-                <?= dl_row('Geschlecht', h($gLbl)) ?>
-                <?= dl_row('Geboren am', show_val((string)($p['geburtsdatum'] ?? ''))) ?>
-                <?= dl_row('Geburtsort / Geburtsland', show_val((string)($p['geburtsort_land'] ?? ''))) ?>
-                <?= dl_row('Staatsangehörigkeit', show_val((string)($p['staatsang'] ?? ''))) ?>
-                <?= dl_row('Straße, Nr.', show_val((string)($p['strasse'] ?? ''))) ?>
-                <?= dl_row('PLZ / Wohnort', show_val(trim((string)($p['plz'] ?? '') . ' ' . (string)($p['wohnort'] ?? 'Oldenburg (Oldb)')))) ?>
-                <?= dl_row('Telefon', show_val((string)($p['telefon'] ?? ''))) ?>
-                <?= dl_row('E-Mail (Schüler*in, optional)', show_val((string)($p['email'] ?? ''))) ?>
+                <?= dl_row(t('review.lbl.name'), show_val((string)($p['name'] ?? ''))) ?>
+                <?= dl_row(t('review.lbl.vorname'), show_val((string)($p['vorname'] ?? ''))) ?>
+                <?= dl_row(t('review.lbl.geschlecht'), h($gLbl)) ?>
+                <?= dl_row(t('review.lbl.geburtsdatum'), show_val((string)($p['geburtsdatum'] ?? ''))) ?>
+                <?= dl_row(t('review.lbl.geburtsort'), show_val((string)($p['geburtsort_land'] ?? ''))) ?>
+                <?= dl_row(t('review.lbl.staatsang'), show_val((string)($p['staatsang'] ?? ''))) ?>
+                <?= dl_row(t('review.lbl.strasse'), show_val((string)($p['strasse'] ?? ''))) ?>
+                <?= dl_row(
+                      t('review.lbl.plz_ort'),
+                      show_val(trim((string)($p['plz'] ?? '') . ' ' . (string)($p['wohnort'] ?? 'Oldenburg (Oldb)')))
+                    ) ?>
+                <?= dl_row(t('review.lbl.telefon'), show_val((string)($p['telefon'] ?? ''))) ?>
+                <?= dl_row(t('review.lbl.email'), show_val((string)($p['email'] ?? ''))) ?>
 
                 <div class="col-12">
-                  <div class="small text-muted">Weitere Angaben (z. B. Förderstatus)</div>
-                  <div class="fw-semibold"><?= $weitereAngaben !== '' ? nl2br(h($weitereAngaben)) : '–' ?></div>
+                  <div class="small text-muted"><?= h(t('review.lbl.weitere_angaben')) ?></div>
+                  <div class="fw-semibold"><?= $weitereAngaben !== '' ? nl2br(h($weitereAngaben)) : h(t('review.value.empty')) ?></div>
                 </div>
               </div>
 
               <hr class="my-4">
 
               <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
-                <div class="fw-semibold">Weitere Kontakte</div>
-                <div class="text-muted small">optional</div>
+                <div class="fw-semibold"><?= h(t('review.contacts.title')) ?></div>
+                <div class="text-muted small"><?= h(t('review.contacts.optional')) ?></div>
               </div>
 
               <?php
@@ -634,10 +604,10 @@ $weitereAngaben = norm_space($p['weitere_angaben'] ?? '');
                   <table class="table table-sm align-middle">
                     <thead class="table-light">
                       <tr>
-                        <th style="width:14rem">Rolle</th>
-                        <th style="width:22rem">Name / Einrichtung</th>
-                        <th style="width:16rem">Telefon</th>
-                        <th style="width:22rem">E-Mail</th>
+                        <th style="width:14rem"><?= h(t('review.contacts.th.role')) ?></th>
+                        <th style="width:22rem"><?= h(t('review.contacts.th.name')) ?></th>
+                        <th style="width:16rem"><?= h(t('review.contacts.th.tel')) ?></th>
+                        <th style="width:22rem"><?= h(t('review.contacts.th.mail')) ?></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -659,8 +629,8 @@ $weitereAngaben = norm_space($p['weitere_angaben'] ?? '');
                         </tr>
                         <tr class="table-light">
                           <td colspan="4">
-                            <span class="text-muted small">Notiz:</span>
-                            <span class="fw-semibold"><?= $notiz !== '' ? h($notiz) : '–' ?></span>
+                            <span class="text-muted small"><?= h(t('review.contacts.note')) ?></span>
+                            <span class="fw-semibold"><?= $notiz !== '' ? h($notiz) : h(t('review.value.empty')) ?></span>
                           </td>
                         </tr>
                       <?php endforeach; ?>
@@ -668,7 +638,7 @@ $weitereAngaben = norm_space($p['weitere_angaben'] ?? '');
                   </table>
                 </div>
               <?php else: ?>
-                <div class="text-muted">–</div>
+                <div class="text-muted"><?= h(t('review.contacts.none')) ?></div>
               <?php endif; ?>
             </div>
           </div>
@@ -678,26 +648,26 @@ $weitereAngaben = norm_space($p['weitere_angaben'] ?? '');
         <div class="accordion-item">
           <h2 class="accordion-header" id="hSchool">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#cSchool" aria-expanded="false" aria-controls="cSchool">
-              Schule &amp; Interessen
+              <?= h(t('review.acc.school')) ?>
             </button>
           </h2>
           <div id="cSchool" class="accordion-collapse collapse" aria-labelledby="hSchool" data-bs-parent="#reviewAccordion">
             <div class="accordion-body">
               <div class="row g-3">
-                <?= dl_row('Aktuelle Schule', show_val($schoolDisplay), 'col-12') ?>
-                <?= dl_row('Verantwortliche*r Lehrer*in', show_val((string)($s['klassenlehrer'] ?? ''))) ?>
-                <?= dl_row('E-Mail Lehrkraft', show_val((string)($s['mail_lehrkraft'] ?? ''))) ?>
-                <?= dl_row('Seit wann an der Schule', show_val($sinceDisplay)) ?>
-                <?= dl_row('Jahre in Deutschland', show_val((string)($s['jahre_in_de'] ?? ''))) ?>
-                <?= dl_row('Familiensprache / Erstsprache', show_val((string)($s['familiensprache'] ?? ''))) ?>
-                <?= dl_row('Deutsch-Niveau', show_val((string)($s['deutsch_niveau'] ?? ''))) ?>
-                <?= dl_row('Schule im Herkunftsland', show_val((string)($s['schule_herkunft'] ?? ''))) ?>
+                <?= dl_row(t('review.lbl.school_current'), show_val($schoolDisplay), 'col-12') ?>
+                <?= dl_row(t('review.lbl.klassenlehrer'), show_val((string)($s['klassenlehrer'] ?? ''))) ?>
+                <?= dl_row(t('review.lbl.mail_lehrkraft'), show_val((string)($s['mail_lehrkraft'] ?? ''))) ?>
+                <?= dl_row(t('review.lbl.since'), show_val($sinceDisplay)) ?>
+                <?= dl_row(t('review.lbl.years_de'), show_val((string)($s['jahre_in_de'] ?? ''))) ?>
+                <?= dl_row(t('review.lbl.family_lang'), show_val((string)($s['familiensprache'] ?? ''))) ?>
+                <?= dl_row(t('review.lbl.de_level'), show_val((string)($s['deutsch_niveau'] ?? ''))) ?>
+                <?= dl_row(t('review.lbl.school_origin'), show_val((string)($s['schule_herkunft'] ?? ''))) ?>
 
                 <?php if (($s['schule_herkunft'] ?? '') === 'ja'): ?>
-                  <?= dl_row('Jahre Schule im Herkunftsland', show_val((string)($s['jahre_schule_herkunft'] ?? ''))) ?>
+                  <?= dl_row(t('review.lbl.years_origin'), show_val((string)($s['jahre_schule_herkunft'] ?? ''))) ?>
                 <?php endif; ?>
 
-                <?= dl_row('Interessen', show_val($interessenDisplay), 'col-12') ?>
+                <?= dl_row(t('review.lbl.interests'), show_val($interessenDisplay), 'col-12') ?>
               </div>
             </div>
           </div>
@@ -707,15 +677,19 @@ $weitereAngaben = norm_space($p['weitere_angaben'] ?? '');
         <div class="accordion-item">
           <h2 class="accordion-header" id="hUploads">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#cUploads" aria-expanded="false" aria-controls="cUploads">
-              Unterlagen
+              <?= h(t('review.acc.uploads')) ?>
             </button>
           </h2>
           <div id="cUploads" class="accordion-collapse collapse" aria-labelledby="hUploads" data-bs-parent="#reviewAccordion">
             <div class="accordion-body">
               <div class="row g-3">
-                <?= dl_row('Halbjahreszeugnis', $hasZeugnis ? '<span class="badge text-bg-success">hochgeladen</span>' : '<span class="badge text-bg-secondary">nicht hochgeladen</span>') ?>
-                <?= dl_row('Lebenslauf', $hasLebenslauf ? '<span class="badge text-bg-success">hochgeladen</span>' : '<span class="badge text-bg-secondary">nicht hochgeladen</span>') ?>
-                <?= dl_row('Später nachreichen', (($u['zeugnis_spaeter'] ?? '0') === '1') ? 'Ja' : 'Nein', 'col-12') ?>
+                <?= dl_row(t('review.lbl.zeugnis'), $hasZeugnis ? $badgeUploaded : $badgeNot) ?>
+                <?= dl_row(t('review.lbl.lebenslauf'), $hasLebenslauf ? $badgeUploaded : $badgeNot) ?>
+                <?= dl_row(
+                      t('review.lbl.later'),
+                      h((($u['zeugnis_spaeter'] ?? '0') === '1') ? t('review.yes') : t('review.no')),
+                      'col-12'
+                    ) ?>
               </div>
             </div>
           </div>
@@ -728,21 +702,21 @@ $weitereAngaben = norm_space($p['weitere_angaben'] ?? '');
           <form method="post">
             <?php csrf_field(); ?>
             <input type="hidden" name="action" value="reset">
-            <button class="btn btn-outline-secondary">Zur Startseite</button>
+            <button class="btn btn-outline-secondary"><?= h(t('review.btn.home')) ?></button>
           </form>
 
           <form method="post">
             <?php csrf_field(); ?>
             <input type="hidden" name="action" value="new_application">
-            <button class="btn btn-primary">Weitere Bewerbung einreichen</button>
+            <button class="btn btn-primary"><?= h(t('review.btn.newapp')) ?></button>
           </form>
         </div>
       <?php else: ?>
         <form method="post" action="" class="mt-4 d-flex gap-2 flex-wrap">
           <?php csrf_field(); ?>
           <input type="hidden" name="action" value="submit">
-          <a href="/form_upload.php" class="btn btn-outline-secondary">Zurück</a>
-          <button class="btn btn-success">Bewerben</button>
+          <a href="<?= h(url_with_lang('/form_upload.php')) ?>" class="btn btn-outline-secondary"><?= h(t('review.btn.back')) ?></a>
+          <button class="btn btn-success"><?= h(t('review.btn.submit')) ?></button>
         </form>
       <?php endif; ?>
 
@@ -751,4 +725,4 @@ $weitereAngaben = norm_space($p['weitere_angaben'] ?? '');
 </div>
 
 <script src="/assets/bootstrap/bootstrap.bundle.min.js"></script>
-<?php include __DIR__ . '/partials/footer.php'; ?>
+<?php require __DIR__ . '/partials/footer.php'; ?>
