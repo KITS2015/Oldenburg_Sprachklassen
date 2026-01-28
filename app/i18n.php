@@ -232,58 +232,71 @@ function i18n_dict(): array {
             'school.required_hint' => 'Pflichtfelder sind blau am Rahmen hervorgehoben.',
             'school.form_error_hint' => 'Bitte prüfen Sie die markierten Felder.',
             
-            'school.label.schule' => 'Aktuelle Schule',
-            'school.schule_choose' => '– bitte wählen –',
-            'school.label.schule_freitext' => 'Welche Schule ist das?',
-            'school.placeholder.schule_freitext' => 'Name der Schule',
+            'school.top_hint_title' => 'Hinweis:',
+            'school.top_hint_body'  => 'Sind Sie <u>mehr als 3 Jahre</u> in Deutschland oder sprechen Sie bereits Deutsch auf dem Niveau <u>B1</u> oder höher, können Sie nicht in der Sprachlernklasse der BBS aufgenommen werden. Bitte bewerben Sie sich für eine andere Klasse einer BBS hier:',
+            'school.bbs_link_label' => 'https://bbs-ol.de/',
             
-            'school.label.klassenlehrer' => 'Verantwortliche*r Lehrer*in',
-            'school.placeholder.klassenlehrer' => 'Name der Lehrkraft',
-            'school.label.mail_lehrkraft' => 'E-Mail Lehrkraft (optional)',
-            'school.placeholder.mail_lehrkraft' => 'name@example.org',
+            'school.autohints_title' => 'Hinweise', // optional, falls du später Überschrift willst
             
-            'school.label.since' => 'Seit wann an der Schule',
-            'school.since_month' => 'Monat',
-            'school.since_year' => 'Jahr',
-            'school.since_choose' => '– bitte wählen –',
+            'school.label.schule_aktuell' => 'Aktuelle Schule',
+            'school.search_placeholder'   => 'Schule suchen … (Name, Straße, PLZ)',
+            'school.select_choose'        => 'Bitte wählen …',
+            'school.option_other'         => 'Andere / nicht gelistet',
+            'school.other_placeholder'    => 'Schulname, Straße, Ort (Freitext)',
             
-            'school.label.jahre_in_de' => 'Jahre in Deutschland',
-            'school.placeholder.jahre_in_de' => 'z. B. 2',
-            'school.hint.jahre_in_de' => 'Hinweis: Für die Aufnahme gilt i. d. R. höchstens 3 Jahre in Deutschland.',
+            'school.label.teacher'        => 'verantwortliche*r Lehrer*in',
+            'school.label.teacher_mail'   => 'E-Mail der verantwortliche*r Lehrer*in',
             
-            'school.label.familiensprache' => 'Familiensprache / Erstsprache',
-            'school.placeholder.familiensprache' => 'z. B. Arabisch',
+            'school.label.herkunft'       => 'Haben Sie im Herkunftsland die Schule besucht?',
+            'school.yes'                  => 'Ja',
+            'school.no'                   => 'Nein',
+            'school.label.herkunft_years' => 'Wenn ja: wie viele Jahre?',
             
-            'school.label.deutsch_niveau' => 'Deutsch-Niveau',
-            'school.deutsch_choose' => '– bitte wählen –',
-            'school.deutsch_note' => 'Falls vorhanden, bitte ungefähr angeben.',
+            'school.label.since'          => 'Seit wann an einer Schule in Deutschland?',
+            'school.since_month'          => 'Monat (MM)',
+            'school.since_year_ph'        => 'Jahr (JJJJ)',
+            'school.since_help'           => 'Entweder Monat+Jahr angeben <strong>oder</strong> das Freitextfeld nutzen.',
+            'school.label.since_text'     => 'Alternativ: Freitext (z. B. „seit Herbst 2023“)',
             
-            'school.label.schule_herkunft' => 'Waren Sie im Herkunftsland in der Schule?',
-            'school.schule_herkunft_yes' => 'Ja',
-            'school.schule_herkunft_no'  => 'Nein',
+            'school.label.years_in_de'    => 'Seit wie vielen Jahren sind Sie in Deutschland?',
+            'school.years_in_de_help'     => 'Hinweis: &gt; 3 Jahre → Bitte reguläre BBS-Bewerbung über {link}.',
             
-            'school.label.jahre_schule_herkunft' => 'Wie viele Jahre waren Sie dort in der Schule?',
-            'school.placeholder.jahre_schule_herkunft' => 'z. B. 6',
+            'school.label.family_lang'    => 'Familiensprache / Erstsprache',
             
-            'school.label.interessen' => 'Interessen',
-            'school.interessen_hint' => 'Optional. Mehrfachauswahl möglich.',
+            'school.label.level'          => 'Welches Deutsch-Niveau?',
+            'school.level_choose'         => 'Bitte wählen …',
+            'school.level_help'           => 'Hinweis: B1 oder höher → reguläre BBS-Bewerbung über {link}.',
             
-            'school.btn.back' => 'Zurück',
-            'school.btn.next' => 'Weiter',
-            'school.btn.cancel' => 'Abbrechen',
+            'school.label.interests'      => 'Interessen (mind. 1, max. 2)',
             
-            // Validierung / Fehlertexte (School)
-            'val.school_required' => 'Bitte wählen Sie eine Schule aus.',
-            'val.school_freitext_required' => 'Bitte geben Sie den Namen der Schule ein.',
-            'val.teacher_name_required' => 'Erforderlich.',
-            'val.since_required' => 'Bitte Monat und Jahr auswählen.',
-            'val.jahre_in_de_required' => 'Erforderlich.',
-            'val.jahre_in_de_invalid' => 'Bitte eine gültige Zahl eingeben.',
-            'val.familiensprache_required' => 'Erforderlich.',
-            'val.deutsch_niveau_required' => 'Bitte auswählen.',
-            'val.schule_herkunft_required' => 'Bitte auswählen.',
-            'val.jahre_schule_herkunft_required' => 'Bitte Anzahl Jahre angeben.',
-            'val.jahre_schule_herkunft_invalid' => 'Bitte eine gültige Zahl eingeben.',
+            'school.btn.back'             => 'Zurück',
+            'school.btn.next'             => 'Weiter',
+            
+            // ---------------------
+            // Validierung / Errors
+            // ---------------------
+            'val.required' => 'Erforderlich.', // hast du schon – falls vorhanden, kannst du das hier weglassen
+            
+            'val.school_free_required' => 'Bitte Schulname (Freitext) angeben.',
+            'val.school_invalid'       => 'Bitte gültige Schule wählen oder „Andere / nicht gelistet“.',
+            
+            'val.since_required'       => 'Bitte Monat+Jahr oder Freitext angeben.',
+            'val.month_invalid'        => 'Monat muss 01–12 sein.',
+            'val.year_invalid'         => 'Bitte gültiges Jahr.',
+            'val.number_required'      => 'Bitte Zahl angeben.',
+            'val.choose'               => 'Bitte auswählen.',
+            'val.herkunft_years'       => 'Bitte Anzahl Jahre angeben.',
+            
+            'val.level_invalid'        => 'Ungültige Auswahl.',
+            
+            'val.interests_min1'       => 'Bitte mindestens 1 Bereich wählen.',
+            'val.interests_max2'       => 'Bitte höchstens 2 Bereiche wählen.',
+            
+            // ---------------------
+            // JS Live-Hinweise
+            // ---------------------
+            'js.hint_years_gt3'  => 'Hinweis: Sie haben mehr als 3 Jahre in Deutschland. Bitte bewerben Sie sich über {link}.',
+            'js.hint_level_b1p'  => 'Hinweis: Mit Deutsch-Niveau B1 oder höher bitte reguläre BBS-Bewerbung über {link}.',
         
         ],
 
