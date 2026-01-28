@@ -1093,88 +1093,100 @@ function i18n_dict(): array {
             'js.hint_years_gt3'  => 'Note: You have been in Germany for more than 3 years. Please apply via {link}.',
             'js.hint_level_b1p'  => 'Note: With German level B1 or higher, please use the regular BBS application via {link}.',
         ],
+        
+        // =======================
+        // FR: in 'fr' => [ ... ] einfügen (komplett)
+        // =======================
         'fr' => [
+        
+            // =======================
+            // STEP Start: Index (FR)
+            // =======================
             'index.title' => 'Bienvenue – Inscription en ligne aux cours de langue',
-            'index.lead'  => 'Ce service s’adresse aux personnes récemment arrivées à Oldenburg. Le formulaire nous aide à vous contacter et à proposer une offre adaptée.',
+            'index.lead'  => 'Ce service s’adresse aux personnes nouvellement arrivées à Oldenburg. Le formulaire nous aide à vous contacter et à trouver une offre adaptée.',
             'index.bullets' => [
-                'Préparez vos coordonnées et un document d’identité (si disponible).',
+                'Veuillez préparer vos coordonnées et une pièce d’identité (si disponible).',
                 'Le formulaire peut être rempli dans plusieurs langues.',
-                'Vos données sont traitées de manière confidentielle (RGPD).',
+                'Vos données sont traitées de manière confidentielle conformément au RGPD.',
             ],
             'index.info_p' => [
                 'Chère élève, cher élève,',
-                'Par la présente, vous posez votre candidature pour une place dans la classe d’apprentissage de la langue « BES Langue et Intégration » d’un établissement professionnel (BBS) à Oldenburg. Vous ne candidatez pas pour un établissement précis. Après le 20 février, vous serez informé·e de l’établissement qui vous accueillera.',
-                'Vous ne pouvez être admis·e que si toutes les conditions suivantes sont remplies :',
+                'Par la présente, vous posez votre candidature pour une place dans la classe d’apprentissage de la langue « BES Langue et Intégration » d’un établissement d’enseignement professionnel (BBS) à Oldenburg. Vous ne candidatez pas pour un BBS en particulier. Après le 20 février, vous serez informé·e de l’établissement qui vous accueillera dans la classe.',
+                'Vous ne pouvez être admis·e que si les conditions suivantes sont remplies :',
             ],
             'index.info_bullets' => [
                 'Vous avez besoin d’un soutien intensif en allemand (niveau inférieur à B1).',
-                'Au début de la prochaine année scolaire, vous êtes en Allemagne depuis au plus 3 ans.',
+                'Au début de la prochaine année scolaire, vous êtes en Allemagne depuis 3 ans au maximum.',
                 'Au 30 septembre de cette année, vous avez au moins 16 ans et au plus 18 ans.',
                 'Vous êtes soumis·e à l’obligation scolaire pour la prochaine année scolaire.',
             ],
-            'index.access_title' => 'Confidentialité & Accès',
-            'index.access_intro' => 'Vous pouvez continuer avec ou sans adresse e-mail. L’accès aux candidatures enregistrées n’est possible qu’avec votre jeton d’accès personnel et votre date de naissance.',
+            'index.access_title' => 'Protection des données & Accès',
+            'index.access_intro' => 'Vous pouvez continuer avec ou sans adresse e-mail. L’accès aux candidatures enregistrées n’est possible qu’avec votre code d’accès personnel (token) et votre date de naissance.',
             'index.access_points' => [
-                '<strong>Avec e-mail :</strong> vous recevez un code de vérification et pouvez reprendre votre candidature plus tard.',
-                '<strong>Sans e-mail :</strong> vous recevez un jeton d’accès personnel. Veuillez le noter/photographier — sans e-mail vérifié, aucune récupération n’est possible.',
+                '<strong>Avec e-mail :</strong> vous recevez un code de confirmation et pouvez créer plusieurs candidatures et les retrouver plus tard.',
+                '<strong>Sans e-mail :</strong> vous recevez un code d’accès personnel (Access-Token). Veuillez le noter/le photographier — sans e-mail vérifié, aucune récupération n’est possible.',
             ],
+        
             'index.btn_noemail' => 'Continuer sans e-mail',
-            'index.btn_create'  => 'Créer un accès avec e-mail',
-            'index.btn_load'    => 'Charger la candidature',
-            'index.lang_label'  => 'Langue:',
-			
-			'personal.page_title' => 'Étape 1/4 – Données personnelles',
+            'index.btn_create'  => 'Continuer avec e-mail',
+            'index.btn_load'    => 'Accéder à la/aux candidature(s)',
+            'index.lang_label'  => 'Langue :',
+        
+            // =======================
+            // STEP 1/4: PERSONAL (FR)
+            // =======================
+            'personal.page_title' => 'Étape 1/4 – Données personnelles',
             'personal.h1' => 'Étape 1/4 – Données personnelles',
             'personal.required_hint' => 'Les champs obligatoires sont mis en évidence par une bordure bleue.',
             'personal.form_error_hint' => 'Veuillez vérifier les champs en surbrillance.',
-            
+        
             'personal.alert_email_title' => 'Connexion e-mail active :',
             'personal.alert_email_line1' => 'Connecté·e avec l’adresse e-mail {email}.',
-            'personal.alert_email_line2' => 'Cet e-mail est utilisé uniquement pour le jeton d’accès (Access-Token) et pour retrouver votre candidature.',
-            'personal.alert_email_line3' => 'Vous pouvez indiquer ci-dessous l’e-mail de l’élève (si disponible).',
-            
+            'personal.alert_email_line2' => 'Cet e-mail est utilisé uniquement pour le code d’accès (Access-Token) et pour retrouver votre candidature.',
+            'personal.alert_email_line3' => 'Vous pouvez indiquer ci-dessous l’adresse e-mail de l’élève (si disponible).',
+        
             'personal.alert_noemail_title' => 'Remarque (sans e-mail) :',
-            'personal.alert_noemail_body' => 'Veuillez noter/photographier votre jeton d’accès affiché après l’enregistrement. Sans e-mail vérifié, la récupération n’est possible qu’avec jeton + date de naissance.',
-            
+            'personal.alert_noemail_body' => 'Veuillez noter/photographier votre code d’accès (Access-Token) affiché après l’enregistrement de cette page. Sans e-mail vérifié, la récupération n’est possible qu’avec le token + la date de naissance.',
+        
             'personal.label.name' => 'Nom',
             'personal.label.vorname' => 'Prénom',
             'personal.label.geschlecht' => 'Sexe',
             'personal.gender.m' => 'masculin',
             'personal.gender.w' => 'féminin',
             'personal.gender.d' => 'divers',
-            
-            'personal.label.geburtsdatum' => 'Date de naissance',
+        
+            'personal.label.geburtsdatum' => 'Né(e) le',
             'personal.label.geburtsdatum_hint' => '(JJ.MM.AAAA)',
             'personal.placeholder.geburtsdatum' => 'JJ.MM.AAAA',
-            
-            'personal.age_hint' => 'Remarque : si vous avez moins de 16 ans ou plus de 18 ans au 30/09/{year}, vous ne pouvez pas être admis·e. Veuillez postuler à une autre classe ici :',
-            'personal.age_redirect_msg' => "Remarque : si vous avez moins de 16 ans ou plus de 18 ans au 30/09/{year}, vous ne pouvez pas être admis·e.\nVeuillez postuler à une autre classe ici :\n{url}",
-            
+        
+            'personal.age_hint' => 'Remarque : si vous avez moins de 16 ans ou plus de 18 ans au 30.09.{year}, vous ne pouvez pas être admis·e dans la classe de langue du BBS. Veuillez postuler à une autre classe ici :',
+            'personal.age_redirect_msg' => "Remarque : si vous avez moins de 16 ans ou plus de 18 ans au 30.09.{year}, vous ne pouvez pas être admis·e dans la classe de langue du BBS. Veuillez postuler à une autre classe d’un BBS ici :\n{url}",
+        
             'personal.label.geburtsort_land' => 'Lieu / pays de naissance',
             'personal.label.staatsang' => 'Nationalité',
-            
+        
             'personal.label.strasse' => 'Rue, n°',
             'personal.label.plz' => 'Code postal',
             'personal.plz_choose' => '– veuillez choisir –',
             'personal.plz_hint' => 'Oldenburg uniquement.',
             'personal.label.wohnort' => 'Ville',
-            
+        
             'personal.label.telefon' => 'Numéro de téléphone',
             'personal.label.telefon_vorwahl_help' => 'Indicatif avec/sans 0',
             'personal.label.telefon_nummer_help' => 'Numéro',
             'personal.placeholder.telefon_vorwahl' => '(0)441',
             'personal.placeholder.telefon_nummer' => '123456',
-            
+        
             'personal.label.email' => 'Adresse e-mail de l’élève (optionnel, pas d’adresse IServ)',
-            'personal.email_help' => 'Cet e-mail appartient à l’élève (si disponible) et est indépendant de l’e-mail de connexion.',
+            'personal.email_help' => 'Cet e-mail appartient à l’élève (si disponible) et est indépendant de l’adresse e-mail utilisée pour le code d’accès.',
             'personal.placeholder.email' => 'nom@example.org',
-            
+        
             'personal.label.kontakte' => 'Autres coordonnées',
             'personal.kontakte_hint' => '(p. ex. parents, tuteur·rice, structure)',
             'personal.kontakte_error' => 'Veuillez vérifier les contacts supplémentaires.',
             'personal.kontakte_add' => '+ Ajouter un contact',
             'personal.kontakte_remove_title' => 'Supprimer le contact',
-            
+        
             'personal.table.role' => 'Rôle',
             'personal.table.name' => 'Nom / structure',
             'personal.table.tel'  => 'Téléphone',
@@ -1183,7 +1195,7 @@ function i18n_dict(): array {
             'personal.placeholder.kontakt_name' => 'Nom ou désignation',
             'personal.placeholder.kontakt_tel'  => '+49 …',
             'personal.placeholder.kontakt_note' => 'p. ex. disponibilité, langue, remarques',
-            
+        
             'personal.contact_role.none' => '–',
             'personal.contact_role.mutter' => 'Mère',
             'personal.contact_role.vater' => 'Père',
@@ -1191,17 +1203,534 @@ function i18n_dict(): array {
             'personal.contact_role.betreuer' => 'Tuteur·rice',
             'personal.contact_role.einrichtung' => 'Structure',
             'personal.contact_role.sonstiges' => 'Autre',
-            
-            'personal.label.weitere_angaben' => 'Autres informations (p. ex. besoins de soutien) :',
-            'personal.placeholder.weitere_angaben' => 'Vous pouvez indiquer ici des besoins de soutien, des besoins éducatifs particuliers ou d’autres remarques.',
+        
+            'personal.label.weitere_angaben' => 'Autres informations (p. ex. statut d’aide/mesures de soutien) :',
+            'personal.placeholder.weitere_angaben' => 'Vous pouvez indiquer ici, par exemple, des besoins de soutien particuliers, des besoins éducatifs spécifiques ou d’autres remarques.',
             'personal.weitere_angaben_help' => 'Optionnel. Maximum 1500 caractères.',
             'personal.btn.cancel' => 'Annuler',
             'personal.btn.next' => 'Suivant',
-            
+        
             'personal.dsgvo_text_prefix' => "J’ai lu les",
             'personal.dsgvo_link_text' => 'informations de protection des données',
             'personal.dsgvo_text_suffix' => 'et je suis d’accord.',
-            
+        
+            // =====================
+            // STEP 2/4: SCHOOL (FR)
+            // =====================
+            'school.page_title' => 'Étape 2/4 – École & intérêts',
+            'school.h1' => 'Étape 2/4 – École & intérêts',
+            'school.required_hint' => 'Les champs obligatoires sont mis en évidence par une bordure bleue.',
+            'school.form_error_hint' => 'Veuillez vérifier les champs en surbrillance.',
+        
+            'school.top_hint_title' => 'Remarque :',
+            'school.top_hint_body'  => 'Si vous êtes en Allemagne depuis <u>plus de 3 ans</u> ou si vous parlez déjà allemand au niveau <u>B1</u> ou plus, vous ne pouvez pas être admis·e dans la classe de langue du BBS. Veuillez postuler à une autre classe d’un BBS ici :',
+            'school.bbs_link_label' => 'https://bbs-ol.de/',
+        
+            'school.autohints_title' => 'Informations',
+        
+            'school.label.schule_aktuell' => 'École actuelle',
+            'school.search_placeholder'   => 'Rechercher une école… (nom, rue, CP)',
+            'school.select_choose'        => 'Veuillez choisir…',
+            'school.option_other'         => 'Autre / non répertoriée',
+            'school.other_placeholder'    => 'Nom de l’école, rue, ville (texte libre)',
+        
+            'school.label.teacher'        => 'Enseignant·e responsable',
+            'school.label.teacher_mail'   => "E-mail de l’enseignant·e responsable",
+        
+            'school.label.herkunft'       => 'Avez-vous fréquenté l’école dans votre pays d’origine ?',
+            'school.yes'                  => 'Oui',
+            'school.no'                   => 'Non',
+            'school.label.herkunft_years' => 'Si oui : combien d’années ?',
+        
+            'school.label.since'          => 'Depuis quand dans une école en Allemagne ?',
+            'school.since_month'          => 'Mois (MM)',
+            'school.since_year_ph'        => 'Année (AAAA)',
+            'school.since_help'           => 'Indiquez soit mois+année <strong>ou</strong> utilisez le champ de texte libre.',
+            'school.label.since_text'     => 'Alternative : texte libre (p. ex. « depuis l’automne 2023 »)',
+        
+            'school.label.years_in_de'    => 'Depuis combien d’années êtes-vous en Allemagne ?',
+            'school.years_in_de_help'     => 'Remarque : &gt; 3 ans → candidature BBS régulière via {link}.',
+        
+            'school.label.family_lang'    => 'Langue familiale / langue maternelle',
+        
+            'school.label.level'          => 'Quel niveau d’allemand ?',
+            'school.level_choose'         => 'Veuillez choisir…',
+            'school.level_help'           => 'Remarque : B1 ou plus → candidature BBS régulière via {link}.',
+        
+            'school.label.interests'      => 'Intérêts (min. 1, max. 2)',
+        
+            'school.btn.back'             => 'Retour',
+            'school.btn.next'             => 'Suivant',
+        
+            // ---------------------
+            // Validierung / Errors
+            // ---------------------
+            'val.school_free_required' => 'Veuillez indiquer le nom de l’école (texte libre).',
+            'val.school_invalid'       => 'Veuillez choisir une école valide ou « Autre / non répertoriée ».',
+        
+            'val.since_required'       => 'Veuillez indiquer mois+année ou un texte libre.',
+            'val.month_invalid'        => 'Le mois doit être entre 01 et 12.',
+            'val.year_invalid'         => 'Veuillez indiquer une année valide.',
+            'val.number_required'      => 'Veuillez indiquer un nombre.',
+            'val.choose'               => 'Veuillez sélectionner.',
+            'val.herkunft_years'       => 'Veuillez indiquer le nombre d’années.',
+        
+            'val.level_invalid'        => 'Sélection invalide.',
+        
+            'val.interests_min1'       => 'Veuillez sélectionner au moins 1 domaine.',
+            'val.interests_max2'       => 'Veuillez sélectionner au maximum 2 domaines.',
+        
+            // ---------------------
+            // JS Live-Hinweise
+            // ---------------------
+            'js.hint_years_gt3'  => 'Remarque : vous êtes en Allemagne depuis plus de 3 ans. Veuillez postuler via {link}.',
+            'js.hint_level_b1p'  => 'Remarque : avec un niveau d’allemand B1 ou plus, veuillez postuler via {link}.',
+        
+            // =========================
+            // STEP 3/4: UPLOAD (FR)
+            // =========================
+            'upload.page_title' => 'Étape 3/4 – Documents (optionnel)',
+            'upload.h1'         => 'Étape 3/4 – Documents (optionnel)',
+        
+            'upload.intro'      => 'Vous pouvez téléverser des documents ici. Formats autorisés : <strong>PDF</strong>, <strong>JPG</strong> et <strong>PNG</strong>. La taille maximale est de <strong>{max_mb} Mo</strong> par fichier.',
+        
+            'upload.type.zeugnis'    => 'Dernier bulletin semestriel',
+            'upload.type.lebenslauf' => 'CV',
+            'upload.type_hint'       => '(PDF/JPG/PNG, max. {max_mb} Mo)',
+        
+            'upload.btn.remove' => 'Supprimer',
+            'upload.btn.back'   => 'Retour',
+            'upload.btn.next'   => 'Suivant',
+        
+            'upload.saved_prefix' => 'Déjà enregistré :',
+            'upload.empty'        => 'Aucun fichier téléversé pour le moment.',
+            'upload.saved_html'   => 'Déjà enregistré : <strong>{filename}</strong>, {size_kb} Ko, téléversé le {uploaded_at}',
+        
+            'upload.checkbox.zeugnis_spaeter' => 'Je fournirai le bulletin semestriel après l’acceptation.',
+        
+            'upload.flash.no_access' => 'Aucun accès valide trouvé. Veuillez recommencer l’inscription.',
+            'upload.flash.saved'     => 'Informations de téléversement enregistrées.',
+        
+            'upload.js.uploading'          => 'Téléversement en cours…',
+            'upload.js.unexpected'         => 'Réponse inattendue du serveur.',
+            'upload.js.upload_failed'      => 'Téléversement échoué.',
+            'upload.js.delete_confirm'     => 'Supprimer le fichier téléversé ?',
+            'upload.js.delete_failed'      => 'Suppression échouée.',
+            'upload.js.remove_confirm_btn' => 'Supprimer le fichier ?',
+        
+            // AJAX / Fehlertexte
+            'upload.ajax.invalid_method'     => 'Méthode invalide',
+            'upload.ajax.invalid_csrf'       => 'Jeton CSRF invalide',
+            'upload.ajax.no_access'          => 'Aucun accès valide.',
+            'upload.ajax.invalid_field'      => 'Champ invalide',
+            'upload.ajax.no_file_sent'       => 'Aucun fichier envoyé',
+            'upload.ajax.no_file_selected'   => 'Aucun fichier sélectionné',
+            'upload.ajax.upload_error'       => 'Erreur de téléversement (code {code})',
+            'upload.ajax.too_large'          => 'Fichier supérieur à {max_mb} Mo',
+            'upload.ajax.mime_only'          => 'Seuls PDF, JPG ou PNG sont autorisés',
+            'upload.ajax.ext_only'           => 'Extension invalide (uniquement pdf/jpg/jpeg/png)',
+            'upload.ajax.cannot_save'        => 'Impossible d’enregistrer le fichier',
+            'upload.ajax.unknown_action'     => 'Action inconnue',
+            'upload.ajax.server_error'       => 'Erreur serveur lors du téléversement',
+        
+            // =========================
+            // STEP 4/4: REVIEW (FR)
+            // =========================
+            'review.page_title' => 'Étape 4/4 – Récapitulatif & candidature',
+        
+            'review.h1'      => 'Étape 4/4 – Récapitulatif & candidature',
+            'review.subhead' => 'Veuillez vérifier vos informations. En cliquant sur « Postuler », vous envoyez les données.',
+        
+            'review.readonly_alert' => 'Cette candidature a déjà été envoyée. Les informations peuvent uniquement être consultées, mais ne peuvent plus être modifiées ni renvoyées.',
+        
+            'review.info.p1' => 'Chère élève, cher élève,',
+            'review.info.p2' => 'en cliquant sur <strong>« Postuler »</strong>, vous avez posé votre candidature pour <strong>BES Langue et Intégration</strong> dans un BBS d’Oldenburg.',
+            'review.info.p3' => 'Il ne s’agit pas encore d’une inscription définitive, mais d’une <strong>candidature</strong>. Après le <strong>20.02.</strong>, vous recevrez l’information indiquant si / dans quel BBS vous êtes accepté·e. Veuillez vérifier régulièrement votre boîte aux lettres et votre messagerie électronique. Assurez-vous que votre nom est visible sur la boîte aux lettres afin de recevoir le courrier.',
+            'review.info.p4' => 'Avec l’acceptation de l’école, il vous sera demandé de fournir ces documents (si vous ne les avez pas encore téléversés aujourd’hui) :',
+            'review.info.li1' => 'dernier bulletin semestriel',
+        
+            // Accordion Überschriften
+            'review.acc.personal' => 'Données personnelles',
+            'review.acc.school'   => 'École & intérêts',
+            'review.acc.uploads'  => 'Documents',
+        
+            // Labels: Personal
+            'review.lbl.name'            => 'Nom',
+            'review.lbl.vorname'         => 'Prénom',
+            'review.lbl.geschlecht'      => 'Sexe',
+            'review.lbl.geburtsdatum'    => 'Né(e) le',
+            'review.lbl.geburtsort'      => 'Lieu / pays de naissance',
+            'review.lbl.staatsang'       => 'Nationalité',
+            'review.lbl.strasse'         => 'Rue, n°',
+            'review.lbl.plz_ort'         => 'Code postal / Ville',
+            'review.lbl.telefon'         => 'Téléphone',
+            'review.lbl.email'           => 'E-mail (élève, optionnel)',
+            'review.lbl.weitere_angaben' => 'Autres informations (p. ex. mesures de soutien)',
+        
+            'review.contacts.title'    => 'Autres contacts',
+            'review.contacts.optional' => 'optionnel',
+            'review.contacts.none'     => '–',
+        
+            'review.contacts.th.role' => 'Rôle',
+            'review.contacts.th.name' => 'Nom / structure',
+            'review.contacts.th.tel'  => 'Téléphone',
+            'review.contacts.th.mail' => 'E-mail',
+            'review.contacts.note'    => 'Note :',
+        
+            // Labels: School
+            'review.lbl.school_current' => 'École actuelle',
+            'review.lbl.klassenlehrer'  => 'Enseignant·e responsable',
+            'review.lbl.mail_lehrkraft' => 'E-mail enseignant·e',
+            'review.lbl.since'          => 'Depuis quand à l’école',
+            'review.lbl.years_de'       => 'Années en Allemagne',
+            'review.lbl.family_lang'    => 'Langue familiale / langue maternelle',
+            'review.lbl.de_level'       => 'Niveau d’allemand',
+            'review.lbl.school_origin'  => 'École dans le pays d’origine',
+            'review.lbl.years_origin'   => 'Années d’école dans le pays d’origine',
+            'review.lbl.interests'      => 'Intérêts',
+        
+            // Uploads
+            'review.lbl.zeugnis'        => 'Bulletin semestriel',
+            'review.lbl.lebenslauf'     => 'CV',
+            'review.lbl.later'          => 'À fournir plus tard',
+            'review.badge.uploaded'     => 'téléversé',
+            'review.badge.not_uploaded' => 'non téléversé',
+            'review.yes'                => 'Oui',
+            'review.no'                 => 'Non',
+        
+            // Buttons / Actions
+            'review.btn.home'   => "Retour à l’accueil",
+            'review.btn.newapp' => 'Soumettre une autre candidature',
+            'review.btn.back'   => 'Retour',
+            'review.btn.submit' => 'Postuler',
+        
+            // Errors / Flash / Systemtexte
+            'review.err.invalid_request'        => 'Requête invalide.',
+            'review.flash.already_submitted'    => 'Cette candidature a déjà été envoyée et ne peut pas être renvoyée ni modifiée.',
+            'review.flash.no_token'             => 'Aucun code d’accès valide. Veuillez recommencer la procédure.',
+            'review.err.not_found_token'        => 'Aucune candidature trouvée pour ce token.',
+            'review.flash.submit_error'         => 'Une erreur est survenue lors de l’envoi. Veuillez réessayer plus tard.',
+        
+            // Gender fallback
+            'review.gender.m' => 'masculin',
+            'review.gender.w' => 'féminin',
+            'review.gender.d' => 'divers',
+        
+            // Fallback Anzeige
+            'review.value.empty' => '–',
+        
+            // =========================
+            // STATUS (FR)
+            // =========================
+            'status.hdr_title'   => 'Candidature enregistrée avec succès',
+            'status.hdr_message' => 'Votre candidature a été transmise.',
+        
+            'status.h1' => 'Votre candidature a été enregistrée avec succès.',
+        
+            'status.success.title' => 'Merci !',
+            'status.success.body'  => 'Votre candidature a été transmise et va maintenant être traitée.',
+        
+            'status.info.title' => 'Information importante',
+            'status.info.body'  => '<em>[PLACEHOLDER : texte fourni par le client]</em>',
+        
+            'status.btn.pdf'    => 'Télécharger / imprimer le PDF',
+            'status.btn.newapp' => 'Démarrer une autre candidature',
+            'status.btn.home'   => "Retour à l’accueil",
+        
+            'status.ref' => 'Référence : candidature #{id}',
+        
+            'status.err.invalid_request' => 'Requête invalide.',
+        
+            // =========================
+            // PDF (FR)
+            // =========================
+            'pdf.err.autoload_missing' => 'Autoload Composer introuvable. Veuillez exécuter "composer install".',
+            'pdf.err.no_token'         => 'Aucun code d’accès valide. Veuillez recommencer la procédure.',
+            'pdf.err.not_found'        => 'Candidature introuvable.',
+            'pdf.err.server'           => 'Erreur serveur lors de la création du PDF.',
+        
+            'pdf.header_title' => 'Candidature – Récapitulatif',
+            'pdf.footer_auto'  => 'Document généré automatiquement',
+            'pdf.footer_page'  => 'Page {cur} / {max}',
+        
+            'pdf.meta.ref'        => 'Candidature #{id}',
+            'pdf.meta.created_at' => 'Créé le',
+            'pdf.meta.status'     => 'Statut',
+        
+            'pdf.top.title'        => 'Aperçu',
+            'pdf.top.name'         => 'Nom',
+            'pdf.top.reference'    => 'Référence',
+            'pdf.top.generated'    => 'Créé le',
+            'pdf.top.hint'         => 'Remarque',
+            'pdf.top.keep_note'    => 'Veuillez conserver ce document pour vos dossiers.',
+            'pdf.hint_placeholder' => '[PLACEHOLDER : texte fourni par le client]',
+        
+            'pdf.sec1.title' => '1) Données personnelles',
+            'pdf.sec2.title' => '2) Autres coordonnées',
+            'pdf.sec3.title' => '3) École & intérêts',
+            'pdf.sec4.title' => '4) Documents',
+        
+            'pdf.lbl.name'           => 'Nom',
+            'pdf.lbl.vorname'        => 'Prénom',
+            'pdf.lbl.gender'         => 'Sexe',
+            'pdf.lbl.dob'            => 'Date de naissance',
+            'pdf.lbl.birthplace'     => 'Lieu/pays de naissance',
+            'pdf.lbl.nationality'    => 'Nationalité',
+            'pdf.lbl.address'        => 'Adresse',
+            'pdf.lbl.phone'          => 'Téléphone',
+            'pdf.lbl.email_optional' => 'E-mail (optionnel)',
+            'pdf.lbl.more'           => 'Autres informations',
+        
+            'pdf.lbl.school_current' => 'École actuelle',
+            'pdf.lbl.teacher'        => 'Enseignant·e',
+            'pdf.lbl.teacher_email'  => 'E-mail enseignant·e',
+            'pdf.lbl.since_school'   => 'Depuis quand à l’école',
+            'pdf.lbl.years_in_de'    => 'Depuis quand en Allemagne',
+            'pdf.lbl.family_lang'    => 'Langue familiale',
+            'pdf.lbl.de_level'       => 'Niveau d’allemand',
+            'pdf.lbl.school_origin'  => 'École dans le pays d’origine',
+            'pdf.lbl.years_origin'   => 'Années d’école dans le pays d’origine',
+            'pdf.lbl.interests'      => 'Intérêts',
+        
+            'pdf.lbl.report'       => 'Bulletin semestriel',
+            'pdf.lbl.cv'           => 'CV',
+            'pdf.lbl.report_later' => 'Bulletin à fournir plus tard',
+        
+            'pdf.uploaded'     => 'téléversé',
+            'pdf.not_uploaded' => 'non téléversé',
+        
+            'pdf.contacts.none'   => '–',
+            'pdf.contacts.th.role'=> 'Rôle',
+            'pdf.contacts.th.name'=> 'Nom/structure',
+            'pdf.contacts.th.tel' => 'Téléphone',
+            'pdf.contacts.th.mail'=> 'E-mail',
+            'pdf.contacts.th.note'=> 'Note',
+        
+            'pdf.gender.m' => 'masculin',
+            'pdf.gender.w' => 'féminin',
+            'pdf.gender.d' => 'divers',
+        
+            'pdf.yes' => 'Oui',
+            'pdf.no'  => 'Non',
+        
+            'pdf.sec4.note' => 'Ce document est un récapitulatif généré automatiquement des données saisies.',
+        
+            'pdf.filename_prefix' => 'Candidature',
+        
+            // =========================
+            // ACCESS_CREATE (FR)
+            // =========================
+            'access_create.title'         => 'Continuer avec e-mail',
+            'access_create.lead'          => 'Vous pouvez vous connecter avec votre accès ou créer un nouvel accès.',
+            'access_create.tabs_login'    => 'Se connecter',
+            'access_create.tabs_register' => 'Créer un nouvel accès',
+        
+            'access_create.login_title' => 'Se connecter (accès existant)',
+            'access_create.login_text'  => 'Veuillez saisir votre adresse e-mail et votre mot de passe.',
+            'access_create.email_label' => 'Adresse e-mail',
+            'access_create.pass_label'  => 'Mot de passe',
+            'access_create.login_btn'   => 'Se connecter',
+            'access_create.login_err'   => 'E-mail/mot de passe incorrect ou accès non vérifié.',
+        
+            'access_create.reg_title'     => 'Créer un nouvel accès',
+            'access_create.reg_text'      => 'Nous vous envoyons un code de confirmation à 6 chiffres. Après confirmation, vous recevrez votre mot de passe par e-mail.',
+            'access_create.consent_label' => 'J’accepte que mon e-mail soit utilisé pour le processus d’inscription.',
+            'access_create.send_btn'      => 'Envoyer le code',
+            'access_create.code_label'    => 'Code de confirmation',
+            'access_create.verify_btn'    => 'Vérifier le code',
+            'access_create.resend'        => 'Renvoyer le code',
+        
+            'access_create.info_sent'    => 'Nous vous avons envoyé un code. Veuillez aussi vérifier le dossier spam.',
+            'access_create.ok_verified'  => 'E-mail confirmé. Le mot de passe a été envoyé. Vous pouvez maintenant vous connecter.',
+            'access_create.email_in_use' => 'Cette adresse e-mail possède déjà un accès. Veuillez vous connecter.',
+        
+            'access_create.error_email'     => 'Veuillez saisir une adresse e-mail valide.',
+            'access_create.error_consent'   => 'Veuillez accepter l’utilisation de votre e-mail.',
+            'access_create.error_rate'      => 'Trop de tentatives. Veuillez patienter un moment puis réessayer.',
+            'access_create.error_code'      => 'Le code est invalide ou expiré.',
+            'access_create.error_resend'    => 'Renvoi impossible. Veuillez recommencer.',
+            'access_create.error_mail_send' => 'Échec de l’envoi de l’e-mail. Veuillez réessayer plus tard.',
+            'access_create.error_db'        => 'Erreur serveur (BD).',
+        
+            'access_create.back'   => 'Retour',
+            'access_create.cancel' => 'Annuler',
+        
+            'access_create.mail_subject' => 'Votre mot de passe pour l’inscription en ligne',
+            'access_create.mail_body'    => "Votre accès a été créé.\n\nE-mail : {email}\nMot de passe : {password}\n\nVeuillez conserver ce mot de passe en lieu sûr.",
+        
+            // =========================
+            // ACCESS_PORTAL (FR)
+            // =========================
+            'access_portal.title'    => 'Mes candidatures',
+            'access_portal.lead'     => 'Vous voyez ici vos candidatures. Vous pouvez reprendre une candidature existante ou en démarrer une nouvelle.',
+            'access_portal.max_hint' => '{email} · max. {max} candidatures',
+        
+            'access_portal.btn_new'    => 'Démarrer une nouvelle candidature',
+            'access_portal.btn_open'   => 'Ouvrir',
+            'access_portal.btn_logout' => 'Se déconnecter',
+        
+            'access_portal.th_ref'     => 'ID',
+            'access_portal.th_status'  => 'Statut',
+            'access_portal.th_created' => 'Créée',
+            'access_portal.th_updated' => 'Mise à jour',
+            'access_portal.th_token'   => 'Token',
+            'access_portal.th_action'  => 'Action',
+        
+            'access_portal.status_draft'     => 'Brouillon',
+            'access_portal.status_submitted' => 'Envoyée',
+            'access_portal.status_withdrawn' => 'Retirée',
+        
+            'access_portal.limit_reached' => 'Vous avez atteint le nombre maximal de candidatures pour cet e-mail.',
+            'access_portal.no_apps'       => 'Aucune candidature pour le moment.',
+            'access_portal.err_generic'   => 'Une erreur est survenue.',
+            'access_portal.csrf_invalid'  => 'Requête invalide.',
+        
+            // =========================
+            // ACCESS_LOGIN (FR)
+            // =========================
+            'access_login.title'            => 'Accéder à la/aux candidature(s)',
+            'access_login.lead'             => 'Vous pouvez ici rouvrir une candidature déjà commencée ou envoyée.',
+        
+            'access_login.login_box_title'  => 'Connexion avec Access-Token',
+            'access_login.login_box_text'   => 'Veuillez saisir votre code d’accès personnel (Access-Token) et votre date de naissance.',
+        
+            'access_login.token_label'      => 'Access-Token',
+            'access_login.dob_label'        => 'Date de naissance (JJ.MM.AAAA)',
+        
+            'access_login.login_btn'        => 'Accéder',
+            'access_login.back'             => "Retour à l’accueil",
+        
+            'access_login.login_ok'         => 'La candidature a été chargée.',
+            'access_login.login_error'      => 'La combinaison Access-Token et date de naissance est introuvable.',
+            'access_login.login_error_token'=> 'Veuillez saisir un Access-Token valide.',
+            'access_login.login_error_dob'  => 'Veuillez saisir une date de naissance valide au format JJ.MM.AAAA.',
+        
+            'access_login.csrf_invalid'     => 'Requête invalide.',
+            'access_login.internal_error'   => 'Erreur interne.',
+            'access_login.load_error'       => 'Une erreur est survenue lors du chargement de la candidature.',
+        
+            // =========================
+            // PRIVACY (FR)
+            // =========================
+            'privacy.title' => 'Protection des données',
+            'privacy.h1'    => 'Informations de protection des données pour la candidature en ligne « BES Langue et Intégration »',
+        
+            'privacy.s1_title'    => '1. Responsable du traitement',
+            'privacy.s1_body_html'=> '<strong>Ville d’Oldenburg / Écoles professionnelles</strong><br>(Veuillez indiquer le service/l’établissement exact, l’adresse, le téléphone et l’e-mail)',
+        
+            'privacy.s2_title'    => '2. Délégué·e à la protection des données',
+            'privacy.s2_body_html'=> '(Indiquer les coordonnées du/de la délégué·e à la protection des données)',
+        
+            'privacy.s3_title' => '3. Finalités du traitement',
+            'privacy.s3_li1'   => 'Réception et traitement de votre candidature pour l’admission dans la classe de langue (« BES Langue et Intégration »)',
+            'privacy.s3_li2'   => 'Communication avec vous (questions, informations sur la décision d’admission)',
+            'privacy.s3_li3'   => 'Planification de l’organisation scolaire (affectation à un BBS)',
+        
+            'privacy.s4_title' => '4. Bases juridiques',
+            'privacy.s4_li1'   => 'Art. 6, par. 1, point e) RGPD en lien avec la réglementation scolaire du Land de Basse-Saxe',
+            'privacy.s4_li2'   => 'Art. 6, par. 1, point c) RGPD (respect d’une obligation légale)',
+            'privacy.s4_li3'   => 'Art. 6, par. 1, point a) RGPD (consentement), dans la mesure où des informations/téléversements facultatifs sont fournis',
+        
+            'privacy.s5_title' => '5. Catégories de données à caractère personnel',
+            'privacy.s5_li1'   => 'Données d’identification (nom, prénom, date de naissance, nationalité, adresse, coordonnées)',
+            'privacy.s5_li2'   => 'Informations scolaires (école actuelle, niveau de langue, intérêts)',
+            'privacy.s5_li3'   => 'Documents facultatifs (p. ex. dernier bulletin semestriel)',
+            'privacy.s5_li4'   => 'Contacts supplémentaires (parents/tuteur·rice/structures)',
+        
+            'privacy.s6_title' => '6. Destinataires',
+            'privacy.s6_body'  => 'Au sein de la Ville d’Oldenburg et des écoles professionnelles compétentes. Une transmission à des tiers n’a lieu que si la loi l’exige (p. ex. autorités scolaires) ou avec votre consentement.',
+        
+            'privacy.s7_title' => '7. Transfert vers des pays tiers',
+            'privacy.s7_body'  => 'Aucun transfert vers des pays tiers n’a lieu.',
+        
+            'privacy.s8_title' => '8. Durée de conservation',
+            'privacy.s8_body'  => 'Vos données sont conservées pendant la durée de la procédure de candidature/admission et conformément aux délais légaux de conservation, puis supprimées.',
+        
+            'privacy.s9_title' => '9. Vos droits',
+            'privacy.s9_li1'   => 'Accès (art. 15 RGPD), rectification (art. 16), effacement (art. 17), limitation (art. 18)',
+            'privacy.s9_li2'   => 'Opposition (art. 21) aux traitements réalisés dans l’intérêt public',
+            'privacy.s9_li3'   => 'Retrait des consentements (art. 7, par. 3) avec effet pour l’avenir',
+            'privacy.s9_li4'   => 'Droit de réclamation auprès de l’autorité de contrôle : Délégué·e régional·e à la protection des données de Basse-Saxe',
+        
+            'privacy.s10_title' => '10. Hébergement & journaux',
+            'privacy.s10_body'  => 'L’application est exploitée sur des serveurs de la ville ou dans un centre informatique communal. Seules des données techniquement nécessaires sont traitées (p. ex. journaux serveur pour le diagnostic). Aucun CDN externe n’est utilisé. Seul un cookie lié à la langue est défini.',
+        
+            'privacy.s11_title'    => '11. Cookies',
+            'privacy.s11_li1_html' => '<strong>lang</strong> – enregistre la langue sélectionnée (validité 12 mois). Objectif : convivialité.',
+            'privacy.s11_li2'      => 'Session PHP – nécessaire au fonctionnement du formulaire, supprimée à la fin de la session.',
+        
+            'privacy.stand_label' => 'Version',
+            'privacy.stand_hint'  => 'Veuillez vérifier régulièrement si des modifications ont été apportées.',
+            'privacy.back_home'   => "Retour à l’accueil",
+        
+            // =========================
+            // IMPRINT (FR)
+            // =========================
+            'imprint.title' => 'Mentions légales',
+            'imprint.h1'    => 'Mentions légales',
+        
+            'imprint.s1_title'    => 'Fournisseur de services',
+            'imprint.s1_body_html' => '<strong>Ville ***</strong><br>Écoles professionnelles<br>(indiquer l’adresse exacte)<br>Téléphone : (à compléter)<br>E-mail : (à compléter)',
+        
+            'imprint.s2_title'    => 'Représenté par',
+            'imprint.s2_body_html'=> '(p. ex. maire de la ville ****<br>ou direction de l’établissement BBS)',
+        
+            'imprint.s3_title'    => 'Responsable du contenu selon § 18, al. 2 MStV',
+            'imprint.s3_body_html'=> '(nom, fonction, contact, p. ex. direction du BBS ou service de presse)',
+        
+            'imprint.s4_title'    => 'N° de TVA',
+            'imprint.s4_body_html'=> '(si disponible ; sinon cette section peut être supprimée)',
+        
+            'imprint.s5_title' => 'Autorité de surveillance',
+            'imprint.s5_body'  => '(autorité communale compétente / autorité scolaire, p. ex. antenne régionale de l’autorité scolaire)',
+        
+            'imprint.s6_title' => 'Responsabilité du contenu',
+            'imprint.s6_body'  => 'Nous avons apporté le plus grand soin à la création du contenu. Toutefois, nous ne pouvons garantir l’exactitude, l’exhaustivité et l’actualité. En tant qu’organisme public, nous sommes responsables de nos propres contenus conformément au § 7, al. 1 TMG.',
+        
+            'imprint.s7_title' => 'Responsabilité des liens',
+            'imprint.s7_body'  => 'Notre offre ne contient pas de contenus externes transférant des données personnelles à des tiers. Dans la mesure où nous renvoyons vers des offres d’information d’autres organismes publics, nous n’assumons aucune responsabilité pour leur contenu.',
+        
+            'imprint.s8_title' => 'Droit d’auteur',
+            'imprint.s8_body'  => 'Les contenus et œuvres créés par la Ville d’Oldenburg sont soumis au droit d’auteur allemand. Les contributions de tiers sont signalées comme telles. Toute reproduction, modification, diffusion ou exploitation en dehors des limites du droit d’auteur nécessite l’accord écrit de la Ville d’Oldenburg ou du titulaire des droits.',
+        
+            'imprint.stand_label' => 'Version',
+            'imprint.stand_hint'  => 'Ces informations s’appliquent au formulaire en ligne « BES Langue et Intégration ».',
+            'imprint.back_home'   => "Retour à l’accueil",
+        
+            // =========================
+            // VERIFY_EMAIL (FR)
+            // =========================
+            'verify_email.title' => 'Vérifier l’e-mail',
+            'verify_email.h1'    => 'Vérifier l’e-mail',
+        
+            'verify_email.lead_sent'    => 'Nous avons envoyé un code de confirmation à {email}.',
+            'verify_email.lead_generic' => 'Veuillez saisir le code de confirmation reçu par e-mail. Si vous ne voyez pas d’e-mail, vous pouvez renvoyer le code à votre adresse.',
+        
+            'verify_email.code_label'  => 'Code de confirmation (6 chiffres)',
+            'verify_email.email_label' => 'Votre adresse e-mail',
+        
+            'verify_email.btn_verify' => 'Confirmer',
+            'verify_email.btn_resend' => 'Renvoyer le code',
+            'verify_email.hint_spam'  => 'Veuillez aussi vérifier le dossier spam.',
+        
+            'verify_email.back' => 'Retour',
+        
+            'verify_email.csrf_invalid' => 'Requête invalide.',
+            'verify_email.ok_verified'  => 'E-mail vérifié avec succès.',
+            'verify_email.ok_sent'      => 'Un nouveau code a été envoyé à {email}.',
+        
+            'verify_email.warn_cooldown'    => 'Veuillez patienter un instant avant de redemander le code.',
+            'verify_email.error_send'       => 'Échec de l’envoi. Veuillez réessayer plus tard.',
+            'verify_email.error_email'      => 'Veuillez saisir une adresse e-mail valide.',
+            'verify_email.error_no_session' => 'Aucun processus de vérification actif trouvé. Veuillez demander un nouveau code.',
+            'verify_email.error_expired'    => 'Code invalide ou expiré.',
+            'verify_email.error_invalid'    => 'Code invalide ou expiré.',
+            'verify_email.error_code_format'=> 'Veuillez saisir un code valide à 6 chiffres.',
+            'verify_email.error_rate'       => 'Trop de tentatives. Veuillez demander un nouveau code.',
+        
+            // =========================
+            // VALIDATION (FR) – global
+            // =========================
             'val.required' => 'Obligatoire.',
             'val.only_letters' => 'Veuillez utiliser uniquement des lettres.',
             'val.gender_choose' => 'Veuillez choisir un sexe.',
@@ -1218,6 +1747,7 @@ function i18n_dict(): array {
             'val.kontakt_row_mail_invalid' => 'E-mail invalide',
             'val.kontakt_row_tel_invalid'  => 'Téléphone invalide',
         ],
+
 
         'uk' => [
             'index.title' => 'Ласкаво просимо до онлайн-реєстрації – мовні класи',
