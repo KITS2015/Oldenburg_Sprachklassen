@@ -298,39 +298,53 @@ function i18n_dict(): array {
             'js.hint_years_gt3'  => 'Hinweis: Sie haben mehr als 3 Jahre in Deutschland. Bitte bewerben Sie sich über {link}.',
             'js.hint_level_b1p'  => 'Hinweis: Mit Deutsch-Niveau B1 oder höher bitte reguläre BBS-Bewerbung über {link}.',
 
-            // ==================================================
-            // form_upload.php (DE) – Schritt 3/4 Upload
-            // Einfügen in i18n_dict() unter 'de' => [ ... ]
-            // ==================================================
-            'upload.page_title' => 'Schritt 3/4 – Dokumente hochladen',
-            'upload.h1' => 'Schritt 3/4 – Dokumente hochladen',
-            'upload.required_hint' => 'Pflichtfelder sind blau am Rahmen hervorgehoben.',
-            'upload.form_error_hint' => 'Bitte prüfen Sie die markierten Felder.',
+            // ------------------------
+            // DE: form_upload.php
+            // ------------------------
+            'upload.page_title' => 'Schritt 3/4 – Unterlagen (optional)',
+            'upload.h1'         => 'Schritt 3/4 – Unterlagen (optional)',
             
-            'upload.info_title' => 'Hinweis:',
-            'upload.info_body'  => 'Bitte laden Sie – wenn vorhanden – passende Dokumente hoch. Akzeptiert werden PDF, JPG und PNG. Dateien werden vertraulich behandelt.',
+            'upload.intro'      => 'Sie können hier Unterlagen hochladen. Erlaubte Formate sind <strong>PDF</strong>, <strong>JPG</strong> und <strong>PNG</strong>. Die maximale Dateigröße beträgt <strong>{max_mb} MB</strong> pro Datei.',
             
-            'upload.section_docs' => 'Dokumente',
-            'upload.docs_hint'    => 'Sie können mehrere Dateien hochladen. Große Dateien ggf. vorher verkleinern.',
+            'upload.type.zeugnis'    => 'Letztes Halbjahreszeugnis',
+            'upload.type.lebenslauf' => 'Lebenslauf',
+            'upload.type_hint'       => '(PDF/JPG/PNG, max. {max_mb} MB)',
             
-            'upload.file_current' => 'Bereits hochgeladen:',
-            'upload.file_replace' => 'Ersetzen / neu hochladen',
-            'upload.file_remove'  => 'Datei entfernen',
+            'upload.btn.remove' => 'Entfernen',
+            'upload.btn.back'   => 'Zurück',
+            'upload.btn.next'   => 'Weiter',
             
-            'upload.btn.back' => 'Zurück',
-            'upload.btn.next' => 'Weiter',
+            'upload.saved_prefix' => 'Bereits gespeichert:',
+            'upload.empty'        => 'Noch keine Datei hochgeladen.',
+            'upload.saved_html'   => 'Bereits gespeichert: <strong>{filename}</strong>, {size_kb} KB, hochgeladen am {uploaded_at}',
             
-            // Allgemeine Upload-Labels (du kannst pro Feld eigene Keys ergänzen)
-            'upload.label.generic' => 'Datei hochladen',
-            'upload.help.generic'  => 'Optional',
+            'upload.checkbox.zeugnis_spaeter' => 'Ich reiche das Halbjahreszeugnis nach der Zusage nach.',
             
-            // Validierung / Fehler
-            'val.upload_required'      => 'Bitte laden Sie eine Datei hoch.',
-            'val.upload_err_php'       => 'Upload fehlgeschlagen (Serverfehler).',
-            'val.upload_type'          => 'Ungültiger Dateityp. Erlaubt: PDF, JPG, PNG.',
-            'val.upload_too_large'     => 'Die Datei ist zu groß.',
-            'val.upload_move_failed'   => 'Datei konnte nicht gespeichert werden.',
-            'val.upload_remove_failed' => 'Datei konnte nicht entfernt werden.',
+            'upload.flash.no_access' => 'Kein gültiger Zugang gefunden. Bitte beginnen Sie die Anmeldung neu.',
+            'upload.flash.saved'     => 'Upload-Informationen gespeichert.',
+            
+            'upload.js.uploading'         => 'Upload wird durchgeführt …',
+            'upload.js.unexpected'        => 'Unerwartete Antwort vom Server.',
+            'upload.js.upload_failed'     => 'Upload fehlgeschlagen.',
+            'upload.js.delete_confirm'    => 'Hochgeladene Datei wirklich entfernen?',
+            'upload.js.delete_failed'     => 'Löschen fehlgeschlagen.',
+            'upload.js.remove_confirm_btn'=> 'Datei entfernen?',
+            
+            // AJAX / Fehlertexte
+            'upload.ajax.invalid_method' => 'Ungültige Methode',
+            'upload.ajax.invalid_csrf'   => 'Ungültiges CSRF-Token',
+            'upload.ajax.no_access'      => 'Kein gültiger Zugang.',
+            'upload.ajax.invalid_field'  => 'Ungültiges Feld',
+            'upload.ajax.no_file_sent'   => 'Keine Datei gesendet',
+            'upload.ajax.no_file_selected' => 'Keine Datei ausgewählt',
+            'upload.ajax.upload_error'   => 'Upload-Fehler (Code {code})',
+            'upload.ajax.too_large'      => 'Datei größer als {max_mb} MB',
+            'upload.ajax.mime_only'      => 'Nur PDF, JPG oder PNG erlaubt',
+            'upload.ajax.ext_only'       => 'Ungültige Dateiendung (nur pdf/jpg/jpeg/png)',
+            'upload.ajax.cannot_save'    => 'Konnte Datei nicht speichern',
+            'upload.ajax.unknown_action' => 'Unbekannte Aktion',
+            'upload.ajax.server_error'   => 'Serverfehler beim Upload',
+
         
         ],
 
