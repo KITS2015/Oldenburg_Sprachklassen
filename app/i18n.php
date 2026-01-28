@@ -1749,131 +1749,660 @@ function i18n_dict(): array {
         ],
 
 
+        // =======================
+        // UK: in 'uk' => [ ... ] einfügen (komplett)
+        // =======================
         'uk' => [
+        
+            // =======================
+            // STEP Start: Index (UK)
+            // =======================
             'index.title' => 'Ласкаво просимо до онлайн-реєстрації – мовні класи',
-            'index.lead'  => 'Ця послуга для людей, які нещодавно прибули до Ольденбурга. Форма допоможе нам зв’язатися з вами та підібрати відповідні курси.',
+            'index.lead'  => 'Ця послуга призначена для людей, які нещодавно прибули до Ольденбурга. Форма допоможе нам зв’язатися з вами та підібрати відповідні пропозиції.',
             'index.bullets' => [
-                'Підготуйте контактні дані та документ, що посвідчує особу (за наявності).',
-                'Форму можна заповнювати різними мовами.',
+                'Будь ласка, підготуйте контактні дані та документ, що посвідчує особу (за наявності).',
+                'Форму можна заповнювати кількома мовами.',
                 'Ваші дані обробляються конфіденційно відповідно до GDPR.',
             ],
             'index.info_p' => [
-                'Шановна ученице, шановний учню!',
-                'Ви подаєте заявку на місце у класі вивчення мови «BES Мова та інтеграція» у професійній школі (BBS) міста Ольденбург. Ви не подаєтеся до конкретної школи. Після 20 лютого вам повідомлять, яка школа зарахує вас до класу.',
+                'Шановна ученице, шановний учню,',
+                'Цією заявою ви подаєтеся на місце у мовному класі «BES Мова та інтеграція» у професійній школі (BBS) в Ольденбурзі. Ви подаєтеся не до конкретної BBS. Після 20 лютого вам повідомлять, яка школа прийме вас до мовного класу.',
                 'Вас можуть зарахувати лише за таких умов:',
             ],
             'index.info_bullets' => [
-                'вам потрібна інтенсивна підтримка з німецької мови (рівень нижче B1);',
-                'на початок наступного навчального року ви перебуваєте в Німеччині не більше 3 років;',
-                'станом на 30 вересня цього року вам щонайменше 16 і не більше 18 років;',
-                'у наступному навчальному році ви підлягаєте обов’язковому шкільному навчанню.',
+                'Вам потрібна інтенсивна підтримка з німецької мови (рівень німецької нижче B1).',
+                'На початок наступного навчального року ви перебуваєте в Німеччині не більше 3 років.',
+                'Станом на 30 вересня цього року вам щонайменше 16 і не більше 18 років.',
+                'У наступному навчальному році ви підлягаєте обов’язковому шкільному навчанню.',
             ],
-            'index.access_title' => 'Конфіденційність та доступ',
-            'index.access_intro' => 'Ви можете продовжити з електронною поштою або без неї. Доступ до збережених заяв можливий лише за допомогою особистого токена доступу та дати народження.',
+            'index.access_title' => 'Захист даних і доступ',
+            'index.access_intro' => 'Ви можете продовжити з електронною поштою або без неї. Доступ до збережених заяв можливий лише за допомогою особистого коду доступу (токена) та дати народження.',
             'index.access_points' => [
-                '<strong>З e-mail:</strong> ви отримаєте код підтвердження і зможете пізніше продовжити заповнення.',
-                '<strong>Без e-mail:</strong> ви отримаєте особистий токен доступу. Занотуйте/сфотографуйте його — без підтвердженої e-mail відновлення неможливе.',
+                '<strong>З e-mail:</strong> ви отримаєте код підтвердження і зможете створювати кілька заяв та відкривати їх пізніше.',
+                '<strong>Без e-mail:</strong> ви отримаєте особистий код доступу (Access-Token). Будь ласка, запишіть/сфотографуйте його — без підтвердженого e-mail відновлення неможливе.',
             ],
+        
             'index.btn_noemail' => 'Продовжити без e-mail',
-            'index.btn_create'  => 'Створити доступ за e-mail',
-            'index.btn_load'    => 'Завантажити заявку',
+            'index.btn_create'  => 'Продовжити з e-mail',
+            'index.btn_load'    => 'Доступ до заявки/заяв',
             'index.lang_label'  => 'Мова:',
-
+        
+            // =======================
+            // STEP 1/4: PERSONAL (UK)
+            // =======================
             'personal.page_title' => 'Крок 1/4 – Особисті дані',
-			'personal.h1' => 'Крок 1/4 – Особисті дані',
-			'personal.required_hint' => 'Обов’язкові поля виділені синьою рамкою.',
-			'personal.form_error_hint' => 'Будь ласка, перевірте позначені поля.',
-
-			'personal.alert_email_title' => 'Вхід через e-mail активний:',
-			'personal.alert_email_line1' => 'Ви увійшли з адресою e-mail {email}.',
-			'personal.alert_email_line2' => 'Цей e-mail використовується лише для коду доступу (Access-Token) та для пошуку вашої заявки.',
-			'personal.alert_email_line3' => 'Нижче ви можете вказати e-mail учениці / учня (за наявності).',
-
-			'personal.alert_noemail_title' => 'Примітка (без e-mail):',
-			'personal.alert_noemail_body' => 'Будь ласка, запишіть або сфотографуйте ваш код доступу (Access-Token), який буде показано після збереження цієї сторінки. Без підтвердженого e-mail відновлення можливе лише за токеном + датою народження.',
-
-			'personal.label.name' => 'Прізвище',
-			'personal.label.vorname' => 'Ім’я',
-			'personal.label.geschlecht' => 'Стать',
-			'personal.gender.m' => 'чоловіча',
-			'personal.gender.w' => 'жіноча',
-			'personal.gender.d' => 'інша',
-
-			'personal.label.geburtsdatum' => 'Дата народження',
-			'personal.label.geburtsdatum_hint' => '(ДД.ММ.РРРР)',
-			'personal.placeholder.geburtsdatum' => 'ДД.ММ.РРРР',
-
-			'personal.age_hint' => 'Примітка: якщо станом на 30.09.{year} вам менше 16 або більше 18 років, вас не можна зарахувати до мовного класу BBS. Будь ласка, подайте заявку до іншого класу тут:',
-			'personal.age_redirect_msg' => "Примітка: якщо станом на 30.09.{year} вам менше 16 або більше 18 років, вас не можна зарахувати до мовного класу BBS.\nБудь ласка, подайте заявку до іншого класу BBS тут:\n{url}",
-
-			'personal.label.geburtsort_land' => 'Місце / країна народження',
-			'personal.label.staatsang' => 'Громадянство',
-
-			'personal.label.strasse' => 'Вулиця, №',
-			'personal.label.plz' => 'Поштовий індекс',
-			'personal.plz_choose' => '– будь ласка, оберіть –',
-			'personal.plz_hint' => 'Лише Ольденбург (Oldb).',
-			'personal.label.wohnort' => 'Місто',
-
-			'personal.label.telefon' => 'Номер телефону',
-			'personal.label.telefon_vorwahl_help' => 'Код міста/оператора з/без 0',
-			'personal.label.telefon_nummer_help' => 'Номер',
-			'personal.placeholder.telefon_vorwahl' => '(0)441',
-			'personal.placeholder.telefon_nummer' => '123456',
-
-			'personal.label.email' => 'E-mail адреса учениці / учня (необов’язково, не адреса IServ)',
-			'personal.email_help' => 'Цей e-mail належить учениці / учню (за наявності) і не залежить від e-mail для входу.',
-			'personal.placeholder.email' => 'name@example.org',
-
-			'personal.label.kontakte' => 'Додаткові контактні дані',
-			'personal.kontakte_hint' => '(наприклад, батьки, опікун, установа)',
-			'personal.kontakte_error' => 'Будь ласка, перевірте додаткові контакти.',
-			'personal.kontakte_add' => '+ Додати контакт',
-			'personal.kontakte_remove_title' => 'Видалити контакт',
-
-			'personal.table.role' => 'Роль',
-			'personal.table.name' => 'Ім’я / установа',
-			'personal.table.tel'  => 'Телефон',
-			'personal.table.mail' => 'E-mail',
-			'personal.table.note_header' => 'Примітка',
-			'personal.placeholder.kontakt_name' => 'Ім’я або назва',
-			'personal.placeholder.kontakt_tel'  => '+49 …',
-			'personal.placeholder.kontakt_note' => 'наприклад, доступність, мова, примітки',
-
-			'personal.contact_role.none' => '–',
-			'personal.contact_role.mutter' => 'Мати',
-			'personal.contact_role.vater' => 'Батько',
-			'personal.contact_role.elternteil' => 'Один із батьків',
-			'personal.contact_role.betreuer' => 'Опікун/опікунка',
-			'personal.contact_role.einrichtung' => 'Установа',
-			'personal.contact_role.sonstiges' => 'Інше',
-
-			'personal.label.weitere_angaben' => 'Додаткові відомості (наприклад, потреба в підтримці):',
-			'personal.placeholder.weitere_angaben' => 'Тут ви можете вказати особливі потреби у підтримці, спеціальні освітні потреби або інші примітки.',
-			'personal.weitere_angaben_help' => 'Необов’язково. Максимум 1500 символів.',
-			'personal.btn.cancel' => 'Скасувати',
-			'personal.btn.next' => 'Далі',
-
-			'personal.dsgvo_text_prefix' => 'Я прочитав/прочитала',
-			'personal.dsgvo_link_text' => 'повідомлення про захист даних',
-			'personal.dsgvo_text_suffix' => 'і погоджуюся.',
-
-			'val.required' => 'Обов’язково.',
-			'val.only_letters' => 'Будь ласка, лише літери.',
-			'val.gender_choose' => 'Будь ласка, оберіть стать.',
-			'val.date_format' => 'ДД.ММ.РРРР',
-			'val.date_invalid' => 'Недійсна дата.',
-			'val.plz_whitelist' => 'Лише поштові індекси Ольденбурга (26121–26135).',
-			'val.phone_vorwahl' => 'Код: 2–6 цифр.',
-			'val.phone_nummer' => 'Номер: 3–12 цифр.',
-			'val.email_invalid' => 'Недійсний e-mail.',
-			'val.email_no_iserv' => 'Будь ласка, приватний e-mail (не IServ).',
-			'val.max_1500' => 'Максимум 1500 символів.',
-			'val.kontakt_row_name_missing' => 'Відсутнє ім’я/назва',
-			'val.kontakt_row_tel_or_mail'  => 'Вкажіть телефон АБО e-mail',
-			'val.kontakt_row_mail_invalid' => 'Недійсний e-mail',
-			'val.kontakt_row_tel_invalid'  => 'Недійсний телефон',
+            'personal.h1' => 'Крок 1/4 – Особисті дані',
+            'personal.required_hint' => 'Обов’язкові поля виділені синьою рамкою.',
+            'personal.form_error_hint' => 'Будь ласка, перевірте позначені поля.',
+        
+            'personal.alert_email_title' => 'Вхід через e-mail активний:',
+            'personal.alert_email_line1' => 'Ви увійшли з адресою e-mail {email}.',
+            'personal.alert_email_line2' => 'Цей e-mail використовується лише для коду доступу (Access-Token) та для пошуку вашої заявки.',
+            'personal.alert_email_line3' => 'Нижче ви можете вказати e-mail учениці / учня (за наявності).',
+        
+            'personal.alert_noemail_title' => 'Примітка (без e-mail):',
+            'personal.alert_noemail_body' => 'Будь ласка, запишіть або сфотографуйте ваш код доступу (Access-Token), який буде показано після збереження цієї сторінки. Без підтвердженого e-mail відновлення можливе лише за токеном + датою народження.',
+        
+            'personal.label.name' => 'Прізвище',
+            'personal.label.vorname' => 'Ім’я',
+            'personal.label.geschlecht' => 'Стать',
+            'personal.gender.m' => 'чоловіча',
+            'personal.gender.w' => 'жіноча',
+            'personal.gender.d' => 'інша',
+        
+            'personal.label.geburtsdatum' => 'Народився/лася',
+            'personal.label.geburtsdatum_hint' => '(ДД.ММ.РРРР)',
+            'personal.placeholder.geburtsdatum' => 'ДД.ММ.РРРР',
+        
+            'personal.age_hint' => 'Примітка: якщо станом на 30.09.{year} вам менше 16 або більше 18 років, вас не можна зарахувати до мовного класу BBS. Будь ласка, подайте заявку до іншого класу тут:',
+            'personal.age_redirect_msg' => "Примітка: якщо станом на 30.09.{year} вам менше 16 або більше 18 років, вас не можна зарахувати до мовного класу BBS. Будь ласка, подайте заявку до іншого класу BBS тут:\n{url}",
+        
+            'personal.label.geburtsort_land' => 'Місце / країна народження',
+            'personal.label.staatsang' => 'Громадянство',
+        
+            'personal.label.strasse' => 'Вулиця, №',
+            'personal.label.plz' => 'Поштовий індекс',
+            'personal.plz_choose' => '– будь ласка, оберіть –',
+            'personal.plz_hint' => 'Лише Ольденбург (Oldb).',
+            'personal.label.wohnort' => 'Місто',
+        
+            'personal.label.telefon' => 'Номер телефону',
+            'personal.label.telefon_vorwahl_help' => 'Код міста/оператора з/без 0',
+            'personal.label.telefon_nummer_help' => 'Номер',
+            'personal.placeholder.telefon_vorwahl' => '(0)441',
+            'personal.placeholder.telefon_nummer' => '123456',
+        
+            'personal.label.email' => 'E-mail адреса учениці / учня (необов’язково, не адреса IServ)',
+            'personal.email_help' => 'Цей e-mail належить учениці / учню (за наявності) і не залежить від e-mail для коду доступу.',
+            'personal.placeholder.email' => 'name@example.org',
+        
+            'personal.label.kontakte' => 'Додаткові контактні дані',
+            'personal.kontakte_hint' => '(наприклад, батьки, опікун, установа)',
+            'personal.kontakte_error' => 'Будь ласка, перевірте додаткові контакти.',
+            'personal.kontakte_add' => '+ Додати контакт',
+            'personal.kontakte_remove_title' => 'Видалити контакт',
+        
+            'personal.table.role' => 'Роль',
+            'personal.table.name' => 'Ім’я / установа',
+            'personal.table.tel'  => 'Телефон',
+            'personal.table.mail' => 'E-mail',
+            'personal.table.note_header' => 'Примітка',
+            'personal.placeholder.kontakt_name' => 'Ім’я або назва',
+            'personal.placeholder.kontakt_tel'  => '+49 …',
+            'personal.placeholder.kontakt_note' => 'наприклад, доступність, мова, примітки',
+        
+            'personal.contact_role.none' => '–',
+            'personal.contact_role.mutter' => 'Мати',
+            'personal.contact_role.vater' => 'Батько',
+            'personal.contact_role.elternteil' => 'Один із батьків',
+            'personal.contact_role.betreuer' => 'Опікун/опікунка',
+            'personal.contact_role.einrichtung' => 'Установа',
+            'personal.contact_role.sonstiges' => 'Інше',
+        
+            'personal.label.weitere_angaben' => 'Додаткові відомості (наприклад, статус підтримки):',
+            'personal.placeholder.weitere_angaben' => 'Тут ви можете вказати, наприклад, особливі потреби у підтримці, спеціальні освітні потреби або інші примітки.',
+            'personal.weitere_angaben_help' => 'Необов’язково. Максимум 1500 символів.',
+            'personal.btn.cancel' => 'Скасувати',
+            'personal.btn.next' => 'Далі',
+        
+            'personal.dsgvo_text_prefix' => 'Я прочитав/прочитала',
+            'personal.dsgvo_link_text' => 'повідомлення про захист даних',
+            'personal.dsgvo_text_suffix' => 'і погоджуюся.',
+        
+            // =====================
+            // STEP 2/4: SCHOOL (UK)
+            // =====================
+            'school.page_title' => 'Крок 2/4 – Школа та інтереси',
+            'school.h1' => 'Крок 2/4 – Школа та інтереси',
+            'school.required_hint' => 'Обов’язкові поля виділені синьою рамкою.',
+            'school.form_error_hint' => 'Будь ласка, перевірте позначені поля.',
+        
+            'school.top_hint_title' => 'Примітка:',
+            'school.top_hint_body'  => 'Якщо ви перебуваєте в Німеччині <u>понад 3 роки</u> або вже володієте німецькою на рівні <u>B1</u> чи вище, вас не можна зарахувати до мовного класу BBS. Будь ласка, подайте заявку до іншого класу BBS тут:',
+            'school.bbs_link_label' => 'https://bbs-ol.de/',
+        
+            'school.autohints_title' => 'Підказки',
+        
+            'school.label.schule_aktuell' => 'Поточна школа',
+            'school.search_placeholder'   => 'Пошук школи… (назва, вулиця, індекс)',
+            'school.select_choose'        => 'Будь ласка, оберіть…',
+            'school.option_other'         => 'Інша / немає у списку',
+            'school.other_placeholder'    => 'Назва школи, вулиця, місто (вільний текст)',
+        
+            'school.label.teacher'        => 'відповідальний/а вчитель/ка',
+            'school.label.teacher_mail'   => 'E-mail відповідального/ої вчителя/ки',
+        
+            'school.label.herkunft'       => 'Чи відвідували ви школу у країні походження?',
+            'school.yes'                  => 'Так',
+            'school.no'                   => 'Ні',
+            'school.label.herkunft_years' => 'Якщо так: скільки років?',
+        
+            'school.label.since'          => 'З якого часу ви навчаєтесь у школі в Німеччині?',
+            'school.since_month'          => 'Місяць (MM)',
+            'school.since_year_ph'        => 'Рік (РРРР)',
+            'school.since_help'           => 'Вкажіть місяць+рік <strong>або</strong> скористайтеся полем вільного тексту.',
+            'school.label.since_text'     => 'Альтернатива: вільний текст (наприклад, «з осені 2023»)',
+        
+            'school.label.years_in_de'    => 'Скільки років ви в Німеччині?',
+            'school.years_in_de_help'     => 'Примітка: &gt; 3 роки → звичайна заявка до BBS через {link}.',
+        
+            'school.label.family_lang'    => 'Сімейна мова / рідна мова',
+        
+            'school.label.level'          => 'Який рівень німецької?',
+            'school.level_choose'         => 'Будь ласка, оберіть…',
+            'school.level_help'           => 'Примітка: B1 або вище → звичайна заявка до BBS через {link}.',
+        
+            'school.label.interests'      => 'Інтереси (мін. 1, макс. 2)',
+        
+            'school.btn.back'             => 'Назад',
+            'school.btn.next'             => 'Далі',
+        
+            // ---------------------
+            // Validierung / Errors
+            // ---------------------
+            'val.school_free_required' => 'Будь ласка, вкажіть назву школи (вільний текст).',
+            'val.school_invalid'       => 'Будь ласка, оберіть дійсну школу або «Інша / немає у списку».',
+        
+            'val.since_required'       => 'Будь ласка, вкажіть місяць+рік або вільний текст.',
+            'val.month_invalid'        => 'Місяць має бути 01–12.',
+            'val.year_invalid'         => 'Будь ласка, вкажіть дійсний рік.',
+            'val.number_required'      => 'Будь ласка, вкажіть число.',
+            'val.choose'               => 'Будь ласка, оберіть.',
+            'val.herkunft_years'       => 'Будь ласка, вкажіть кількість років.',
+        
+            'val.level_invalid'        => 'Недійсний вибір.',
+        
+            'val.interests_min1'       => 'Будь ласка, оберіть щонайменше 1 напрям.',
+            'val.interests_max2'       => 'Будь ласка, оберіть не більше 2 напрямів.',
+        
+            // ---------------------
+            // JS Live-Hinweise
+            // ---------------------
+            'js.hint_years_gt3'  => 'Примітка: ви перебуваєте в Німеччині понад 3 роки. Будь ласка, подайте заявку через {link}.',
+            'js.hint_level_b1p'  => 'Примітка: з рівнем німецької B1 або вище подавайте звичайну заявку до BBS через {link}.',
+        
+            // =========================
+            // STEP 3/4: UPLOAD (UK)
+            // =========================
+            'upload.page_title' => 'Крок 3/4 – Документи (необов’язково)',
+            'upload.h1'         => 'Крок 3/4 – Документи (необов’язково)',
+        
+            'upload.intro'      => 'Тут ви можете завантажити документи. Дозволені формати: <strong>PDF</strong>, <strong>JPG</strong> та <strong>PNG</strong>. Максимальний розмір файлу — <strong>{max_mb} МБ</strong> для кожного файлу.',
+        
+            'upload.type.zeugnis'    => 'Останнє семестрове табель/свідоцтво',
+            'upload.type.lebenslauf' => 'Резюме (CV)',
+            'upload.type_hint'       => '(PDF/JPG/PNG, макс. {max_mb} МБ)',
+        
+            'upload.btn.remove' => 'Видалити',
+            'upload.btn.back'   => 'Назад',
+            'upload.btn.next'   => 'Далі',
+        
+            'upload.saved_prefix' => 'Вже збережено:',
+            'upload.empty'        => 'Файл ще не завантажено.',
+            'upload.saved_html'   => 'Вже збережено: <strong>{filename}</strong>, {size_kb} КБ, завантажено {uploaded_at}',
+        
+            'upload.checkbox.zeugnis_spaeter' => 'Я подам семестрове свідоцтво після зарахування.',
+        
+            'upload.flash.no_access' => 'Дійсний доступ не знайдено. Будь ласка, почніть реєстрацію заново.',
+            'upload.flash.saved'     => 'Інформацію про завантаження збережено.',
+        
+            'upload.js.uploading'          => 'Виконується завантаження…',
+            'upload.js.unexpected'         => 'Неочікувана відповідь сервера.',
+            'upload.js.upload_failed'      => 'Завантаження не вдалося.',
+            'upload.js.delete_confirm'     => 'Справді видалити завантажений файл?',
+            'upload.js.delete_failed'      => 'Видалення не вдалося.',
+            'upload.js.remove_confirm_btn' => 'Видалити файл?',
+        
+            // AJAX / Fehlertexte
+            'upload.ajax.invalid_method'       => 'Недійсний метод',
+            'upload.ajax.invalid_csrf'         => 'Недійсний CSRF-токен',
+            'upload.ajax.no_access'            => 'Немає дійсного доступу.',
+            'upload.ajax.invalid_field'        => 'Недійсне поле',
+            'upload.ajax.no_file_sent'         => 'Файл не надіслано',
+            'upload.ajax.no_file_selected'     => 'Файл не вибрано',
+            'upload.ajax.upload_error'         => 'Помилка завантаження (код {code})',
+            'upload.ajax.too_large'            => 'Файл більший за {max_mb} МБ',
+            'upload.ajax.mime_only'            => 'Дозволено лише PDF, JPG або PNG',
+            'upload.ajax.ext_only'             => 'Недійсне розширення (лише pdf/jpg/jpeg/png)',
+            'upload.ajax.cannot_save'          => 'Не вдалося зберегти файл',
+            'upload.ajax.unknown_action'       => 'Невідома дія',
+            'upload.ajax.server_error'         => 'Помилка сервера під час завантаження',
+        
+            // =========================
+            // STEP 4/4: REVIEW (UK)
+            // =========================
+            'review.page_title' => 'Крок 4/4 – Підсумок та подання заявки',
+        
+            'review.h1'      => 'Крок 4/4 – Підсумок та подання заявки',
+            'review.subhead' => 'Будь ласка, перевірте ваші дані. Натиснувши «Подати заявку», ви надішлете дані.',
+        
+            'review.readonly_alert' => 'Цю заявку вже надіслано. Дані можна лише переглядати — змінювати або повторно подавати не можна.',
+        
+            'review.info.p1' => 'Шановна ученице, шановний учню,',
+            'review.info.p2' => 'натиснувши <strong>«Подати заявку»</strong>, ви подали заявку на <strong>BES Мова та інтеграція</strong> в одній із BBS Ольденбурга.',
+            'review.info.p3' => 'Це ще не остаточна реєстрація, а <strong>заявка</strong>. Після <strong>20.02.</strong> ви отримаєте інформацію, чи / у якій BBS вас прийнято. Будь ласка, регулярно перевіряйте поштову скриньку та e-mail. Переконайтеся, що ваше ім’я видно на поштовій скриньці, щоб ви могли отримувати листи.',
+            'review.info.p4' => 'Разом із підтвердженням від школи вас попросять подати ці документи (якщо ви ще не завантажили їх сьогодні):',
+            'review.info.li1' => 'останнє семестрове свідоцтво',
+        
+            // Accordion Überschriften
+            'review.acc.personal' => 'Особисті дані',
+            'review.acc.school'   => 'Школа та інтереси',
+            'review.acc.uploads'  => 'Документи',
+        
+            // Labels: Personal
+            'review.lbl.name'            => 'Прізвище',
+            'review.lbl.vorname'         => 'Ім’я',
+            'review.lbl.geschlecht'      => 'Стать',
+            'review.lbl.geburtsdatum'    => 'Народився/лася',
+            'review.lbl.geburtsort'      => 'Місце / країна народження',
+            'review.lbl.staatsang'       => 'Громадянство',
+            'review.lbl.strasse'         => 'Вулиця, №',
+            'review.lbl.plz_ort'         => 'Індекс / місто',
+            'review.lbl.telefon'         => 'Телефон',
+            'review.lbl.email'           => 'E-mail (учень/учениця, необов’язково)',
+            'review.lbl.weitere_angaben' => 'Додаткові відомості (наприклад, статус підтримки)',
+        
+            'review.contacts.title'    => 'Додаткові контакти',
+            'review.contacts.optional' => 'необов’язково',
+            'review.contacts.none'     => '–',
+        
+            'review.contacts.th.role' => 'Роль',
+            'review.contacts.th.name' => 'Ім’я / установа',
+            'review.contacts.th.tel'  => 'Телефон',
+            'review.contacts.th.mail' => 'E-mail',
+            'review.contacts.note'    => 'Примітка:',
+        
+            // Labels: School
+            'review.lbl.school_current' => 'Поточна школа',
+            'review.lbl.klassenlehrer'  => 'Відповідальний/а вчитель/ка',
+            'review.lbl.mail_lehrkraft' => 'E-mail вчителя/ки',
+            'review.lbl.since'          => 'З якого часу у школі',
+            'review.lbl.years_de'       => 'Років у Німеччині',
+            'review.lbl.family_lang'    => 'Сімейна мова / рідна мова',
+            'review.lbl.de_level'       => 'Рівень німецької',
+            'review.lbl.school_origin'  => 'Школа у країні походження',
+            'review.lbl.years_origin'   => 'Років навчання у країні походження',
+            'review.lbl.interests'      => 'Інтереси',
+        
+            // Uploads
+            'review.lbl.zeugnis'         => 'Семестрове свідоцтво',
+            'review.lbl.lebenslauf'      => 'Резюме (CV)',
+            'review.lbl.later'           => 'Подати пізніше',
+            'review.badge.uploaded'      => 'завантажено',
+            'review.badge.not_uploaded'  => 'не завантажено',
+            'review.yes'                 => 'Так',
+            'review.no'                  => 'Ні',
+        
+            // Buttons / Actions
+            'review.btn.home'   => 'На головну',
+            'review.btn.newapp' => 'Подати ще одну заявку',
+            'review.btn.back'   => 'Назад',
+            'review.btn.submit' => 'Подати заявку',
+        
+            // Errors / Flash / Systemtexte
+            'review.err.invalid_request'     => 'Недійсний запит.',
+            'review.flash.already_submitted' => 'Цю заявку вже надіслано — її не можна повторно подати або змінити.',
+            'review.flash.no_token'          => 'Немає дійсного коду доступу. Будь ласка, почніть процес заново.',
+            'review.err.not_found_token'     => 'Заявку за цим токеном не знайдено.',
+            'review.flash.submit_error'      => 'Під час надсилання сталася помилка. Будь ласка, спробуйте пізніше.',
+        
+            // Gender fallback
+            'review.gender.m' => 'чоловіча',
+            'review.gender.w' => 'жіноча',
+            'review.gender.d' => 'інша',
+        
+            // Fallback Anzeige
+            'review.value.empty' => '–',
+        
+            // =========================
+            // STATUS (UK)
+            // =========================
+            'status.hdr_title'   => 'Заявку успішно збережено',
+            'status.hdr_message' => 'Вашу заявку надіслано.',
+        
+            'status.h1' => 'Вашу заявку успішно збережено.',
+        
+            'status.success.title' => 'Дякуємо!',
+            'status.success.body'  => 'Вашу заявку надіслано, її буде опрацьовано найближчим часом.',
+        
+            'status.info.title' => 'Важлива примітка',
+            'status.info.body'  => '<em>[ЗАГЛУШКА: текст від замовника буде пізніше]</em>',
+        
+            'status.btn.pdf'    => 'Завантажити / роздрукувати PDF',
+            'status.btn.newapp' => 'Почати ще одну заявку',
+            'status.btn.home'   => 'На головну',
+        
+            'status.ref' => 'Довідка: заявка #{id}',
+        
+            'status.err.invalid_request' => 'Недійсний запит.',
+        
+            // =========================
+            // PDF (UK)
+            // =========================
+            'pdf.err.autoload_missing' => 'Composer Autoload не знайдено. Будь ласка, виконайте "composer install".',
+            'pdf.err.no_token'         => 'Немає дійсного коду доступу. Будь ласка, почніть процес заново.',
+            'pdf.err.not_found'        => 'Заявку не знайдено.',
+            'pdf.err.server'           => 'Помилка сервера під час створення PDF.',
+        
+            'pdf.header_title' => 'Заявка – Підсумок',
+            'pdf.footer_auto'  => 'Автоматично створений документ',
+            'pdf.footer_page'  => 'Сторінка {cur} / {max}',
+        
+            'pdf.meta.ref'        => 'Заявка #{id}',
+            'pdf.meta.created_at' => 'Створено',
+            'pdf.meta.status'     => 'Статус',
+        
+            'pdf.top.title'        => 'Короткий огляд',
+            'pdf.top.name'         => 'Прізвище',
+            'pdf.top.reference'    => 'Довідка',
+            'pdf.top.generated'    => 'Створено',
+            'pdf.top.hint'         => 'Примітка',
+            'pdf.top.keep_note'    => 'Будь ласка, збережіть цей документ для ваших записів.',
+            'pdf.hint_placeholder' => '[ЗАГЛУШКА: текст від замовника буде пізніше]',
+        
+            'pdf.sec1.title' => '1) Особисті дані',
+            'pdf.sec2.title' => '2) Додаткові контактні дані',
+            'pdf.sec3.title' => '3) Школа та інтереси',
+            'pdf.sec4.title' => '4) Документи',
+        
+            'pdf.lbl.name'           => 'Прізвище',
+            'pdf.lbl.vorname'        => 'Ім’я',
+            'pdf.lbl.gender'         => 'Стать',
+            'pdf.lbl.dob'            => 'Дата народження',
+            'pdf.lbl.birthplace'     => 'Місце/країна народження',
+            'pdf.lbl.nationality'    => 'Громадянство',
+            'pdf.lbl.address'        => 'Адреса',
+            'pdf.lbl.phone'          => 'Телефон',
+            'pdf.lbl.email_optional' => 'E-mail (необов’язково)',
+            'pdf.lbl.more'           => 'Додаткові відомості',
+        
+            'pdf.lbl.school_current' => 'Поточна школа',
+            'pdf.lbl.teacher'        => 'Вчитель/ка',
+            'pdf.lbl.teacher_email'  => 'E-mail вчителя/ки',
+            'pdf.lbl.since_school'   => 'З якого часу у школі',
+            'pdf.lbl.years_in_de'    => 'З якого часу в Німеччині',
+            'pdf.lbl.family_lang'    => 'Сімейна мова',
+            'pdf.lbl.de_level'       => 'Рівень німецької',
+            'pdf.lbl.school_origin'  => 'Школа у країні походження',
+            'pdf.lbl.years_origin'   => 'Років навчання у країні походження',
+            'pdf.lbl.interests'      => 'Інтереси',
+        
+            'pdf.lbl.report'       => 'Семестрове свідоцтво',
+            'pdf.lbl.cv'           => 'Резюме (CV)',
+            'pdf.lbl.report_later' => 'Свідоцтво подати пізніше',
+        
+            'pdf.uploaded'     => 'завантажено',
+            'pdf.not_uploaded' => 'не завантажено',
+        
+            'pdf.contacts.none'   => '–',
+            'pdf.contacts.th.role'=> 'Роль',
+            'pdf.contacts.th.name'=> 'Ім’я/установа',
+            'pdf.contacts.th.tel' => 'Телефон',
+            'pdf.contacts.th.mail'=> 'E-mail',
+            'pdf.contacts.th.note'=> 'Примітка',
+        
+            'pdf.gender.m' => 'чоловіча',
+            'pdf.gender.w' => 'жіноча',
+            'pdf.gender.d' => 'інша',
+        
+            'pdf.yes' => 'Так',
+            'pdf.no'  => 'Ні',
+        
+            'pdf.sec4.note' => 'Цей документ є автоматично створеним підсумком введених даних.',
+        
+            'pdf.filename_prefix' => 'Заявка',
+        
+            // =========================
+            // ACCESS_CREATE (UK)
+            // =========================
+            'access_create.title'         => 'Продовжити з e-mail',
+            'access_create.lead'          => 'Ви можете увійти зі своїм доступом або створити новий доступ.',
+            'access_create.tabs_login'    => 'Увійти',
+            'access_create.tabs_register' => 'Створити новий доступ',
+        
+            'access_create.login_title' => 'Увійти (існуючий доступ)',
+            'access_create.login_text'  => 'Будь ласка, введіть вашу адресу e-mail та пароль.',
+            'access_create.email_label' => 'Адреса e-mail',
+            'access_create.pass_label'  => 'Пароль',
+            'access_create.login_btn'   => 'Увійти',
+            'access_create.login_err'   => 'E-mail/пароль неправильні або доступ не підтверджено.',
+        
+            'access_create.reg_title'     => 'Створити новий доступ',
+            'access_create.reg_text'      => 'Ми надішлемо вам 6-значний код підтвердження. Після успішного підтвердження ви отримаєте пароль на e-mail.',
+            'access_create.consent_label' => 'Я погоджуюся, що мій e-mail буде використано для процесу реєстрації.',
+            'access_create.send_btn'      => 'Надіслати код',
+            'access_create.code_label'    => 'Код підтвердження',
+            'access_create.verify_btn'    => 'Перевірити код',
+            'access_create.resend'        => 'Надіслати код повторно',
+        
+            'access_create.info_sent'    => 'Ми надіслали вам код. Будь ласка, перевірте також папку «Спам».',
+            'access_create.ok_verified'  => 'E-mail підтверджено. Пароль надіслано. Тепер ви можете увійти.',
+            'access_create.email_in_use' => 'Ця адреса e-mail вже має доступ. Будь ласка, увійдіть.',
+        
+            'access_create.error_email'     => 'Будь ласка, введіть дійсну адресу e-mail.',
+            'access_create.error_consent'   => 'Будь ласка, погодьтеся на використання вашого e-mail.',
+            'access_create.error_rate'      => 'Забагато спроб. Будь ласка, зачекайте та спробуйте ще раз.',
+            'access_create.error_code'      => 'Код недійсний або термін дії минув.',
+            'access_create.error_resend'    => 'Повторне надсилання неможливе. Будь ласка, почніть спочатку.',
+            'access_create.error_mail_send' => 'Не вдалося надіслати e-mail. Спробуйте пізніше.',
+            'access_create.error_db'        => 'Помилка сервера (БД).',
+        
+            'access_create.back'   => 'Назад',
+            'access_create.cancel' => 'Скасувати',
+        
+            'access_create.mail_subject' => 'Ваш пароль для онлайн-реєстрації',
+            'access_create.mail_body'    => "Ваш доступ створено.\n\nE-mail: {email}\nПароль: {password}\n\nБудь ласка, зберігайте пароль у безпечному місці.",
+        
+            // =========================
+            // ACCESS_PORTAL (UK)
+            // =========================
+            'access_portal.title'    => 'Мої заявки',
+            'access_portal.lead'     => 'Тут ви бачите ваші заявки. Ви можете продовжити існуючу заявку або почати нову.',
+            'access_portal.max_hint' => '{email} · макс. {max} заяв(и)',
+        
+            'access_portal.btn_new'    => 'Почати нову заявку',
+            'access_portal.btn_open'   => 'Відкрити',
+            'access_portal.btn_logout' => 'Вийти',
+        
+            'access_portal.th_ref'     => 'ID',
+            'access_portal.th_status'  => 'Статус',
+            'access_portal.th_created' => 'Створено',
+            'access_portal.th_updated' => 'Оновлено',
+            'access_portal.th_token'   => 'Токен',
+            'access_portal.th_action'  => 'Дія',
+        
+            'access_portal.status_draft'     => 'Чернетка',
+            'access_portal.status_submitted' => 'Надіслано',
+            'access_portal.status_withdrawn' => 'Відкликано',
+        
+            'access_portal.limit_reached' => 'Ви досягли максимальної кількості заяв для цієї адреси e-mail.',
+            'access_portal.no_apps'       => 'Заяв поки що немає.',
+            'access_portal.err_generic'   => 'Сталася помилка.',
+            'access_portal.csrf_invalid'  => 'Недійсний запит.',
+        
+            // =========================
+            // ACCESS_LOGIN (UK)
+            // =========================
+            'access_login.title'            => 'Доступ до заявки/заяв',
+            'access_login.lead'             => 'Тут ви можете знову відкрити вже розпочату або надіслану заявку.',
+        
+            'access_login.login_box_title'  => 'Вхід за Access-Token',
+            'access_login.login_box_text'   => 'Будь ласка, введіть ваш особистий код доступу (Access-Token) та дату народження.',
+        
+            'access_login.token_label'      => 'Access-Token',
+            'access_login.dob_label'        => 'Дата народження (ДД.ММ.РРРР)',
+        
+            'access_login.login_btn'        => 'Доступ',
+            'access_login.back'             => 'Назад на головну',
+        
+            'access_login.login_ok'         => 'Заявку завантажено.',
+            'access_login.login_error'      => 'Комбінацію Access-Token та дати народження не знайдено.',
+            'access_login.login_error_token'=> 'Будь ласка, введіть дійсний Access-Token.',
+            'access_login.login_error_dob'  => 'Будь ласка, введіть дійсну дату народження у форматі ДД.ММ.РРРР.',
+        
+            'access_login.csrf_invalid'     => 'Недійсний запит.',
+            'access_login.internal_error'   => 'Внутрішня помилка.',
+            'access_login.load_error'       => 'Під час завантаження заявки сталася помилка.',
+        
+            // =========================
+            // PRIVACY (UK)
+            // =========================
+            'privacy.title' => 'Захист даних',
+            'privacy.h1'    => 'Інформація про захист даних для онлайн-заявки «BES Мова та інтеграція»',
+        
+            'privacy.s1_title'     => '1. Відповідальна установа',
+            'privacy.s1_body_html' => '<strong>Місто Ольденбург / Професійні школи</strong><br>(вкажіть точну назву установи/школи, адресу, телефон, e-mail)',
+        
+            'privacy.s2_title'     => '2. Уповноважений/а з питань захисту даних',
+            'privacy.s2_body_html' => '(вкажіть контактні дані уповноваженого/ої з питань захисту даних)',
+        
+            'privacy.s3_title' => '3. Мета обробки',
+            'privacy.s3_li1'   => 'Прийняття та опрацювання вашої заявки на зарахування до мовного класу («BES Мова та інтеграція»)',
+            'privacy.s3_li2'   => 'Комунікація з вами (уточнення, повідомлення щодо рішення про зарахування)',
+            'privacy.s3_li3'   => 'Планування організації навчання (розподіл до BBS)',
+        
+            'privacy.s4_title' => '4. Правові підстави',
+            'privacy.s4_li1'   => 'Ст. 6 ч. 1 літ. e GDPR у поєднанні зі шкільним законодавством землі Нижня Саксонія',
+            'privacy.s4_li2'   => 'Ст. 6 ч. 1 літ. c GDPR (виконання юридичного обов’язку)',
+            'privacy.s4_li3'   => 'Ст. 6 ч. 1 літ. a GDPR (згода), якщо надаються добровільні відомості/завантаження',
+        
+            'privacy.s5_title' => '5. Категорії персональних даних',
+            'privacy.s5_li1'   => 'Основні дані (прізвище, ім’я, дата народження, громадянство, адреса, контактні дані)',
+            'privacy.s5_li2'   => 'Шкільна інформація (поточна школа, рівень мови, інтереси)',
+            'privacy.s5_li3'   => 'Необов’язкові документи (наприклад, останнє семестрове свідоцтво)',
+            'privacy.s5_li4'   => 'Додаткові контакти (батьки/опікун/установи)',
+        
+            'privacy.s6_title' => '6. Отримувачі',
+            'privacy.s6_body'  => 'У межах компетенції міста Ольденбург та професійних шкіл. Передача третім особам здійснюється лише за потреби згідно із законом (наприклад, шкільним органам) або за вашою згодою.',
+        
+            'privacy.s7_title' => '7. Передача до третіх країн',
+            'privacy.s7_body'  => 'Передача до третіх країн не здійснюється.',
+        
+            'privacy.s8_title' => '8. Термін зберігання',
+            'privacy.s8_body'  => 'Ваші дані зберігаються протягом процедури подання/зарахування та відповідно до встановлених законом строків зберігання, а потім видаляються.',
+        
+            'privacy.s9_title' => '9. Ваші права',
+            'privacy.s9_li1'   => 'Доступ (ст. 15 GDPR), виправлення (ст. 16), видалення (ст. 17), обмеження (ст. 18)',
+            'privacy.s9_li2'   => 'Заперечення (ст. 21) проти обробки в суспільних інтересах',
+            'privacy.s9_li3'   => 'Відкликання наданої згоди (ст. 7 ч. 3) на майбутнє',
+            'privacy.s9_li4'   => 'Право на скаргу до наглядового органу: Уповноважений/а з питань захисту даних Нижньої Саксонії',
+        
+            'privacy.s10_title' => '10. Хостинг і журнали',
+            'privacy.s10_body'  => 'Застосунок працює на серверах міста або в комунальному дата-центрі. Обробляються лише технічно необхідні дані (наприклад, серверні логи для пошуку помилок). Зовнішні CDN не використовуються. Встановлюється лише мовний cookie.',
+        
+            'privacy.s11_title'    => '11. Cookies',
+            'privacy.s11_li1_html' => '<strong>lang</strong> – зберігає вибрану мову (діє 12 місяців). Мета: зручність користування.',
+            'privacy.s11_li2'      => 'PHP-сесія – технічно необхідна для роботи форми, видаляється після завершення сесії.',
+        
+            'privacy.stand_label' => 'Стан',
+            'privacy.stand_hint'  => 'Будь ласка, регулярно перевіряйте, чи є зміни.',
+            'privacy.back_home'   => 'На головну',
+        
+            // =========================
+            // IMPRINT (UK)
+            // =========================
+            'imprint.title' => 'Вихідні дані',
+            'imprint.h1'    => 'Вихідні дані',
+        
+            'imprint.s1_title'     => 'Постачальник послуг',
+            'imprint.s1_body_html' => '<strong>Місто ***</strong><br>Професійні школи<br>(вкажіть точну адресу)<br>Телефон: (доповнити)<br>E-mail: (доповнити)',
+        
+            'imprint.s2_title'     => 'Представництво',
+            'imprint.s2_body_html' => '(наприклад, мер/мерка міста ****<br>або керівництво відповідної BBS)',
+        
+            'imprint.s3_title'     => 'Відповідальний/а за зміст згідно з § 18 абз. 2 MStV',
+            'imprint.s3_body_html' => '(ім’я, посада, контакт, наприклад, керівництво BBS або пресслужба)',
+        
+            'imprint.s4_title'     => 'Ідентифікаційний номер ПДВ',
+            'imprint.s4_body_html' => '(за наявності; інакше цей розділ можна пропустити)',
+        
+            'imprint.s5_title' => 'Наглядовий орган',
+            'imprint.s5_body'  => '(компетентний комунальний нагляд / шкільний орган, наприклад, регіональний підрозділ земельної шкільної служби)',
+        
+            'imprint.s6_title' => 'Відповідальність за зміст',
+            'imprint.s6_body'  => 'Зміст наших сторінок створено з максимальною ретельністю. Однак ми не можемо гарантувати правильність, повноту та актуальність. Як публічна установа ми відповідаємо за власний зміст згідно з § 7 абз. 1 TMG.',
+        
+            'imprint.s7_title' => 'Відповідальність за посилання',
+            'imprint.s7_body'  => 'Наша пропозиція не містить зовнішнього вмісту, який передає персональні дані третім особам. Якщо ми посилаємося на інформаційні пропозиції інших публічних установ, ми не несемо відповідальності за їхній зміст.',
+        
+            'imprint.s8_title' => 'Авторське право',
+            'imprint.s8_body'  => 'Вміст і твори, створені містом Ольденбург, охороняються німецьким авторським правом. Матеріали третіх сторін позначені відповідним чином. Відтворення, обробка, поширення та будь-яке використання поза межами авторського права потребують письмової згоди міста Ольденбург або відповідного правовласника.',
+        
+            'imprint.stand_label' => 'Стан',
+            'imprint.stand_hint'  => 'Ці дані стосуються онлайн-форми «BES Мова та інтеграція».',
+            'imprint.back_home'   => 'На головну',
+        
+            // =========================
+            // VERIFY_EMAIL (UK)
+            // =========================
+            'verify_email.title' => 'Підтвердити e-mail',
+            'verify_email.h1'    => 'Підтвердити e-mail',
+        
+            'verify_email.lead_sent'    => 'Ми надіслали код підтвердження на {email}.',
+            'verify_email.lead_generic' => 'Будь ласка, введіть код підтвердження, отриманий електронною поштою. Якщо ви не бачите листа, можна надіслати код повторно на вашу адресу.',
+        
+            'verify_email.code_label'  => 'Код підтвердження (6 цифр)',
+            'verify_email.email_label' => 'Ваша адреса e-mail',
+        
+            'verify_email.btn_verify' => 'Підтвердити',
+            'verify_email.btn_resend' => 'Надіслати код повторно',
+            'verify_email.hint_spam'  => 'Будь ласка, перевірте також папку «Спам».',
+        
+            'verify_email.back' => 'Назад',
+        
+            'verify_email.csrf_invalid' => 'Недійсний запит.',
+            'verify_email.ok_verified'  => 'E-mail успішно підтверджено.',
+            'verify_email.ok_sent'      => 'Новий код надіслано на {email}.',
+        
+            'verify_email.warn_cooldown'     => 'Будь ласка, зачекайте трохи перед повторним запитом коду.',
+            'verify_email.error_send'        => 'Не вдалося надіслати. Спробуйте пізніше.',
+            'verify_email.error_email'       => 'Будь ласка, введіть дійсну адресу e-mail.',
+            'verify_email.error_no_session'  => 'Активний процес підтвердження не знайдено. Будь ласка, запросіть новий код.',
+            'verify_email.error_expired'     => 'Код недійсний або термін дії минув.',
+            'verify_email.error_invalid'     => 'Код недійсний або термін дії минув.',
+            'verify_email.error_code_format' => 'Будь ласка, введіть дійсний 6-значний код.',
+            'verify_email.error_rate'        => 'Забагато спроб. Будь ласка, запросіть новий код.',
+        
+            // =========================
+            // VALIDATION (UK) – global
+            // =========================
+            'val.required' => 'Обов’язково.',
+            'val.only_letters' => 'Будь ласка, лише літери.',
+            'val.gender_choose' => 'Будь ласка, оберіть стать.',
+            'val.date_format' => 'ДД.ММ.РРРР',
+            'val.date_invalid' => 'Недійсна дата.',
+            'val.plz_whitelist' => 'Лише поштові індекси Ольденбурга (26121–26135).',
+            'val.phone_vorwahl' => 'Код: 2–6 цифр.',
+            'val.phone_nummer' => 'Номер: 3–12 цифр.',
+            'val.email_invalid' => 'Недійсний e-mail.',
+            'val.email_no_iserv' => 'Будь ласка, приватний e-mail (не IServ).',
+            'val.max_1500' => 'Максимум 1500 символів.',
+            'val.kontakt_row_name_missing' => 'Відсутнє ім’я/назва',
+            'val.kontakt_row_tel_or_mail'  => 'Вкажіть телефон АБО e-mail',
+            'val.kontakt_row_mail_invalid' => 'Недійсний e-mail',
+            'val.kontakt_row_tel_invalid'  => 'Недійсний телефон',
         ],
+
 
         'ar' => [
             'index.title' => 'مرحبًا بكم في التسجيل الإلكتروني – صفوف اللغة',
