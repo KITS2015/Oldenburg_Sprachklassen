@@ -599,6 +599,31 @@ function i18n_dict(): array {
             
             'access_portal.csrf_invalid'  => 'Ungültige Anfrage.',
 
+            // ------------------------
+            // DE: access_login.php
+            // ------------------------
+            'access_login.title'             => 'Zugriff auf Bewerbung/en',
+            'access_login.lead'              => 'Hier können Sie eine bereits begonnene oder abgeschickte Bewerbung wieder aufrufen.',
+            
+            'access_login.login_box_title'   => 'Anmeldung mit Access-Token',
+            'access_login.login_box_text'    => 'Geben Sie bitte Ihren persönlichen Zugangscode (Access-Token) und Ihr Geburtsdatum ein.',
+            
+            'access_login.token_label'       => 'Access-Token',
+            'access_login.dob_label'         => 'Geburtsdatum (TT.MM.JJJJ)',
+            
+            'access_login.login_btn'         => 'Zugriff',
+            'access_login.back'              => 'Zurück zur Startseite',
+            
+            'access_login.login_ok'          => 'Bewerbung wurde geladen.',
+            'access_login.login_error'       => 'Kombination aus Access-Token und Geburtsdatum wurde nicht gefunden.',
+            'access_login.login_error_token' => 'Bitte geben Sie einen gültigen Access-Token ein.',
+            'access_login.login_error_dob'   => 'Bitte geben Sie ein gültiges Geburtsdatum im Format TT.MM.JJJJ ein.',
+            
+            'access_login.csrf_invalid'      => 'Ungültige Anfrage.',
+            'access_login.internal_error'    => 'Interner Fehler.',
+            'access_login.load_error'        => 'Beim Laden der Bewerbung ist ein Fehler aufgetreten.',
+
+
         
         ],
 
