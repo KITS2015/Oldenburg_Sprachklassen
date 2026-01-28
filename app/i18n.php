@@ -712,6 +712,39 @@ function i18n_dict(): array {
             
             'imprint.back_home' => 'Zur Startseite',
 
+            // ------------------------
+            // DE: verify_email.php
+            // ------------------------
+            'verify_email.title' => 'E-Mail verifizieren',
+            'verify_email.h1' => 'E-Mail verifizieren',
+            
+            'verify_email.lead_sent' => 'Wir haben einen Bestätigungscode an {email} gesendet.',
+            'verify_email.lead_generic' => 'Bitte geben Sie den per E-Mail erhaltenen Bestätigungscode ein. Falls Sie keine E-Mail sehen, können Sie sich den Code an Ihre Adresse senden lassen.',
+            
+            'verify_email.code_label' => 'Bestätigungscode (6 Ziffern)',
+            'verify_email.email_label' => 'Ihre E-Mail-Adresse',
+            
+            'verify_email.btn_verify' => 'Bestätigen',
+            'verify_email.btn_resend' => 'Code erneut senden',
+            'verify_email.hint_spam' => 'Bitte prüfen Sie auch den Spam-Ordner.',
+            
+            'verify_email.back' => 'Zurück',
+            
+            'verify_email.csrf_invalid' => 'Ungültige Anfrage.',
+            'verify_email.ok_verified' => 'E-Mail erfolgreich verifiziert.',
+            'verify_email.ok_sent' => 'Neuer Code wurde an {email} gesendet.',
+            
+            'verify_email.warn_cooldown' => 'Bitte warten Sie kurz, bevor Sie den Code erneut anfordern.',
+            'verify_email.error_send' => 'Versand fehlgeschlagen. Bitte später erneut versuchen.',
+            'verify_email.error_email' => 'Bitte eine gültige E-Mail-Adresse eingeben.',
+            
+            'verify_email.error_no_session' => 'Kein aktiver Verifizierungsvorgang gefunden. Bitte fordern Sie einen neuen Code an.',
+            'verify_email.error_expired' => 'Code ungültig oder abgelaufen.',
+            'verify_email.error_invalid' => 'Code ungültig oder abgelaufen.',
+            'verify_email.error_code_format' => 'Bitte geben Sie einen gültigen 6-stelligen Code ein.',
+            'verify_email.error_rate' => 'Zu viele Versuche. Bitte fordern Sie einen neuen Code an.',
+            
+
         ],
 
         'en' => [
