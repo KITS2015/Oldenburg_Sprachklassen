@@ -35,22 +35,6 @@ $href_load    = function_exists('i18n_url') ? i18n_url('/access_login.php', $lan
 </style>
 
 <div class="container py-5">
-
-  <!-- Sprachwahl -->
-  <div class="d-flex lang-switch justify-content-end mb-3">
-    <form method="get" action="" class="d-flex lang-switch">
-      <label class="me-2 fw-semibold" for="lang"><?= h(t('index.lang_label')) ?></label>
-      <select class="form-select form-select-sm" name="lang" id="lang" onchange="this.form.submit()" style="max-width: 220px;">
-        <?php foreach ($languages as $code => $label): ?>
-          <option value="<?= h((string)$code) ?>" <?= ((string)$code === $lang) ? 'selected' : ''; ?>>
-            <?= h((string)$label) ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
-      <noscript><button class="btn btn-sm btn-primary ms-2">OK</button></noscript>
-    </form>
-  </div>
-
   <div class="card shadow border-0">
     <div class="card-body p-4 p-md-5">
       <h1 class="h3 mb-3"><?= h(t('index.title')) ?></h1>
