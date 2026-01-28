@@ -623,6 +623,59 @@ function i18n_dict(): array {
             'access_login.internal_error'    => 'Interner Fehler.',
             'access_login.load_error'        => 'Beim Laden der Bewerbung ist ein Fehler aufgetreten.',
 
+            // ------------------------
+            // DE: datenschutz.php
+            // ------------------------
+            'privacy.title' => 'Datenschutz',
+            'privacy.h1' => 'Datenschutzhinweise für die Online-Bewerbung „BES Sprache und Integration“',
+            
+            'privacy.s1_title' => '1. Verantwortliche Stelle',
+            'privacy.s1_body_html' => '<strong>Stadt Oldenburg / Berufsbildende Schulen</strong><br>(Bitte genaue Dienststellen-/Schulbezeichnung, Anschrift, Telefon, E-Mail eintragen)',
+            
+            'privacy.s2_title' => '2. Datenschutzbeauftragte*r',
+            'privacy.s2_body_html' => '(Kontaktdaten der/des behördlichen Datenschutzbeauftragten eintragen)',
+            
+            'privacy.s3_title' => '3. Zwecke der Verarbeitung',
+            'privacy.s3_li1' => 'Entgegennahme und Bearbeitung Ihrer Bewerbung zur Aufnahme in die Sprachlernklasse („BES Sprache und Integration“)',
+            'privacy.s3_li2' => 'Kommunikation mit Ihnen (Rückfragen, Mitteilungen zur Aufnahmeentscheidung)',
+            'privacy.s3_li3' => 'Schulorganisatorische Planung (Zuweisung zu einer BBS)',
+            
+            'privacy.s4_title' => '4. Rechtsgrundlagen',
+            'privacy.s4_li1' => 'Art. 6 Abs. 1 lit. e DSGVO i. V. m. den schulrechtlichen Vorschriften des Landes Niedersachsen',
+            'privacy.s4_li2' => 'Art. 6 Abs. 1 lit. c DSGVO (Erfüllung rechtlicher Verpflichtungen)',
+            'privacy.s4_li3' => 'Art. 6 Abs. 1 lit. a DSGVO (Einwilligung), soweit freiwillige Angaben/Uploads erfolgen',
+            
+            'privacy.s5_title' => '5. Kategorien personenbezogener Daten',
+            'privacy.s5_li1' => 'Stammdaten (Name, Vorname, Geburtsdaten, Staatsangehörigkeit, Anschrift, Kontaktdaten)',
+            'privacy.s5_li2' => 'Schulische Informationen (aktuelle Schule, Sprachniveau, Interessen)',
+            'privacy.s5_li3' => 'Optionale Unterlagen (z. B. letztes Halbjahreszeugnis)',
+            'privacy.s5_li4' => 'Zusatzkontakte (Eltern/Betreuer/Einrichtungen)',
+            
+            'privacy.s6_title' => '6. Empfänger',
+            'privacy.s6_body' => 'Innerhalb der Zuständigkeit der Stadt Oldenburg und der berufsbildenden Schulen. Eine Übermittlung an Dritte erfolgt nur, soweit rechtlich erforderlich (z. B. Schulbehörden) oder mit Ihrer Einwilligung.',
+            
+            'privacy.s7_title' => '7. Drittlandübermittlung',
+            'privacy.s7_body' => 'Es findet keine Übermittlung in Drittländer statt.',
+            
+            'privacy.s8_title' => '8. Speicherdauer',
+            'privacy.s8_body' => 'Ihre Daten werden für die Dauer des Bewerbungs- bzw. Aufnahmeverfahrens und gemäß den gesetzlichen Aufbewahrungsfristen gespeichert und anschließend gelöscht.',
+            
+            'privacy.s9_title' => '9. Ihre Rechte',
+            'privacy.s9_li1' => 'Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung (Art. 18)',
+            'privacy.s9_li2' => 'Widerspruch (Art. 21) gegen Verarbeitungen im öffentlichen Interesse',
+            'privacy.s9_li3' => 'Widerruf erteilter Einwilligungen (Art. 7 Abs. 3) mit Wirkung für die Zukunft',
+            'privacy.s9_li4' => 'Beschwerderecht bei der Aufsichtsbehörde: Landesbeauftragte*r für den Datenschutz Niedersachsen',
+            
+            'privacy.s10_title' => '10. Hosting & Protokolle',
+            'privacy.s10_body' => 'Die Anwendung wird auf Servern der Stadt bzw. im kommunalen Rechenzentrum betrieben. Es werden nur technisch notwendige Daten verarbeitet (z. B. Server-Logfiles zur Fehlersuche). Keine Einbindung externer CDNs. Es wird ausschließlich ein sprachbezogenes Cookie gesetzt.',
+            
+            'privacy.s11_title' => '11. Cookies',
+            'privacy.s11_li1_html' => '<strong>lang</strong> – speichert die ausgewählte Sprache (Gültigkeit 12 Monate). Zweck: Benutzerfreundlichkeit.',
+            'privacy.s11_li2' => 'PHP-Session – technisch erforderlich für den Formular-Ablauf, wird beim Beenden der Sitzung gelöscht.',
+            
+            'privacy.stand_label' => 'Stand',
+            'privacy.stand_hint' => 'Bitte prüfen Sie regelmäßig, ob sich Änderungen ergeben haben.',
+            'privacy.back_home' => 'Zur Startseite',
 
         
         ],
