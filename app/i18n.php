@@ -3708,134 +3708,660 @@ function i18n_dict(): array {
             'val.kontakt_row_tel_invalid'  => 'Недействительный телефон',
         ],
 
-        
+        // =======================
+        // TR: in 'tr' => [ ... ] einfügen (komplett)
+        // =======================
         'tr' => [
-            'index.title' => 'Çevrimiçi Kayıt – Dil Kursları',
-            'index.lead'  => 'Bu hizmet, Oldenburg’a yeni gelen kişiler içindir. Form, sizinle iletişim kurmamıza ve uygun kurs seçeneklerini bulmamıza yardımcı olur.',
+        
+            // =======================
+            // STEP Start: Index (TR)
+            // =======================
+            'index.title' => 'Çevrim içi Başvuru – Dil Sınıfları',
+            'index.lead'  => 'Bu hizmet, Oldenburg’a yeni göç eden kişiler içindir. Form, sizinle iletişime geçmemize ve uygun seçenekleri bulmamıza yardımcı olur.',
             'index.bullets' => [
-                'Lütfen iletişim bilgilerinizi ve kimlik belgenizi (varsa) hazırlayın.',
-                'Formu birden fazla dilde doldurabilirsiniz.',
-                'Verileriniz GDPR kapsamında gizli tutulur.',
+                'Lütfen iletişim bilgilerinizi ve kimlik belgenizi (varsa) hazır bulundurun.',
+                'Bilgileri birden fazla dilde doldurabilirsiniz.',
+                'Verileriniz GDPR kapsamında gizli olarak işlenir.',
             ],
             'index.info_p' => [
                 'Sevgili öğrenci,',
-                'Bu başvuru ile Oldenburg’daki bir mesleki okulda (BBS) “BES Dil ve Uyum” dil öğrenme sınıfına başvuruyorsunuz. Belirli bir BBS’e başvurmuyorsunuz. 20 Şubat’tan sonra hangi okulun sizi kabul edeceği bildirilecektir.',
-                'Aşağıdaki koşulların tümü sağlandığında kabul edilebilirsiniz:',
+                'Bu başvuru ile Oldenburg’daki bir mesleki okulun (BBS) “BES Dil ve Entegrasyon” dil öğrenme sınıfına başvuruyorsunuz. Belirli bir BBS’e başvurmuyorsunuz. Dil sınıfına hangi okulun sizi alacağı 20 Şubat’tan sonra size bildirilecektir.',
+                'Aşağıdaki koşullar sağlandığında kabul edilebilirsiniz:',
             ],
             'index.info_bullets' => [
                 'Yoğun Almanca desteğine ihtiyacınız var (Almanca seviyeniz B1’in altında).',
                 'Gelecek öğretim yılının başlangıcında Almanya’da en fazla 3 yıldır bulunuyorsunuz.',
-                'Bu yıl 30 Eylül tarihi itibarıyla yaşınız en az 16, en fazla 18’dir.',
-                'Gelecek öğretim yılında okul zorunluluğuna tabisiniz.',
+                'Bu yılın 30 Eylül tarihinde en az 16, en fazla 18 yaşındasınız.',
+                'Gelecek öğretim yılında zorunlu eğitime tabisiniz.',
             ],
-            'index.access_title' => 'Gizlilik ve Erişim',
-            'index.access_intro' => 'E-posta ile veya e-posta olmadan devam edebilirsiniz. Kaydedilmiş başvurulara erişim yalnızca kişisel erişim kodu ve doğum tarihi ile mümkündür.',
+            'index.access_title' => 'Veri Koruma ve Erişim',
+            'index.access_intro' => 'E-posta adresi ile veya e-posta olmadan devam edebilirsiniz. Kaydedilmiş başvurulara erişim yalnızca kişisel erişim kodu (Token) ve doğum tarihi ile mümkündür.',
             'index.access_points' => [
-                '<strong>E-postayla:</strong> Doğrulama kodu alır ve başvurunuza daha sonra devam edebilirsiniz.',
-                '<strong>E-posta olmadan:</strong> Kişisel bir erişim kodu alırsınız. Lütfen not edin/fotoğraflayın — doğrulanmış e-posta olmadan kurtarma yoktur.',
+                '<strong>E-posta ile:</strong> Bir doğrulama kodu alırsınız; birden fazla başvuru oluşturabilir ve daha sonra tekrar açabilirsiniz.',
+                '<strong>E-posta olmadan:</strong> Kişisel bir erişim kodu (Access-Token) alırsınız. Lütfen not edin/fotoğraflayın — doğrulanmış e-posta olmadan kurtarma mümkün değildir.',
             ],
+        
             'index.btn_noemail' => 'E-posta olmadan devam et',
-            'index.btn_create'  => 'E-posta ile erişim oluştur',
-            'index.btn_load'    => 'Başvuruyu yükle',
-            'index.lang_label'  => 'Dil:',
-			
-			'personal.page_title' => 'Adım 1/4 – Kişisel bilgiler',
-			'personal.h1' => 'Adım 1/4 – Kişisel bilgiler',
-			'personal.required_hint' => 'Zorunlu alanlar mavi bir çerçeve ile vurgulanır.',
-			'personal.form_error_hint' => 'Lütfen işaretli alanları kontrol edin.',
-
-			'personal.alert_email_title' => 'E-posta ile giriş aktif:',
-			'personal.alert_email_line1' => '{email} e-posta adresiyle giriş yapıldı.',
-			'personal.alert_email_line2' => 'Bu e-posta yalnızca erişim kodu (Access-Token) ve başvurunuzu tekrar bulmak için kullanılır.',
-			'personal.alert_email_line3' => 'Aşağıya öğrencinin e-posta adresini (varsa) girebilirsiniz.',
-
-			'personal.alert_noemail_title' => 'Not (e-posta olmadan):',
-			'personal.alert_noemail_body' => 'Lütfen bu sayfayı kaydettikten sonra gösterilecek erişim kodunuzu (Access-Token) not edin veya fotoğrafını çekin. Doğrulanmış e-posta olmadan geri yükleme yalnızca token + doğum tarihi ile mümkündür.',
-
-			'personal.label.name' => 'Soyadı',
-			'personal.label.vorname' => 'Adı',
-			'personal.label.geschlecht' => 'Cinsiyet',
-			'personal.gender.m' => 'erkek',
-			'personal.gender.w' => 'kadın',
-			'personal.gender.d' => 'diğer',
-
-			'personal.label.geburtsdatum' => 'Doğum tarihi',
-			'personal.label.geburtsdatum_hint' => '(GG.AA.YYYY)',
-			'personal.placeholder.geburtsdatum' => 'GG.AA.YYYY',
-
-			'personal.age_hint' => 'Not: 30.09.{year} tarihinde 16 yaşından küçük veya 18 yaşından büyükseniz BBS dil sınıfına kabul edilemezsiniz. Lütfen başka bir sınıfa buradan başvurun:',
-			'personal.age_redirect_msg' => "Not: 30.09.{year} tarihinde 16 yaşından küçük veya 18 yaşından büyükseniz BBS dil sınıfına kabul edilemezsiniz.\nLütfen BBS’de başka bir sınıfa buradan başvurun:\n{url}",
-
-			'personal.label.geburtsort_land' => 'Doğum yeri / doğum ülkesi',
-			'personal.label.staatsang' => 'Uyruğu',
-
-			'personal.label.strasse' => 'Sokak, No.',
-			'personal.label.plz' => 'Posta kodu',
-			'personal.plz_choose' => '– lütfen seçin –',
-			'personal.plz_hint' => 'Sadece Oldenburg (Oldb).',
-			'personal.label.wohnort' => 'Şehir',
-
-			'personal.label.telefon' => 'Telefon numarası',
-			'personal.label.telefon_vorwahl_help' => 'Alan kodu 0 ile/0’sız',
-			'personal.label.telefon_nummer_help' => 'Numara',
-			'personal.placeholder.telefon_vorwahl' => '(0)441',
-			'personal.placeholder.telefon_nummer' => '123456',
-
-			'personal.label.email' => 'Öğrencinin e-posta adresi (opsiyonel, IServ adresi değil)',
-			'personal.email_help' => 'Bu e-posta öğrencinindir (varsa) ve giriş e-postasından bağımsızdır.',
-			'personal.placeholder.email' => 'name@example.org',
-
-			'personal.label.kontakte' => 'Ek iletişim bilgileri',
-			'personal.kontakte_hint' => '(örn. ebeveynler, vasi, kurum)',
-			'personal.kontakte_error' => 'Lütfen ek kişileri kontrol edin.',
-			'personal.kontakte_add' => '+ Kişi ekle',
-			'personal.kontakte_remove_title' => 'Kişiyi kaldır',
-
-			'personal.table.role' => 'Rol',
-			'personal.table.name' => 'İsim / kurum',
-			'personal.table.tel'  => 'Telefon',
-			'personal.table.mail' => 'E-posta',
-			'personal.table.note_header' => 'Not',
-			'personal.placeholder.kontakt_name' => 'İsim veya açıklama',
-			'personal.placeholder.kontakt_tel'  => '+49 …',
-			'personal.placeholder.kontakt_note' => 'örn. ulaşılabilirlik, dil, notlar',
-
-			'personal.contact_role.none' => '–',
-			'personal.contact_role.mutter' => 'Anne',
-			'personal.contact_role.vater' => 'Baba',
-			'personal.contact_role.elternteil' => 'Ebeveyn',
-			'personal.contact_role.betreuer' => 'Vasi/Sorumlu',
-			'personal.contact_role.einrichtung' => 'Kurum',
-			'personal.contact_role.sonstiges' => 'Diğer',
-
-			'personal.label.weitere_angaben' => 'Diğer bilgiler (örn. destek ihtiyacı):',
-			'personal.placeholder.weitere_angaben' => 'Buraya özel destek ihtiyacı, özel eğitim desteği veya diğer notları yazabilirsiniz.',
-			'personal.weitere_angaben_help' => 'Opsiyonel. En fazla 1500 karakter.',
-			'personal.btn.cancel' => 'İptal',
-			'personal.btn.next' => 'İleri',
-
-			'personal.dsgvo_text_prefix' => 'Şunu okudum:',
-			'personal.dsgvo_link_text' => 'gizlilik bilgilendirmesi',
-			'personal.dsgvo_text_suffix' => 've kabul ediyorum.',
-
-			'val.required' => 'Zorunlu.',
-			'val.only_letters' => 'Lütfen sadece harf kullanın.',
-			'val.gender_choose' => 'Lütfen bir cinsiyet seçin.',
-			'val.date_format' => 'GG.AA.YYYY',
-			'val.date_invalid' => 'Geçersiz tarih.',
-			'val.plz_whitelist' => 'Sadece Oldenburg posta kodları (26121–26135).',
-			'val.phone_vorwahl' => 'Alan kodu: 2–6 hane.',
-			'val.phone_nummer' => 'Numara: 3–12 hane.',
-			'val.email_invalid' => 'Geçersiz e-posta.',
-			'val.email_no_iserv' => 'Lütfen özel e-posta kullanın (IServ değil).',
-			'val.max_1500' => 'En fazla 1500 karakter.',
-			'val.kontakt_row_name_missing' => 'İsim/açıklama eksik',
-			'val.kontakt_row_tel_or_mail'  => 'Telefon VEYA e-posta girin',
-			'val.kontakt_row_mail_invalid' => 'Geçersiz e-posta',
-			'val.kontakt_row_tel_invalid'  => 'Geçersiz telefon',
-
+            'index.btn_create'  => 'E-posta ile devam et',
+            'index.btn_load'    => 'Başvuru(lar)a erişim',
+            'index.lang_label'  => 'Dil / Language:',
+        
+            // =======================
+            // STEP 1/4: PERSONAL (TR)
+            // =======================
+            'personal.page_title' => 'Adım 1/4 – Kişisel bilgiler',
+            'personal.h1' => 'Adım 1/4 – Kişisel bilgiler',
+            'personal.required_hint' => 'Zorunlu alanlar mavi çerçeve ile vurgulanır.',
+            'personal.form_error_hint' => 'Lütfen işaretli alanları kontrol edin.',
+        
+            'personal.alert_email_title' => 'E-posta ile giriş aktif:',
+            'personal.alert_email_line1' => '{email} e-posta adresiyle giriş yapıldı.',
+            'personal.alert_email_line2' => 'Bu e-posta yalnızca erişim kodu (Access-Token) ve başvurunuzu tekrar bulmak için kullanılır.',
+            'personal.alert_email_line3' => 'Aşağıda öğrencinin e-posta adresini (varsa) girebilirsiniz.',
+        
+            'personal.alert_noemail_title' => 'Not (e-posta olmadan):',
+            'personal.alert_noemail_body' => 'Lütfen bu sayfayı kaydettikten sonra gösterilecek erişim kodunuzu (Access-Token) not edin veya fotoğrafını çekin. Doğrulanmış e-posta olmadan geri yükleme yalnızca token + doğum tarihi ile mümkündür.',
+        
+            'personal.label.name' => 'Soyadı',
+            'personal.label.vorname' => 'Adı',
+            'personal.label.geschlecht' => 'Cinsiyet',
+            'personal.gender.m' => 'erkek',
+            'personal.gender.w' => 'kadın',
+            'personal.gender.d' => 'diğer',
+        
+            'personal.label.geburtsdatum' => 'Doğum tarihi',
+            'personal.label.geburtsdatum_hint' => '(GG.AA.YYYY)',
+            'personal.placeholder.geburtsdatum' => 'GG.AA.YYYY',
+        
+            'personal.age_hint' => 'Not: 30.09.{year} tarihinde 16 yaşından küçük veya 18 yaşından büyük iseniz BBS dil sınıfına kabul edilemezsiniz. Lütfen başka bir sınıfa buradan başvurun:',
+            'personal.age_redirect_msg' => "Not: 30.09.{year} tarihinde 16 yaşından küçük veya 18 yaşından büyük iseniz BBS dil sınıfına kabul edilemezsiniz. Lütfen BBS’de başka bir sınıfa buradan başvurun:\n{url}",
+        
+            'personal.label.geburtsort_land' => 'Doğum yeri / doğum ülkesi',
+            'personal.label.staatsang' => 'Uyruğu',
+        
+            'personal.label.strasse' => 'Sokak, No.',
+            'personal.label.plz' => 'Posta kodu',
+            'personal.plz_choose' => '– lütfen seçin –',
+            'personal.plz_hint' => 'Sadece Oldenburg (Oldb).',
+            'personal.label.wohnort' => 'Şehir',
+        
+            'personal.label.telefon' => 'Telefon numarası',
+            'personal.label.telefon_vorwahl_help' => 'Alan kodu 0 ile/0’sız',
+            'personal.label.telefon_nummer_help' => 'Numara',
+            'personal.placeholder.telefon_vorwahl' => '(0)441',
+            'personal.placeholder.telefon_nummer' => '123456',
+        
+            'personal.label.email' => 'Öğrencinin e-posta adresi (opsiyonel, IServ adresi değil)',
+            'personal.email_help' => 'Bu e-posta öğrenciye aittir (varsa) ve erişim kodu için kullanılan giriş e-postasından bağımsızdır.',
+            'personal.placeholder.email' => 'name@example.org',
+        
+            'personal.label.kontakte' => 'Ek iletişim bilgileri',
+            'personal.kontakte_hint' => '(örn. ebeveynler, vasi, kurum)',
+            'personal.kontakte_error' => 'Lütfen ek kişileri kontrol edin.',
+            'personal.kontakte_add' => '+ Kişi ekle',
+            'personal.kontakte_remove_title' => 'Kişiyi kaldır',
+        
+            'personal.table.role' => 'Rol',
+            'personal.table.name' => 'İsim / kurum',
+            'personal.table.tel'  => 'Telefon',
+            'personal.table.mail' => 'E-posta',
+            'personal.table.note_header' => 'Not',
+            'personal.placeholder.kontakt_name' => 'İsim veya tanım',
+            'personal.placeholder.kontakt_tel'  => '+49 …',
+            'personal.placeholder.kontakt_note' => 'örn. ulaşılabilirlik, dil, notlar',
+        
+            'personal.contact_role.none' => '–',
+            'personal.contact_role.mutter' => 'Anne',
+            'personal.contact_role.vater' => 'Baba',
+            'personal.contact_role.elternteil' => 'Ebeveyn',
+            'personal.contact_role.betreuer' => 'Vasi/Sorumlu',
+            'personal.contact_role.einrichtung' => 'Kurum',
+            'personal.contact_role.sonstiges' => 'Diğer',
+        
+            'personal.label.weitere_angaben' => 'Diğer bilgiler (örn. destek durumu):',
+            'personal.placeholder.weitere_angaben' => 'Buraya örn. özel destek ihtiyacı, özel eğitim desteği veya diğer notları yazabilirsiniz.',
+            'personal.weitere_angaben_help' => 'Opsiyonel. En fazla 1500 karakter.',
+            'personal.btn.cancel' => 'İptal',
+            'personal.btn.next' => 'İleri',
+        
+            'personal.dsgvo_text_prefix' => '',
+            'personal.dsgvo_link_text' => 'Gizlilik bilgilendirmesini',
+            'personal.dsgvo_text_suffix' => 'okudum ve kabul ediyorum.',
+        
+            // =====================
+            // STEP 2/4: SCHOOL (TR)
+            // =====================
+            'school.page_title' => 'Adım 2/4 – Okul ve ilgi alanları',
+            'school.h1' => 'Adım 2/4 – Okul ve ilgi alanları',
+            'school.required_hint' => 'Zorunlu alanlar mavi çerçeve ile vurgulanır.',
+            'school.form_error_hint' => 'Lütfen işaretli alanları kontrol edin.',
+        
+            'school.top_hint_title' => 'Not:',
+            'school.top_hint_body'  => 'Almanya’da <u>3 yıldan fazla</u> bulunuyorsanız veya Almanca seviyeniz <u>B1</u> ya da üzerindeyse, BBS dil sınıfına kabul edilemezsiniz. Lütfen normal BBS başvurusu için buradan başvurun:',
+            'school.bbs_link_label' => 'https://bbs-ol.de/',
+        
+            'school.autohints_title' => 'Uyarılar',
+        
+            'school.label.schule_aktuell' => 'Mevcut okul',
+            'school.search_placeholder'   => 'Okul ara… (ad, sokak, posta kodu)',
+            'school.select_choose'        => 'Lütfen seçin…',
+            'school.option_other'         => 'Diğer / listede yok',
+            'school.other_placeholder'    => 'Okul adı, sokak, şehir (serbest metin)',
+        
+            'school.label.teacher'      => 'sorumlu öğretmen',
+            'school.label.teacher_mail' => 'Sorumlu öğretmenin e-postası',
+        
+            'school.label.herkunft'       => 'Kendi ülkenizde okula gittiniz mi?',
+            'school.yes'                  => 'Evet',
+            'school.no'                   => 'Hayır',
+            'school.label.herkunft_years' => 'Evet ise: kaç yıl?',
+        
+            'school.label.since'        => 'Almanya’da bir okula ne zamandan beri gidiyorsunuz?',
+            'school.since_month'        => 'Ay (AA)',
+            'school.since_year_ph'      => 'Yıl (YYYY)',
+            'school.since_help'         => 'Ay+yıl belirtin <strong>veya</strong> serbest metin alanını kullanın.',
+            'school.label.since_text'   => 'Alternatif: serbest metin (örn. “2023 sonbaharından beri”)',
+        
+            'school.label.years_in_de'  => 'Almanya’da kaç yıldır bulunuyorsunuz?',
+            'school.years_in_de_help'   => 'Not: &gt; 3 yıl → lütfen {link} üzerinden normal BBS başvurusu.',
+        
+            'school.label.family_lang'  => 'Aile dili / ana dil',
+        
+            'school.label.level'        => 'Almanca seviyeniz nedir?',
+            'school.level_choose'       => 'Lütfen seçin…',
+            'school.level_help'         => 'Not: B1 veya üzeri → {link} üzerinden normal BBS başvurusu.',
+        
+            'school.label.interests'    => 'İlgi alanları (en az 1, en fazla 2)',
+        
+            'school.btn.back'           => 'Geri',
+            'school.btn.next'           => 'İleri',
+        
+            // ---------------------
+            // Validasyon / Hatalar
+            // ---------------------
+            'val.school_free_required' => 'Lütfen okul adını (serbest metin) girin.',
+            'val.school_invalid'       => 'Lütfen geçerli bir okul seçin veya “Diğer / listede yok” seçeneğini kullanın.',
+        
+            'val.since_required'       => 'Lütfen ay+yıl veya serbest metin girin.',
+            'val.month_invalid'        => 'Ay 01–12 olmalıdır.',
+            'val.year_invalid'         => 'Lütfen geçerli bir yıl girin.',
+            'val.number_required'      => 'Lütfen bir sayı girin.',
+            'val.choose'               => 'Lütfen seçin.',
+            'val.herkunft_years'       => 'Lütfen yıl sayısını girin.',
+        
+            'val.level_invalid'        => 'Geçersiz seçim.',
+        
+            'val.interests_min1'       => 'Lütfen en az 1 alan seçin.',
+            'val.interests_max2'       => 'Lütfen en fazla 2 alan seçin.',
+        
+            // ---------------------
+            // JS Canlı uyarılar
+            // ---------------------
+            'js.hint_years_gt3' => 'Not: Almanya’da 3 yıldan fazla bulunuyorsunuz. Lütfen {link} üzerinden başvurun.',
+            'js.hint_level_b1p' => 'Not: Almanca seviyesi B1 veya üzeri ise lütfen {link} üzerinden normal BBS başvurusu yapın.',
+        
+            // =========================
+            // STEP 3/4: UPLOAD (TR)
+            // =========================
+            'upload.page_title' => 'Adım 3/4 – Belgeler (opsiyonel)',
+            'upload.h1'         => 'Adım 3/4 – Belgeler (opsiyonel)',
+        
+            'upload.intro'      => 'Buradan belge yükleyebilirsiniz. İzin verilen formatlar <strong>PDF</strong>, <strong>JPG</strong> ve <strong>PNG</strong>’dir. Dosya başına azami boyut <strong>{max_mb} MB</strong>’dır.',
+        
+            'upload.type.zeugnis'    => 'Son dönem karne belgesi',
+            'upload.type.lebenslauf' => 'Özgeçmiş (CV)',
+            'upload.type_hint'       => '(PDF/JPG/PNG, en fazla {max_mb} MB)',
+        
+            'upload.btn.remove' => 'Kaldır',
+            'upload.btn.back'   => 'Geri',
+            'upload.btn.next'   => 'İleri',
+        
+            'upload.saved_prefix' => 'Kaydedildi:',
+            'upload.empty'        => 'Henüz dosya yüklenmedi.',
+            'upload.saved_html'   => 'Kaydedildi: <strong>{filename}</strong>, {size_kb} KB, yükleme tarihi: {uploaded_at}',
+        
+            'upload.checkbox.zeugnis_spaeter' => 'Karnemi kabulden sonra teslim edeceğim.',
+        
+            'upload.flash.no_access' => 'Geçerli bir erişim bulunamadı. Lütfen başvuruyu yeniden başlatın.',
+            'upload.flash.saved'     => 'Yükleme bilgileri kaydedildi.',
+        
+            'upload.js.uploading'          => 'Yükleniyor…',
+            'upload.js.unexpected'         => 'Sunucudan beklenmeyen yanıt.',
+            'upload.js.upload_failed'      => 'Yükleme başarısız.',
+            'upload.js.delete_confirm'     => 'Yüklenen dosyayı gerçekten silmek istiyor musunuz?',
+            'upload.js.delete_failed'      => 'Silme başarısız.',
+            'upload.js.remove_confirm_btn' => 'Dosyayı kaldırılsın mı?',
+        
+            // AJAX / Hata metinleri
+            'upload.ajax.invalid_method'   => 'Geçersiz yöntem',
+            'upload.ajax.invalid_csrf'     => 'Geçersiz CSRF token',
+            'upload.ajax.no_access'        => 'Geçerli erişim yok.',
+            'upload.ajax.invalid_field'    => 'Geçersiz alan',
+            'upload.ajax.no_file_sent'     => 'Dosya gönderilmedi',
+            'upload.ajax.no_file_selected' => 'Dosya seçilmedi',
+            'upload.ajax.upload_error'     => 'Yükleme hatası (kod {code})',
+            'upload.ajax.too_large'        => 'Dosya {max_mb} MB’den büyük',
+            'upload.ajax.mime_only'        => 'Sadece PDF, JPG veya PNG izinli',
+            'upload.ajax.ext_only'         => 'Geçersiz dosya uzantısı (sadece pdf/jpg/jpeg/png)',
+            'upload.ajax.cannot_save'      => 'Dosya kaydedilemedi',
+            'upload.ajax.unknown_action'   => 'Bilinmeyen işlem',
+            'upload.ajax.server_error'     => 'Yükleme sırasında sunucu hatası',
+        
+            // =========================
+            // STEP 4/4: REVIEW (TR)
+            // =========================
+            'review.page_title' => 'Adım 4/4 – Özet ve Başvuru',
+        
+            'review.h1'      => 'Adım 4/4 – Özet ve Başvuru',
+            'review.subhead' => 'Lütfen bilgilerinizi kontrol edin. “Başvur” ile verileri gönderirsiniz.',
+        
+            'review.readonly_alert' => 'Bu başvuru daha önce gönderildi. Bilgiler sadece görüntülenebilir; değiştirilemez veya tekrar gönderilemez.',
+        
+            'review.info.p1' => 'Sevgili öğrenci,',
+            'review.info.p2' => '<strong>“başvur”</strong> butonuna tıklayarak Oldenburg’daki bir BBS’te <strong>BES Dil ve Entegrasyon</strong> programına başvurmuş olursunuz.',
+            'review.info.p3' => 'Bu henüz kesin kayıt değil, bir <strong>başvurudur</strong>. <strong>20.02.</strong> tarihinden sonra kabul edilip edilmediğiniz / hangi BBS’e yerleştirildiğiniz size bildirilecektir. Lütfen posta kutunuzu ve e-posta gelen kutunuzu düzenli kontrol edin. Posta kutunuzda adınızın görünür olmasına dikkat edin.',
+            'review.info.p4' => 'Okuldan kabul geldiğinde, bu belgeleri sonradan teslim etmeniz istenecektir (bugün henüz yüklemediyseniz):',
+            'review.info.li1' => 'son dönem karne belgesi',
+        
+            // Accordion başlıkları
+            'review.acc.personal' => 'Kişisel bilgiler',
+            'review.acc.school'   => 'Okul ve ilgi alanları',
+            'review.acc.uploads'  => 'Belgeler',
+        
+            // Labels: Personal
+            'review.lbl.name'            => 'Soyadı',
+            'review.lbl.vorname'         => 'Adı',
+            'review.lbl.geschlecht'      => 'Cinsiyet',
+            'review.lbl.geburtsdatum'    => 'Doğum tarihi',
+            'review.lbl.geburtsort'      => 'Doğum yeri / doğum ülkesi',
+            'review.lbl.staatsang'       => 'Uyruğu',
+            'review.lbl.strasse'         => 'Sokak, No.',
+            'review.lbl.plz_ort'         => 'Posta kodu / şehir',
+            'review.lbl.telefon'         => 'Telefon',
+            'review.lbl.email'           => 'E-posta (öğrenci, opsiyonel)',
+            'review.lbl.weitere_angaben' => 'Diğer bilgiler (örn. destek durumu)',
+        
+            'review.contacts.title'    => 'Ek kişiler',
+            'review.contacts.optional' => 'opsiyonel',
+            'review.contacts.none'     => '–',
+        
+            'review.contacts.th.role' => 'Rol',
+            'review.contacts.th.name' => 'İsim / kurum',
+            'review.contacts.th.tel'  => 'Telefon',
+            'review.contacts.th.mail' => 'E-posta',
+            'review.contacts.note'    => 'Not:',
+        
+            // Labels: School
+            'review.lbl.school_current' => 'Mevcut okul',
+            'review.lbl.klassenlehrer'  => 'Sorumlu öğretmen',
+            'review.lbl.mail_lehrkraft' => 'Öğretmenin e-postası',
+            'review.lbl.since'          => 'Ne zamandan beri okulda',
+            'review.lbl.years_de'       => 'Almanya’da yıl',
+            'review.lbl.family_lang'    => 'Aile dili / ana dil',
+            'review.lbl.de_level'       => 'Almanca seviyesi',
+            'review.lbl.school_origin'  => 'Kendi ülkesinde okul',
+            'review.lbl.years_origin'   => 'Kendi ülkesinde okul yılı',
+            'review.lbl.interests'      => 'İlgi alanları',
+        
+            // Uploads
+            'review.lbl.zeugnis'        => 'Karne belgesi',
+            'review.lbl.lebenslauf'     => 'Özgeçmiş (CV)',
+            'review.lbl.later'          => 'sonradan teslim',
+            'review.badge.uploaded'     => 'yüklendi',
+            'review.badge.not_uploaded' => 'yüklenmedi',
+            'review.yes'                => 'Evet',
+            'review.no'                 => 'Hayır',
+        
+            // Buttons / Actions
+            'review.btn.home'   => 'Ana sayfa',
+            'review.btn.newapp' => 'Yeni başvuru gönder',
+            'review.btn.back'   => 'Geri',
+            'review.btn.submit' => 'Başvur',
+        
+            // Errors / Flash / System texts
+            'review.err.invalid_request'     => 'Geçersiz istek.',
+            'review.flash.already_submitted' => 'Bu başvuru zaten gönderildi ve tekrar gönderilemez veya değiştirilemez.',
+            'review.flash.no_token'          => 'Geçerli erişim kodu yok. Lütfen işlemi yeniden başlatın.',
+            'review.err.not_found_token'     => 'Bu token ile başvuru bulunamadı.',
+            'review.flash.submit_error'      => 'Gönderim sırasında bir hata oluştu. Lütfen daha sonra tekrar deneyin.',
+        
+            // Gender fallback
+            'review.gender.m' => 'erkek',
+            'review.gender.w' => 'kadın',
+            'review.gender.d' => 'diğer',
+        
+            // Fallback
+            'review.value.empty' => '–',
+        
+            // =========================
+            // STATUS (TR)
+            // =========================
+            'status.hdr_title'   => 'Başvuru başarıyla kaydedildi',
+            'status.hdr_message' => 'Başvurunuz iletildi.',
+        
+            'status.h1' => 'Başvurunuz başarıyla kaydedildi.',
+        
+            'status.success.title' => 'Teşekkürler!',
+            'status.success.body'  => 'Başvurunuz iletildi ve şimdi işleniyor.',
+        
+            'status.info.title' => 'Önemli bilgi',
+            'status.info.body'  => '<em>[YER TUTUCU: müşteriden metin gelecek]</em>',
+        
+            'status.btn.pdf'    => 'PDF indir / yazdır',
+            'status.btn.newapp' => 'Yeni başvuru başlat',
+            'status.btn.home'   => 'Ana sayfa',
+        
+            'status.ref' => 'Referans: Başvuru #{id}',
+        
+            'status.err.invalid_request' => 'Geçersiz istek.',
+        
+            // =========================
+            // PDF (TR)
+            // =========================
+            'pdf.err.autoload_missing' => 'Composer Autoload bulunamadı. Lütfen "composer install" çalıştırın.',
+            'pdf.err.no_token'         => 'Geçerli erişim kodu yok. Lütfen işlemi yeniden başlatın.',
+            'pdf.err.not_found'        => 'Başvuru bulunamadı.',
+            'pdf.err.server'           => 'PDF oluşturulurken sunucu hatası oluştu.',
+        
+            'pdf.header_title' => 'Başvuru – Özet',
+            'pdf.footer_auto'  => 'Otomatik oluşturulan belge',
+            'pdf.footer_page'  => 'Sayfa {cur} / {max}',
+        
+            'pdf.meta.ref'        => 'Başvuru #{id}',
+            'pdf.meta.created_at' => 'Oluşturulma tarihi',
+            'pdf.meta.status'     => 'Durum',
+        
+            'pdf.top.title'        => 'Kısa özet',
+            'pdf.top.name'         => 'İsim',
+            'pdf.top.reference'    => 'Referans',
+            'pdf.top.generated'    => 'Oluşturulma tarihi',
+            'pdf.top.hint'         => 'Not',
+            'pdf.top.keep_note'    => 'Lütfen bu belgeyi saklayın.',
+            'pdf.hint_placeholder' => '[YER TUTUCU: müşteriden metin gelecek]',
+        
+            'pdf.sec1.title' => '1) Kişisel bilgiler',
+            'pdf.sec2.title' => '2) Ek iletişim bilgileri',
+            'pdf.sec3.title' => '3) Okul ve ilgi alanları',
+            'pdf.sec4.title' => '4) Belgeler',
+        
+            'pdf.lbl.name'           => 'Soyadı',
+            'pdf.lbl.vorname'        => 'Adı',
+            'pdf.lbl.gender'         => 'Cinsiyet',
+            'pdf.lbl.dob'            => 'Doğum tarihi',
+            'pdf.lbl.birthplace'     => 'Doğum yeri/ülke',
+            'pdf.lbl.nationality'    => 'Uyruğu',
+            'pdf.lbl.address'        => 'Adres',
+            'pdf.lbl.phone'          => 'Telefon',
+            'pdf.lbl.email_optional' => 'E-posta (opsiyonel)',
+            'pdf.lbl.more'           => 'Diğer bilgiler',
+        
+            'pdf.lbl.school_current' => 'Mevcut okul',
+            'pdf.lbl.teacher'        => 'Öğretmen',
+            'pdf.lbl.teacher_email'  => 'Öğretmen e-postası',
+            'pdf.lbl.since_school'   => 'Ne zamandan beri okulda',
+            'pdf.lbl.years_in_de'    => 'Almanya’da ne zamandan beri',
+            'pdf.lbl.family_lang'    => 'Aile dili',
+            'pdf.lbl.de_level'       => 'Almanca seviyesi',
+            'pdf.lbl.school_origin'  => 'Kendi ülkesinde okul',
+            'pdf.lbl.years_origin'   => 'Kendi ülkesinde okul yılı',
+            'pdf.lbl.interests'      => 'İlgi alanları',
+        
+            'pdf.lbl.report'       => 'Karne belgesi',
+            'pdf.lbl.cv'           => 'Özgeçmiş (CV)',
+            'pdf.lbl.report_later' => 'Karneyi sonra teslim et',
+        
+            'pdf.uploaded'     => 'yüklendi',
+            'pdf.not_uploaded' => 'yüklenmedi',
+        
+            'pdf.contacts.none'    => '–',
+            'pdf.contacts.th.role' => 'Rol',
+            'pdf.contacts.th.name' => 'İsim/Kurum',
+            'pdf.contacts.th.tel'  => 'Telefon',
+            'pdf.contacts.th.mail' => 'E-posta',
+            'pdf.contacts.th.note' => 'Not',
+        
+            'pdf.gender.m' => 'erkek',
+            'pdf.gender.w' => 'kadın',
+            'pdf.gender.d' => 'diğer',
+        
+            'pdf.yes' => 'Evet',
+            'pdf.no'  => 'Hayır',
+        
+            'pdf.sec4.note' => 'Bu belge, girilen verilerin otomatik oluşturulmuş bir özetidir.',
+            'pdf.filename_prefix' => 'Başvuru',
+        
+            // =========================
+            // ACCESS_CREATE (TR)
+            // =========================
+            'access_create.title'         => 'E-posta ile devam et',
+            'access_create.lead'          => 'Mevcut erişiminizle giriş yapabilir veya yeni bir erişim oluşturabilirsiniz.',
+            'access_create.tabs_login'    => 'Giriş',
+            'access_create.tabs_register' => 'Yeni erişim oluştur',
+        
+            'access_create.login_title' => 'Giriş (mevcut erişim)',
+            'access_create.login_text'  => 'Lütfen e-posta adresinizi ve şifrenizi girin.',
+            'access_create.email_label' => 'E-posta',
+            'access_create.pass_label'  => 'Şifre',
+            'access_create.login_btn'   => 'Giriş yap',
+            'access_create.login_err'   => 'E-posta/şifre yanlış veya erişim doğrulanmamış.',
+        
+            'access_create.reg_title'     => 'Yeni erişim oluştur',
+            'access_create.reg_text'      => 'Size 6 haneli bir doğrulama kodu göndereceğiz. Doğrulama başarılı olunca şifreniz e-posta ile gönderilecektir.',
+            'access_create.consent_label' => 'E-postamın başvuru sürecinde kullanılmasını kabul ediyorum.',
+            'access_create.send_btn'      => 'Kod gönder',
+            'access_create.code_label'    => 'Doğrulama kodu',
+            'access_create.verify_btn'    => 'Kodu doğrula',
+            'access_create.resend'        => 'Kodu yeniden gönder',
+        
+            'access_create.info_sent'    => 'Size bir kod gönderdik. Lütfen spam klasörünü de kontrol edin.',
+            'access_create.ok_verified'  => 'E-posta doğrulandı. Şifre gönderildi. Artık giriş yapabilirsiniz.',
+            'access_create.email_in_use' => 'Bu e-posta için zaten bir erişim var. Lütfen giriş yapın.',
+        
+            'access_create.error_email'     => 'Lütfen geçerli bir e-posta adresi girin.',
+            'access_create.error_consent'   => 'Lütfen e-postanın kullanılmasına onay verin.',
+            'access_create.error_rate'      => 'Çok fazla deneme. Lütfen kısa süre bekleyip tekrar deneyin.',
+            'access_create.error_code'      => 'Kod geçersiz veya süresi dolmuş.',
+            'access_create.error_resend'    => 'Yeniden gönderim mümkün değil. Lütfen baştan başlayın.',
+            'access_create.error_mail_send' => 'E-posta gönderimi başarısız. Lütfen daha sonra tekrar deneyin.',
+            'access_create.error_db'        => 'Sunucu hatası (DB).',
+        
+            'access_create.back'   => 'Geri',
+            'access_create.cancel' => 'İptal',
+        
+            'access_create.mail_subject' => 'Çevrim içi başvuru için şifreniz',
+            'access_create.mail_body'    => "Erişiminiz oluşturuldu.\n\nE-posta: {email}\nŞifre: {password}\n\nLütfen şifrenizi güvenli şekilde saklayın.",
+        
+            // =========================
+            // ACCESS_PORTAL (TR)
+            // =========================
+            'access_portal.title'    => 'Başvurularım',
+            'access_portal.lead'     => 'Burada başvurularınızı görebilirsiniz. Mevcut bir başvuruyu devam ettirebilir veya yeni bir başvuru başlatabilirsiniz.',
+            'access_portal.max_hint' => '{email} · en fazla {max} başvuru',
+        
+            'access_portal.btn_new'    => 'Yeni başvuru başlat',
+            'access_portal.btn_open'   => 'Aç',
+            'access_portal.btn_logout' => 'Çıkış yap',
+        
+            'access_portal.th_ref'     => 'ID',
+            'access_portal.th_status'  => 'Durum',
+            'access_portal.th_created' => 'Oluşturuldu',
+            'access_portal.th_updated' => 'Güncellendi',
+            'access_portal.th_token'   => 'Token',
+            'access_portal.th_action'  => 'İşlem',
+        
+            'access_portal.status_draft'     => 'Taslak',
+            'access_portal.status_submitted' => 'Gönderildi',
+            'access_portal.status_withdrawn' => 'Geri çekildi',
+        
+            'access_portal.limit_reached' => 'Bu e-posta için azami başvuru sayısına ulaştınız.',
+            'access_portal.no_apps'       => 'Henüz başvuru yok.',
+            'access_portal.err_generic'   => 'Bir hata oluştu.',
+            'access_portal.csrf_invalid'  => 'Geçersiz istek.',
+        
+            // =========================
+            // ACCESS_LOGIN (TR)
+            // =========================
+            'access_login.title'             => 'Başvuru(lar)a erişim',
+            'access_login.lead'              => 'Buradan daha önce başlatılmış veya gönderilmiş bir başvuruyu tekrar açabilirsiniz.',
+        
+            'access_login.login_box_title'   => 'Access-Token ile giriş',
+            'access_login.login_box_text'    => 'Lütfen kişisel erişim kodunuzu (Access-Token) ve doğum tarihinizi girin.',
+        
+            'access_login.token_label'       => 'Access-Token',
+            'access_login.dob_label'         => 'Doğum tarihi (GG.AA.YYYY)',
+        
+            'access_login.login_btn'         => 'Erişim',
+            'access_login.back'              => 'Ana sayfaya dön',
+        
+            'access_login.login_ok'          => 'Başvuru yüklendi.',
+            'access_login.login_error'       => 'Access-Token ve doğum tarihi kombinasyonu bulunamadı.',
+            'access_login.login_error_token' => 'Lütfen geçerli bir Access-Token girin.',
+            'access_login.login_error_dob'   => 'Lütfen doğum tarihinizi GG.AA.YYYY formatında girin.',
+        
+            'access_login.csrf_invalid'      => 'Geçersiz istek.',
+            'access_login.internal_error'    => 'Dahili hata.',
+            'access_login.load_error'        => 'Başvuru yüklenirken bir hata oluştu.',
+        
+            // =========================
+            // PRIVACY (TR)
+            // =========================
+            'privacy.title' => 'Veri koruma',
+            'privacy.h1'    => '“BES Dil ve Entegrasyon” çevrim içi başvurusu için veri koruma bilgilendirmesi',
+        
+            'privacy.s1_title'     => '1. Sorumlu kurum',
+            'privacy.s1_body_html' => '<strong>Oldenburg Şehri / Mesleki Okullar</strong><br>(kurum/okul adı, adres, telefon, e-posta bilgileri eklenecek)',
+        
+            'privacy.s2_title'     => '2. Veri koruma görevlisi',
+            'privacy.s2_body_html' => '(kurumsal veri koruma görevlisinin iletişim bilgileri eklenecek)',
+        
+            'privacy.s3_title' => '3. İşleme amaçları',
+            'privacy.s3_li1'   => 'Dil sınıfına (“BES Dil ve Entegrasyon”) kabul için başvurunuzun alınması ve işlenmesi',
+            'privacy.s3_li2'   => 'Sizinle iletişim (sorular, kabul kararıyla ilgili bildirimler)',
+            'privacy.s3_li3'   => 'Okul organizasyonu (bir BBS’e yerleştirme)',
+        
+            'privacy.s4_title' => '4. Hukuki dayanaklar',
+            'privacy.s4_li1'   => 'GDPR Madde 6(1)(e) ile Aşağı Saksonya eyaletinin okul mevzuatı',
+            'privacy.s4_li2'   => 'GDPR Madde 6(1)(c) (hukuki yükümlülüklerin yerine getirilmesi)',
+            'privacy.s4_li3'   => 'GDPR Madde 6(1)(a) (rıza) – gönüllü bilgiler/yüklemeler için',
+        
+            'privacy.s5_title' => '5. Kişisel veri kategorileri',
+            'privacy.s5_li1'   => 'Kimlik/temel bilgiler (soyadı, adı, doğum bilgileri, uyruk, adres, iletişim)',
+            'privacy.s5_li2'   => 'Okul bilgileri (mevcut okul, dil seviyesi, ilgi alanları)',
+            'privacy.s5_li3'   => 'Opsiyonel belgeler (örn. son dönem karne belgesi)',
+            'privacy.s5_li4'   => 'Ek kişiler (ebeveyn/vasi/kurum)',
+        
+            'privacy.s6_title' => '6. Alıcılar',
+            'privacy.s6_body'  => 'Oldenburg şehri ve mesleki okulların yetki alanı içinde. Üçüncü kişilere aktarım yalnızca yasal olarak gerekli ise (örn. okul makamları) veya rızanızla yapılır.',
+        
+            'privacy.s7_title' => '7. Üçüncü ülkelere aktarım',
+            'privacy.s7_body'  => 'Üçüncü ülkelere aktarım yapılmaz.',
+        
+            'privacy.s8_title' => '8. Saklama süresi',
+            'privacy.s8_body'  => 'Verileriniz başvuru/kabul süreci boyunca ve yasal saklama sürelerine uygun şekilde saklanır, ardından silinir.',
+        
+            'privacy.s9_title' => '9. Haklarınız',
+            'privacy.s9_li1'   => 'Bilgi alma (GDPR 15), düzeltme (16), silme (17), kısıtlama (18)',
+            'privacy.s9_li2'   => 'Kamu yararı kapsamındaki işlemlere itiraz (21)',
+            'privacy.s9_li3'   => 'Verilen rızayı geleceğe etkili olacak şekilde geri çekme (7(3))',
+            'privacy.s9_li4'   => 'Denetim makamına şikâyet hakkı: Aşağı Saksonya Veri Koruma Yetkilisi',
+        
+            'privacy.s10_title' => '10. Barındırma ve kayıtlar',
+            'privacy.s10_body'  => 'Uygulama şehir sunucularında veya belediye veri merkezinde çalıştırılır. Sadece teknik olarak gerekli veriler işlenir (örn. hata analizi için sunucu logları). Harici CDN kullanılmaz. Sadece dil çerezi ayarlanır.',
+        
+            'privacy.s11_title'    => '11. Çerezler',
+            'privacy.s11_li1_html' => '<strong>lang</strong> – seçilen dili kaydeder (12 ay geçerli). Amaç: kullanım kolaylığı.',
+            'privacy.s11_li2'      => 'PHP oturumu – form akışı için teknik olarak gereklidir, oturum bitince silinir.',
+        
+            'privacy.stand_label' => 'Sürüm',
+            'privacy.stand_hint'  => 'Lütfen düzenli olarak değişiklik olup olmadığını kontrol edin.',
+            'privacy.back_home'   => 'Ana sayfaya dön',
+        
+            // =========================
+            // IMPRINT (TR)
+            // =========================
+            'imprint.title' => 'Künye',
+            'imprint.h1'    => 'Künye',
+        
+            'imprint.s1_title'     => 'Hizmet sağlayıcı',
+            'imprint.s1_body_html' => '<strong>Şehir ***</strong><br>Mesleki okullar<br>(tam adres eklenecek)<br>Telefon: (eklenecek)<br>E-posta: (eklenecek)',
+        
+            'imprint.s2_title'     => 'Temsil yetkilisi',
+            'imprint.s2_body_html' => '(örn. şehir belediye başkanı<br>veya ilgili BBS yönetimi)',
+        
+            'imprint.s3_title'     => '§ 18 Abs. 2 MStV uyarınca içerikten sorumlu',
+            'imprint.s3_body_html' => '(isim, görev, iletişim; örn. BBS yönetimi veya basın birimi)',
+        
+            'imprint.s4_title'     => 'KDV kimlik no',
+            'imprint.s4_body_html' => '(varsa; yoksa bu bölüm kaldırılabilir)',
+        
+            'imprint.s5_title' => 'Denetim makamı',
+            'imprint.s5_body'  => '(yetkili belediye denetimi / okul makamı, örn. eyalet okul idaresi bölge birimi)',
+        
+            'imprint.s6_title' => 'İçerik için sorumluluk',
+            'imprint.s6_body'  => 'Sayfalarımızın içeriği büyük özenle hazırlanmıştır. Ancak doğruluk, eksiksizlik ve güncellik konusunda garanti veremeyiz. Kamu kurumu olarak kendi içeriklerimizden genel yasalara göre sorumluyuz.',
+        
+            'imprint.s7_title' => 'Bağlantılar için sorumluluk',
+            'imprint.s7_body'  => 'Teklifimiz, kişisel verileri üçüncü kişilere aktaran harici içerik içermez. Diğer kamu kurumlarının bilgi sayfalarına bağlantı verirsek, içeriklerinden sorumlu değiliz.',
+        
+            'imprint.s8_title' => 'Telif hakkı',
+            'imprint.s8_body'  => 'Oldenburg şehri tarafından oluşturulan içerikler ve eserler Alman telif hakkına tabidir. Üçüncü kişilere ait içerikler bu şekilde işaretlenmiştir. Telif hakkı sınırları dışında çoğaltma, işleme, dağıtım ve her türlü kullanım için yazılı izin gerekir.',
+        
+            'imprint.stand_label' => 'Sürüm',
+            'imprint.stand_hint'  => 'Bu bilgiler “BES Dil ve Entegrasyon” çevrim içi formu için geçerlidir.',
+            'imprint.back_home'   => 'Ana sayfaya dön',
+        
+            // =========================
+            // VERIFY_EMAIL (TR)
+            // =========================
+            'verify_email.title' => 'E-postayı doğrula',
+            'verify_email.h1'    => 'E-postayı doğrula',
+        
+            'verify_email.lead_sent'    => '{email} adresine bir doğrulama kodu gönderdik.',
+            'verify_email.lead_generic' => 'Lütfen e-posta ile aldığınız doğrulama kodunu girin. E-posta görünmüyorsa kodu tekrar gönderebilirsiniz.',
+        
+            'verify_email.code_label'  => 'Doğrulama kodu (6 haneli)',
+            'verify_email.email_label' => 'E-posta adresiniz',
+        
+            'verify_email.btn_verify' => 'Doğrula',
+            'verify_email.btn_resend' => 'Kodu yeniden gönder',
+            'verify_email.hint_spam'  => 'Lütfen spam klasörünü de kontrol edin.',
+        
+            'verify_email.back' => 'Geri',
+        
+            'verify_email.csrf_invalid' => 'Geçersiz istek.',
+            'verify_email.ok_verified'  => 'E-posta başarıyla doğrulandı.',
+            'verify_email.ok_sent'      => 'Yeni kod {email} adresine gönderildi.',
+        
+            'verify_email.warn_cooldown'     => 'Lütfen kodu tekrar istemeden önce kısa süre bekleyin.',
+            'verify_email.error_send'        => 'Gönderim başarısız. Lütfen daha sonra tekrar deneyin.',
+            'verify_email.error_email'       => 'Lütfen geçerli bir e-posta girin.',
+            'verify_email.error_no_session'  => 'Aktif doğrulama süreci bulunamadı. Lütfen yeni kod isteyin.',
+            'verify_email.error_expired'     => 'Kod geçersiz veya süresi dolmuş.',
+            'verify_email.error_invalid'     => 'Kod geçersiz veya süresi dolmuş.',
+            'verify_email.error_code_format' => 'Lütfen geçerli bir 6 haneli kod girin.',
+            'verify_email.error_rate'        => 'Çok fazla deneme. Lütfen yeni bir kod isteyin.',
+        
+            // =========================
+            // VALIDATION (TR) – global
+            // =========================
+            'val.required' => 'Zorunlu.',
+            'val.only_letters' => 'Lütfen sadece harf kullanın.',
+            'val.gender_choose' => 'Lütfen bir cinsiyet seçin.',
+            'val.date_format' => 'GG.AA.YYYY',
+            'val.date_invalid' => 'Geçersiz tarih.',
+            'val.plz_whitelist' => 'Sadece Oldenburg posta kodları (26121–26135).',
+            'val.phone_vorwahl' => 'Alan kodu: 2–6 hane.',
+            'val.phone_nummer' => 'Numara: 3–12 hane.',
+            'val.email_invalid' => 'Geçersiz e-posta.',
+            'val.email_no_iserv' => 'Lütfen özel e-posta kullanın (IServ değil).',
+            'val.max_1500' => 'En fazla 1500 karakter.',
+            'val.kontakt_row_name_missing' => 'İsim/tanım eksik',
+            'val.kontakt_row_tel_or_mail'  => 'Telefon VEYA e-posta girin',
+            'val.kontakt_row_mail_invalid' => 'Geçersiz e-posta',
+            'val.kontakt_row_tel_invalid'  => 'Geçersiz telefon',
         ],
-
+        
+                
         'fa' => [
             'index.title' => 'ثبت‌نام آنلاین – کلاس‌های زبان',
             'index.lead'  => 'این خدمت برای افراد تازه‌وارد به اولدن‌بورگ است. این فرم به ما کمک می‌کند با شما تماس بگیریم و گزینه‌های مناسب را بیابیم.',
