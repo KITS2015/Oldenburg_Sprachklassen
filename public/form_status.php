@@ -7,26 +7,26 @@ require_once __DIR__ . '/../app/db.php';
 
 // ========= POST: Reset / Neue Bewerbung =========
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!csrf_check()) { http_response_code(400); exit('Ungültige Anfrage.'); }
+    if (!csrf_check()) { http_response_code(400); exit(t('status.err.invalid_request')); }
 
     $action = (string)($_POST['action'] ?? '');
 
     if ($action === 'reset') {
         $_SESSION = [];
         session_regenerate_id(true);
-        header('Location: /index.php');
+        header('Location: ' . url_with_lang('/index.php'));
         exit;
     }
 
     if ($action === 'new_application') {
         $_SESSION = [];
         session_regenerate_id(true);
-        header('Location: /index.php');
+        header('Location: ' . url_with_lang('/index.php'));
         exit;
     }
 
     // unbekannte Aktion -> Startseite
-    header('Location: /index.php');
+    header('Location: ' . url_with_lang('/index.php'));
     exit;
 }
 
@@ -36,13 +36,13 @@ $submitted = $_SESSION['application_submitted'] ?? null;
 
 $token = current_access_token();
 if (!$readonly || !$submitted || !$token) {
-    header('Location: /index.php');
+    header('Location: ' . url_with_lang('/index.php'));
     exit;
 }
 
 $appId = (int)($submitted['app_id'] ?? 0);
 if ($appId <= 0) {
-    header('Location: /index.php');
+    header('Location: ' . url_with_lang('/index.php'));
     exit;
 }
 
@@ -59,63 +59,76 @@ try {
     $row = $st->fetch(PDO::FETCH_ASSOC);
 
     if (!$row || ($row['status'] ?? '') !== 'submitted') {
-        header('Location: /index.php');
+        header('Location: ' . url_with_lang('/index.php'));
         exit;
     }
 } catch (Throwable $e) {
-    error_log('form_status: '.$e->getMessage());
-    header('Location: /index.php');
+    error_log('form_status: ' . $e->getMessage());
+    header('Location: ' . url_with_lang('/index.php'));
     exit;
 }
 
 // ========= Header-Infos (wie bei form_review) =========
 $hdr = [
-    'title'   => 'Bewerbung erfolgreich gespeichert',
+    'title'   => t('status.hdr_title'),
     'status'  => 'success',
-    'message' => 'Ihre Bewerbung wurde übermittelt.',
+    'message' => t('status.hdr_message'),
     'token'   => $token,
 ];
 
+$title     = t('status.hdr_title');
+$html_lang = html_lang();
+$html_dir  = html_dir();
+
 require __DIR__ . '/partials/header.php';
 require APP_APPDIR . '/header.php';
+
+// kleines Helper für {id}
+function tr_status(string $key, array $vars = []): string {
+    $s = t($key);
+    foreach ($vars as $k => $v) {
+        $s = str_replace('{' . $k . '}', (string)$v, $s);
+    }
+    return $s;
+}
 ?>
 <div class="container py-4">
   <div class="card shadow border-0 rounded-4">
     <div class="card-body p-4 p-md-5">
 
-      <h1 class="h4 mb-3">Ihre Bewerbung wurde erfolgreich gespeichert.</h1>
+      <h1 class="h4 mb-3"><?= h(t('status.h1')) ?></h1>
 
       <div class="alert alert-success">
-        <div class="fw-semibold mb-1">Vielen Dank!</div>
-        <div>Ihre Bewerbung wurde übermittelt und wird nun bearbeitet.</div>
+        <div class="fw-semibold mb-1"><?= h(t('status.success.title')) ?></div>
+        <div><?= h(t('status.success.body')) ?></div>
       </div>
 
-      <!-- Platzhalter für Kunden-Textbaustein -->
+      <!-- Kunden-Textbaustein -->
       <div class="alert alert-info">
-        <div class="fw-semibold mb-1">Wichtiger Hinweis</div>
-        <div><em>[PLATZHALTER: Textbaustein vom Kunden folgt]</em></div>
+        <div class="fw-semibold mb-1"><?= h(t('status.info.title')) ?></div>
+        <div><?= t('status.info.body') /* enthält <em> */ ?></div>
       </div>
 
       <div class="d-flex flex-wrap gap-2 mt-4">
-        <a class="btn btn-outline-primary" href="/application_pdf.php" target="_blank" rel="noopener">
-          PDF herunterladen / drucken
+        <a class="btn btn-outline-primary" href="<?= h(url_with_lang('/application_pdf.php')) ?>" target="_blank" rel="noopener">
+          <?= h(t('status.btn.pdf')) ?>
         </a>
 
-        <form method="post" action="/form_status.php" class="d-inline">
+        <form method="post" action="<?= h(url_with_lang('/form_status.php')) ?>" class="d-inline">
           <?php csrf_field(); ?>
           <input type="hidden" name="action" value="new_application">
-          <button class="btn btn-primary">Weitere Bewerbung starten</button>
+          <button class="btn btn-primary"><?= h(t('status.btn.newapp')) ?></button>
         </form>
 
-        <form method="post" action="/form_status.php" class="d-inline">
+        <form method="post" action="<?= h(url_with_lang('/form_status.php')) ?>" class="d-inline">
           <?php csrf_field(); ?>
           <input type="hidden" name="action" value="reset">
-          <button class="btn btn-outline-secondary">Zur Startseite</button>
+          <button class="btn btn-outline-secondary"><?= h(t('status.btn.home')) ?></button>
         </form>
       </div>
 
       <div class="text-muted small mt-4">
-        Referenz: Bewerbung #<?= (int)$appId ?>
+        <?= h(tr_status('status.ref', ['id' => (string)$appId])) ?>
       </div>
 
     </div>
