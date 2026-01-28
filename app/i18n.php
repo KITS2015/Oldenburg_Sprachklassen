@@ -677,7 +677,41 @@ function i18n_dict(): array {
             'privacy.stand_hint' => 'Bitte prüfen Sie regelmäßig, ob sich Änderungen ergeben haben.',
             'privacy.back_home' => 'Zur Startseite',
 
-        
+            // ------------------------
+            // DE: impressum.php
+            // ------------------------
+            'imprint.title' => 'Impressum',
+            'imprint.h1' => 'Impressum',
+            
+            'imprint.s1_title' => 'Diensteanbieter',
+            'imprint.s1_body_html' => '<strong>Stadt ***</strong><br>Berufsbildende Schulen<br>(genaue Anschrift eintragen)<br>Telefon: (bitte ergänzen)<br>E-Mail: (bitte ergänzen)',
+            
+            'imprint.s2_title' => 'Vertretungsberechtigt',
+            'imprint.s2_body_html' => '(z. B. Oberbürgermeister/in der Stadt ****<br>oder Schulleitung der jeweiligen BBS)',
+            
+            'imprint.s3_title' => 'Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV',
+            'imprint.s3_body_html' => '(Name, Funktion, Kontakt, z. B. Schulleitung der BBS oder Pressestelle)',
+            
+            'imprint.s4_title' => 'Umsatzsteuer-ID',
+            'imprint.s4_body_html' => '(sofern vorhanden; ansonsten kann dieser Abschnitt entfallen)',
+            
+            'imprint.s5_title' => 'Aufsichtsbehörde',
+            'imprint.s5_body' => '(zuständige Kommunalaufsicht / Schulbehörde, z. B. Regionalabteilung der Landesschulbehörde)',
+            
+            'imprint.s6_title' => 'Haftung für Inhalte',
+            'imprint.s6_body' => 'Die Inhalte unserer Seiten wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen. Als öffentliche Stelle sind wir gemäß § 7 Abs. 1 TMG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich.',
+            
+            'imprint.s7_title' => 'Haftung für Links',
+            'imprint.s7_body' => 'Unser Angebot enthält keine externen Inhalte, die personenbezogene Daten an Dritte übertragen. Soweit wir auf Informationsangebote anderer öffentlicher Stellen verlinken, übernehmen wir keine Verantwortung für deren Inhalte.',
+            
+            'imprint.s8_title' => 'Urheberrecht',
+            'imprint.s8_body' => 'Die durch die Stadt Oldenburg erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht. Beiträge Dritter sind als solche gekennzeichnet. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechtes bedürfen der schriftlichen Zustimmung der Stadt Oldenburg oder des jeweiligen Rechteinhabers.',
+            
+            'imprint.stand_label' => 'Stand',
+            'imprint.stand_hint' => 'Diese Angaben gelten für das Online-Formular „BES Sprache und Integration“.',
+            
+            'imprint.back_home' => 'Zur Startseite',
+
         ],
 
         'en' => [
