@@ -2403,133 +2403,660 @@ function i18n_dict(): array {
             'val.kontakt_row_tel_invalid'  => 'Недійсний телефон',
         ],
 
-
+        // =======================
+        // AR: in 'ar' => [ ... ] einfügen (komplett)
+        // =======================
         'ar' => [
+        
+            // =======================
+            // STEP Start: Index (AR)
+            // =======================
             'index.title' => 'مرحبًا بكم في التسجيل الإلكتروني – صفوف اللغة',
-            'index.lead'  => 'هذه الخدمة مخصّصة للوافدين الجدد إلى أولدنبورغ. يساعدنا النموذج على التواصل معكم واختيار الدورة المناسبة.',
+            'index.lead'  => 'هذه الخدمة مخصّصة للوافدين الجدد إلى أولدنبورغ. يساعدنا النموذج على التواصل معكم واختيار العروض المناسبة.',
             'index.bullets' => [
-                'يرجى تجهيز بيانات الاتصال ووثيقة الهوية إن وُجدت.',
+                'يرجى تجهيز بيانات الاتصال ووثائق الهوية (إن وُجدت).',
                 'يمكن تعبئة النموذج بعدة لغات.',
-                'تُعالج بياناتكم بسرية وفق اللائحة العامة لحماية البيانات (GDPR).',
+                'تُعالج بياناتكم بسرية وفقًا للائحة العامة لحماية البيانات (GDPR).',
             ],
             'index.info_p' => [
                 'عزيزتي الطالبة، عزيزي الطالب،',
-                'بهذا التقديم تتقدّم/ين للحصول على مقعد في صف تعلّم اللغة «BES اللغة والاندماج» في إحدى المدارس المهنية (BBS) في أولدنبورغ. لا تتقدّم/ين إلى مدرسة بعينها. بعد 20 فبراير سيتم إبلاغك بأي مدرسة ستقبلك في الصف.',
-                'لا يمكن قبولك إلا إذا توفّرت الشروط التالية جميعها:',
+                'بهذه الطلبات تتقدّم/ين للحصول على مقعد في صف تعلّم اللغة «BES اللغة والاندماج» في إحدى المدارس المهنية (BBS) في أولدنبورغ. لا تتقدّم/ين إلى مدرسة بعينها. بعد 20 فبراير سيتم إبلاغك أي مدرسة ستقبلك في الصف.',
+                'لا يمكن قبولك إلا إذا توفّرت الشروط التالية:',
             ],
             'index.info_bullets' => [
                 'تحتاج/ين إلى دعم مكثّف في اللغة الألمانية (مستوى أقل من B1).',
                 'عند بداية العام الدراسي القادم لا تتجاوز مدة إقامتك في ألمانيا 3 سنوات.',
                 'في تاريخ 30 سبتمبر من هذا العام يكون عمرك بين 16 و18 عامًا.',
-                'تكون/ين خاضعًا/ة للتعليم الإلزامي في العام الدراسي القادم.',
+                'ستكون/ين خاضعًا/ة للتعليم الإلزامي في العام الدراسي القادم.',
             ],
-            'index.access_title' => 'الخصوصية والوصول',
-            'index.access_intro' => 'يمكنك المتابعة مع عنوان بريد إلكتروني أو بدونه. لا يمكن الوصول إلى الطلبات المحفوظة إلا باستخدام رمز الوصول الشخصي وتاريخ الميلاد.',
+            'index.access_title' => 'حماية البيانات والوصول',
+            'index.access_intro' => 'يمكنك المتابعة مع أو بدون بريد إلكتروني. لا يمكن الوصول إلى الطلبات المحفوظة إلا باستخدام رمز الوصول الشخصي (Token) وتاريخ الميلاد.',
             'index.access_points' => [
-                '<strong>مع البريد الإلكتروني:</strong> ستتلقى رمز تحقق ويمكنك متابعة طلبك لاحقًا.',
-                '<strong>بدون بريد إلكتروني:</strong> ستحصل على رمز وصول شخصي. يُرجى حفظه/تصويره — بدون بريد إلكتروني مُوثَّق لا يمكن الاستعادة.',
+                '<strong>مع البريد الإلكتروني:</strong> ستتلقى رمز تأكيد ويمكنك إنشاء عدة طلبات وفتحها لاحقًا.',
+                '<strong>بدون بريد إلكتروني:</strong> ستحصل على رمز وصول شخصي (Access-Token). يرجى كتابته/تصويره — بدون بريد إلكتروني مُوثَّق لا يمكن الاستعادة.',
             ],
+        
             'index.btn_noemail' => 'المتابعة دون بريد إلكتروني',
-            'index.btn_create'  => 'إنشاء وصول عبر البريد',
-            'index.btn_load'    => 'تحميل الطلب',
+            'index.btn_create'  => 'المتابعة مع البريد الإلكتروني',
+            'index.btn_load'    => 'الوصول إلى الطلب/الطلبات',
             'index.lang_label'  => 'اللغة:',
-			
-			'personal.page_title' => 'الخطوة 1/4 – البيانات الشخصية',
-			'personal.h1' => 'الخطوة 1/4 – البيانات الشخصية',
-			'personal.required_hint' => 'الحقول الإلزامية مميزة بإطار أزرق.',
-			'personal.form_error_hint' => 'يرجى التحقق من الحقول المحددة.',
-
-			'personal.alert_email_title' => 'تسجيل الدخول بالبريد الإلكتروني مفعل:',
-			'personal.alert_email_line1' => 'تم تسجيل الدخول باستخدام البريد الإلكتروني {email}.',
-			'personal.alert_email_line2' => 'يُستخدم هذا البريد الإلكتروني فقط لرمز الوصول (Access-Token) وللعثور على طلبك مرة أخرى.',
-			'personal.alert_email_line3' => 'يمكنك أدناه إدخال بريد الطالبة/الطالب الإلكتروني (إن وُجد).',
-
-			'personal.alert_noemail_title' => 'ملاحظة (بدون بريد إلكتروني):',
-			'personal.alert_noemail_body' => 'يرجى كتابة أو تصوير رمز الوصول (Access-Token) الذي سيظهر بعد حفظ هذه الصفحة. بدون بريد إلكتروني مُتحقق منه، لا يمكن الاسترجاع إلا باستخدام الرمز + تاريخ الميلاد.',
-
-			'personal.label.name' => 'اسم العائلة',
-			'personal.label.vorname' => 'الاسم الأول',
-			'personal.label.geschlecht' => 'الجنس',
-			'personal.gender.m' => 'ذكر',
-			'personal.gender.w' => 'أنثى',
-			'personal.gender.d' => 'متنوع',
-
-			'personal.label.geburtsdatum' => 'تاريخ الميلاد',
-			'personal.label.geburtsdatum_hint' => '(يوم.شهر.سنة)',
-			'personal.placeholder.geburtsdatum' => 'يوم.شهر.سنة',
-
-			'personal.age_hint' => 'ملاحظة: إذا كان عمرك في 30.09.{year} أقل من 16 أو أكثر من 18 عامًا، فلن يمكن قبولك في صف اللغة في BBS. يرجى التقديم لصف آخر هنا:',
-			'personal.age_redirect_msg' => "ملاحظة: إذا كان عمرك في 30.09.{year} أقل من 16 أو أكثر من 18 عامًا، فلن يمكن قبولك في صف اللغة في BBS.\nيرجى التقديم لصف آخر في BBS هنا:\n{url}",
-
-			'personal.label.geburtsort_land' => 'مكان / بلد الميلاد',
-			'personal.label.staatsang' => 'الجنسية',
-
-			'personal.label.strasse' => 'الشارع، رقم المنزل',
-			'personal.label.plz' => 'الرمز البريدي',
-			'personal.plz_choose' => '– الرجاء الاختيار –',
-			'personal.plz_hint' => 'أولدنبرغ (Oldb) فقط.',
-			'personal.label.wohnort' => 'المدينة',
-
-			'personal.label.telefon' => 'رقم الهاتف',
-			'personal.label.telefon_vorwahl_help' => 'رمز المنطقة مع/بدون 0',
-			'personal.label.telefon_nummer_help' => 'الرقم',
-			'personal.placeholder.telefon_vorwahl' => '(0)441',
-			'personal.placeholder.telefon_nummer' => '123456',
-
-			'personal.label.email' => 'البريد الإلكتروني للطالبة/الطالب (اختياري، ليس عنوان IServ)',
-			'personal.email_help' => 'هذا البريد الإلكتروني يخص الطالبة/الطالب (إن وُجد) وهو مستقل عن بريد تسجيل الدخول.',
-			'personal.placeholder.email' => 'name@example.org',
-
-			'personal.label.kontakte' => 'بيانات اتصال إضافية',
-			'personal.kontakte_hint' => '(مثل الوالدين، المشرف/ة، المؤسسة)',
-			'personal.kontakte_error' => 'يرجى التحقق من جهات الاتصال الإضافية.',
-			'personal.kontakte_add' => '+ إضافة جهة اتصال',
-			'personal.kontakte_remove_title' => 'إزالة جهة الاتصال',
-
-			'personal.table.role' => 'الدور',
-			'personal.table.name' => 'الاسم / المؤسسة',
-			'personal.table.tel'  => 'الهاتف',
-			'personal.table.mail' => 'البريد الإلكتروني',
-			'personal.table.note_header' => 'ملاحظة',
-			'personal.placeholder.kontakt_name' => 'الاسم أو الوصف',
-			'personal.placeholder.kontakt_tel'  => '+49 …',
-			'personal.placeholder.kontakt_note' => 'مثل أوقات التوفر، اللغة، ملاحظات',
-
-			'personal.contact_role.none' => '–',
-			'personal.contact_role.mutter' => 'الأم',
-			'personal.contact_role.vater' => 'الأب',
-			'personal.contact_role.elternteil' => 'أحد الوالدين',
-			'personal.contact_role.betreuer' => 'مشرف/ة',
-			'personal.contact_role.einrichtung' => 'مؤسسة',
-			'personal.contact_role.sonstiges' => 'أخرى',
-
-			'personal.label.weitere_angaben' => 'معلومات إضافية (مثل احتياجات الدعم):',
-			'personal.placeholder.weitere_angaben' => 'يمكنك هنا ذكر احتياجات دعم خاصة أو دعم تربوي خاص أو ملاحظات أخرى.',
-			'personal.weitere_angaben_help' => 'اختياري. بحد أقصى 1500 حرف.',
-			'personal.btn.cancel' => 'إلغاء',
-			'personal.btn.next' => 'التالي',
-
-			'personal.dsgvo_text_prefix' => 'لقد قرأت',
-			'personal.dsgvo_link_text' => 'إشعار الخصوصية',
-			'personal.dsgvo_text_suffix' => 'وأوافق.',
-
-			'val.required' => 'مطلوب.',
-			'val.only_letters' => 'يرجى استخدام أحرف فقط.',
-			'val.gender_choose' => 'يرجى اختيار الجنس.',
-			'val.date_format' => 'يوم.شهر.سنة',
-			'val.date_invalid' => 'تاريخ غير صالح.',
-			'val.plz_whitelist' => 'فقط الرموز البريدية في أولدنبرغ (26121–26135).',
-			'val.phone_vorwahl' => 'رمز المنطقة: 2–6 أرقام.',
-			'val.phone_nummer' => 'الرقم: 3–12 رقمًا.',
-			'val.email_invalid' => 'بريد إلكتروني غير صالح.',
-			'val.email_no_iserv' => 'يرجى استخدام بريد خاص (ليس IServ).',
-			'val.max_1500' => 'بحد أقصى 1500 حرف.',
-			'val.kontakt_row_name_missing' => 'الاسم/الوصف مفقود',
-			'val.kontakt_row_tel_or_mail'  => 'أدخل الهاتف أو البريد الإلكتروني',
-			'val.kontakt_row_mail_invalid' => 'بريد إلكتروني غير صالح',
-			'val.kontakt_row_tel_invalid'  => 'هاتف غير صالح',
+        
+            // =======================
+            // STEP 1/4: PERSONAL (AR)
+            // =======================
+            'personal.page_title' => 'الخطوة 1/4 – البيانات الشخصية',
+            'personal.h1' => 'الخطوة 1/4 – البيانات الشخصية',
+            'personal.required_hint' => 'الحقول الإلزامية مميزة بإطار أزرق.',
+            'personal.form_error_hint' => 'يرجى التحقق من الحقول المحددة.',
+        
+            'personal.alert_email_title' => 'تسجيل الدخول بالبريد الإلكتروني مفعل:',
+            'personal.alert_email_line1' => 'تم تسجيل الدخول باستخدام البريد الإلكتروني {email}.',
+            'personal.alert_email_line2' => 'يُستخدم هذا البريد الإلكتروني فقط لرمز الوصول (Access-Token) وللعثور على طلبك مرة أخرى.',
+            'personal.alert_email_line3' => 'يمكنك أدناه إدخال البريد الإلكتروني للطالبة/الطالب (إن وُجد).',
+        
+            'personal.alert_noemail_title' => 'ملاحظة (بدون بريد إلكتروني):',
+            'personal.alert_noemail_body' => 'يرجى كتابة أو تصوير رمز الوصول (Access-Token) الذي سيظهر بعد حفظ هذه الصفحة. بدون بريد إلكتروني مُتحقق منه، لا يمكن الاسترجاع إلا باستخدام الرمز + تاريخ الميلاد.',
+        
+            'personal.label.name' => 'اسم العائلة',
+            'personal.label.vorname' => 'الاسم الأول',
+            'personal.label.geschlecht' => 'الجنس',
+            'personal.gender.m' => 'ذكر',
+            'personal.gender.w' => 'أنثى',
+            'personal.gender.d' => 'متنوع',
+        
+            'personal.label.geburtsdatum' => 'تاريخ الميلاد',
+            'personal.label.geburtsdatum_hint' => '(يوم.شهر.سنة)',
+            'personal.placeholder.geburtsdatum' => 'يوم.شهر.سنة',
+        
+            'personal.age_hint' => 'ملاحظة: إذا كان عمرك في 30.09.{year} أقل من 16 أو أكثر من 18 عامًا، فلن يمكن قبولك في صف اللغة في BBS. يرجى التقديم لصف آخر هنا:',
+            'personal.age_redirect_msg' => "ملاحظة: إذا كان عمرك في 30.09.{year} أقل من 16 أو أكثر من 18 عامًا، فلن يمكن قبولك في صف اللغة في BBS.\nيرجى التقديم لصف آخر في BBS هنا:\n{url}",
+        
+            'personal.label.geburtsort_land' => 'مكان / بلد الميلاد',
+            'personal.label.staatsang' => 'الجنسية',
+        
+            'personal.label.strasse' => 'الشارع، رقم المنزل',
+            'personal.label.plz' => 'الرمز البريدي',
+            'personal.plz_choose' => '– الرجاء الاختيار –',
+            'personal.plz_hint' => 'أولدنبرغ (Oldb) فقط.',
+            'personal.label.wohnort' => 'المدينة',
+        
+            'personal.label.telefon' => 'رقم الهاتف',
+            'personal.label.telefon_vorwahl_help' => 'رمز المنطقة مع/بدون 0',
+            'personal.label.telefon_nummer_help' => 'الرقم',
+            'personal.placeholder.telefon_vorwahl' => '(0)441',
+            'personal.placeholder.telefon_nummer' => '123456',
+        
+            'personal.label.email' => 'البريد الإلكتروني للطالبة/الطالب (اختياري، ليس عنوان IServ)',
+            'personal.email_help' => 'هذا البريد الإلكتروني يخص الطالبة/الطالب (إن وُجد) وهو مستقل عن البريد الإلكتروني لرمز الوصول.',
+            'personal.placeholder.email' => 'name@example.org',
+        
+            'personal.label.kontakte' => 'بيانات اتصال إضافية',
+            'personal.kontakte_hint' => '(مثل الوالدين، المشرف/ة، المؤسسة)',
+            'personal.kontakte_error' => 'يرجى التحقق من جهات الاتصال الإضافية.',
+            'personal.kontakte_add' => '+ إضافة جهة اتصال',
+            'personal.kontakte_remove_title' => 'إزالة جهة الاتصال',
+        
+            'personal.table.role' => 'الدور',
+            'personal.table.name' => 'الاسم / المؤسسة',
+            'personal.table.tel'  => 'الهاتف',
+            'personal.table.mail' => 'البريد الإلكتروني',
+            'personal.table.note_header' => 'ملاحظة',
+            'personal.placeholder.kontakt_name' => 'الاسم أو الوصف',
+            'personal.placeholder.kontakt_tel'  => '+49 …',
+            'personal.placeholder.kontakt_note' => 'مثل أوقات التوفر، اللغة، ملاحظات',
+        
+            'personal.contact_role.none' => '–',
+            'personal.contact_role.mutter' => 'الأم',
+            'personal.contact_role.vater' => 'الأب',
+            'personal.contact_role.elternteil' => 'أحد الوالدين',
+            'personal.contact_role.betreuer' => 'مشرف/ة',
+            'personal.contact_role.einrichtung' => 'مؤسسة',
+            'personal.contact_role.sonstiges' => 'أخرى',
+        
+            'personal.label.weitere_angaben' => 'معلومات إضافية (مثل حالة الدعم):',
+            'personal.placeholder.weitere_angaben' => 'يمكنك هنا ذكر مثلًا احتياجات دعم خاصة أو احتياجات دعم تربوي خاص أو ملاحظات أخرى.',
+            'personal.weitere_angaben_help' => 'اختياري. بحد أقصى 1500 حرف.',
+            'personal.btn.cancel' => 'إلغاء',
+            'personal.btn.next' => 'التالي',
+        
+            'personal.dsgvo_text_prefix' => 'لقد قرأت',
+            'personal.dsgvo_link_text' => 'إشعار حماية البيانات',
+            'personal.dsgvo_text_suffix' => 'وأوافق.',
+        
+            // =====================
+            // STEP 2/4: SCHOOL (AR)
+            // =====================
+            'school.page_title' => 'الخطوة 2/4 – المدرسة والاهتمامات',
+            'school.h1' => 'الخطوة 2/4 – المدرسة والاهتمامات',
+            'school.required_hint' => 'الحقول الإلزامية مميزة بإطار أزرق.',
+            'school.form_error_hint' => 'يرجى التحقق من الحقول المحددة.',
+        
+            'school.top_hint_title' => 'ملاحظة:',
+            'school.top_hint_body'  => 'إذا كنت في ألمانيا <u>أكثر من 3 سنوات</u> أو كنت تتحدث الألمانية بالفعل بمستوى <u>B1</u> أو أعلى، فلن يمكن قبولك في صف اللغة في BBS. يرجى التقديم لصف آخر في BBS هنا:',
+            'school.bbs_link_label' => 'https://bbs-ol.de/',
+        
+            'school.autohints_title' => 'ملاحظات',
+        
+            'school.label.schule_aktuell' => 'المدرسة الحالية',
+            'school.search_placeholder'   => 'ابحث عن مدرسة… (الاسم، الشارع، الرمز البريدي)',
+            'school.select_choose'        => 'يرجى الاختيار…',
+            'school.option_other'         => 'أخرى / غير موجودة في القائمة',
+            'school.other_placeholder'    => 'اسم المدرسة، الشارع، المدينة (نص حر)',
+        
+            'school.label.teacher'        => 'المعلّم/ة المسؤول/ة',
+            'school.label.teacher_mail'   => 'بريد المعلّم/ة المسؤول/ة',
+        
+            'school.label.herkunft'       => 'هل درست في بلد المنشأ؟',
+            'school.yes'                  => 'نعم',
+            'school.no'                   => 'لا',
+            'school.label.herkunft_years' => 'إذا نعم: كم عدد السنوات؟',
+        
+            'school.label.since'          => 'منذ متى تدرس في مدرسة في ألمانيا؟',
+            'school.since_month'          => 'الشهر (MM)',
+            'school.since_year_ph'        => 'السنة (YYYY)',
+            'school.since_help'           => 'أدخل الشهر+السنة <strong>أو</strong> استخدم حقل النص الحر.',
+            'school.label.since_text'     => 'بديل: نص حر (مثلًا: «منذ خريف 2023»)',
+        
+            'school.label.years_in_de'    => 'منذ كم سنة أنت في ألمانيا؟',
+            'school.years_in_de_help'     => 'ملاحظة: &gt; 3 سنوات → يرجى التقديم بشكل اعتيادي عبر {link}.',
+        
+            'school.label.family_lang'    => 'لغة الأسرة / اللغة الأولى',
+        
+            'school.label.level'          => 'ما هو مستوى اللغة الألمانية؟',
+            'school.level_choose'         => 'يرجى الاختيار…',
+            'school.level_help'           => 'ملاحظة: B1 أو أعلى → التقديم الاعتيادي عبر {link}.',
+        
+            'school.label.interests'      => 'الاهتمامات (حد أدنى 1، حد أقصى 2)',
+        
+            'school.btn.back'             => 'رجوع',
+            'school.btn.next'             => 'التالي',
+        
+            // ---------------------
+            // Validation / Errors
+            // ---------------------
+            'val.school_free_required' => 'يرجى إدخال اسم المدرسة (نص حر).',
+            'val.school_invalid'       => 'يرجى اختيار مدرسة صالحة أو «أخرى / غير موجودة في القائمة».',
+        
+            'val.since_required'       => 'يرجى إدخال الشهر+السنة أو نصًا حرًا.',
+            'val.month_invalid'        => 'يجب أن يكون الشهر بين 01 و12.',
+            'val.year_invalid'         => 'يرجى إدخال سنة صالحة.',
+            'val.number_required'      => 'يرجى إدخال رقم.',
+            'val.choose'               => 'يرجى الاختيار.',
+            'val.herkunft_years'       => 'يرجى إدخال عدد السنوات.',
+        
+            'val.level_invalid'        => 'اختيار غير صالح.',
+        
+            'val.interests_min1'       => 'يرجى اختيار مجال واحد على الأقل.',
+            'val.interests_max2'       => 'يرجى اختيار مجالين كحد أقصى.',
+        
+            // ---------------------
+            // JS Live hints
+            // ---------------------
+            'js.hint_years_gt3'  => 'ملاحظة: أنت في ألمانيا منذ أكثر من 3 سنوات. يرجى التقديم عبر {link}.',
+            'js.hint_level_b1p'  => 'ملاحظة: مع مستوى B1 أو أعلى يرجى التقديم الاعتيادي عبر {link}.',
+        
+            // =========================
+            // STEP 3/4: UPLOAD (AR)
+            // =========================
+            'upload.page_title' => 'الخطوة 3/4 – المستندات (اختياري)',
+            'upload.h1'         => 'الخطوة 3/4 – المستندات (اختياري)',
+        
+            'upload.intro'      => 'يمكنك هنا رفع المستندات. الصيغ المسموحة هي <strong>PDF</strong> و<strong>JPG</strong> و<strong>PNG</strong>. الحد الأقصى لحجم الملف هو <strong>{max_mb} MB</strong> لكل ملف.',
+        
+            'upload.type.zeugnis'    => 'آخر شهادة نصف سنوية',
+            'upload.type.lebenslauf' => 'السيرة الذاتية (CV)',
+            'upload.type_hint'       => '(PDF/JPG/PNG، بحد أقصى {max_mb} MB)',
+        
+            'upload.btn.remove' => 'إزالة',
+            'upload.btn.back'   => 'رجوع',
+            'upload.btn.next'   => 'التالي',
+        
+            'upload.saved_prefix' => 'تم الحفظ بالفعل:',
+            'upload.empty'        => 'لم يتم رفع أي ملف بعد.',
+            'upload.saved_html'   => 'تم الحفظ بالفعل: <strong>{filename}</strong>، {size_kb} KB، تم الرفع بتاريخ {uploaded_at}',
+        
+            'upload.checkbox.zeugnis_spaeter' => 'سأقوم بتقديم الشهادة نصف السنوية لاحقًا بعد القبول.',
+        
+            'upload.flash.no_access' => 'لم يتم العثور على وصول صالح. يرجى بدء التسجيل من جديد.',
+            'upload.flash.saved'     => 'تم حفظ معلومات الرفع.',
+        
+            'upload.js.uploading'          => 'جارٍ تنفيذ الرفع…',
+            'upload.js.unexpected'         => 'استجابة غير متوقعة من الخادم.',
+            'upload.js.upload_failed'      => 'فشل الرفع.',
+            'upload.js.delete_confirm'     => 'هل تريد حقًا إزالة الملف المرفوع؟',
+            'upload.js.delete_failed'      => 'فشل الحذف.',
+            'upload.js.remove_confirm_btn' => 'إزالة الملف؟',
+        
+            // AJAX / errors
+            'upload.ajax.invalid_method'       => 'طريقة غير صالحة',
+            'upload.ajax.invalid_csrf'         => 'رمز CSRF غير صالح',
+            'upload.ajax.no_access'            => 'لا يوجد وصول صالح.',
+            'upload.ajax.invalid_field'        => 'حقل غير صالح',
+            'upload.ajax.no_file_sent'         => 'لم يتم إرسال ملف',
+            'upload.ajax.no_file_selected'     => 'لم يتم اختيار ملف',
+            'upload.ajax.upload_error'         => 'خطأ في الرفع (الرمز {code})',
+            'upload.ajax.too_large'            => 'حجم الملف أكبر من {max_mb} MB',
+            'upload.ajax.mime_only'            => 'يسمح فقط بـ PDF أو JPG أو PNG',
+            'upload.ajax.ext_only'             => 'امتداد ملف غير صالح (فقط pdf/jpg/jpeg/png)',
+            'upload.ajax.cannot_save'          => 'تعذر حفظ الملف',
+            'upload.ajax.unknown_action'       => 'إجراء غير معروف',
+            'upload.ajax.server_error'         => 'خطأ في الخادم أثناء الرفع',
+        
+            // =========================
+            // STEP 4/4: REVIEW (AR)
+            // =========================
+            'review.page_title' => 'الخطوة 4/4 – الملخص وتقديم الطلب',
+        
+            'review.h1'      => 'الخطوة 4/4 – الملخص وتقديم الطلب',
+            'review.subhead' => 'يرجى التحقق من بياناتك. عند الضغط على «تقديم»، سيتم إرسال البيانات.',
+        
+            'review.readonly_alert' => 'تم إرسال هذا الطلب بالفعل. يمكن عرض البيانات فقط ولا يمكن تعديلها أو إرسالها مرة أخرى.',
+        
+            'review.info.p1' => 'عزيزتي الطالبة، عزيزي الطالب،',
+            'review.info.p2' => 'عند النقر على <strong>«تقديم»</strong> تكون قد تقدّمت بطلب إلى <strong>BES اللغة والاندماج</strong> في إحدى مدارس BBS في أولدنبورغ.',
+            'review.info.p3' => 'هذا ليس تسجيلًا نهائيًا بعد، بل هو <strong>طلب</strong>. بعد <strong>20.02.</strong> ستتلقى معلومات عمّا إذا/وفي أي BBS تم قبولك. يرجى التحقق بانتظام من صندوق البريد والبريد الإلكتروني. يرجى التأكد من أن اسمك ظاهر على صندوق البريد لكي تصلك الرسائل.',
+            'review.info.p4' => 'مع خطاب القبول من المدرسة ستتلقى طلبًا لتقديم هذه الملفات (إذا لم ترفعها اليوم):',
+            'review.info.li1' => 'آخر شهادة نصف سنوية',
+        
+            // Accordion titles
+            'review.acc.personal' => 'البيانات الشخصية',
+            'review.acc.school'   => 'المدرسة والاهتمامات',
+            'review.acc.uploads'  => 'المستندات',
+        
+            // Labels: Personal
+            'review.lbl.name'            => 'اسم العائلة',
+            'review.lbl.vorname'         => 'الاسم الأول',
+            'review.lbl.geschlecht'      => 'الجنس',
+            'review.lbl.geburtsdatum'    => 'تاريخ الميلاد',
+            'review.lbl.geburtsort'      => 'مكان / بلد الميلاد',
+            'review.lbl.staatsang'       => 'الجنسية',
+            'review.lbl.strasse'         => 'الشارع، رقم المنزل',
+            'review.lbl.plz_ort'         => 'الرمز البريدي / المدينة',
+            'review.lbl.telefon'         => 'الهاتف',
+            'review.lbl.email'           => 'البريد الإلكتروني (للطالبة/الطالب، اختياري)',
+            'review.lbl.weitere_angaben' => 'معلومات إضافية (مثل حالة الدعم)',
+        
+            'review.contacts.title'    => 'جهات اتصال إضافية',
+            'review.contacts.optional' => 'اختياري',
+            'review.contacts.none'     => '–',
+        
+            'review.contacts.th.role' => 'الدور',
+            'review.contacts.th.name' => 'الاسم / المؤسسة',
+            'review.contacts.th.tel'  => 'الهاتف',
+            'review.contacts.th.mail' => 'البريد الإلكتروني',
+            'review.contacts.note'    => 'ملاحظة:',
+        
+            // Labels: School
+            'review.lbl.school_current' => 'المدرسة الحالية',
+            'review.lbl.klassenlehrer'  => 'المعلّم/ة المسؤول/ة',
+            'review.lbl.mail_lehrkraft' => 'بريد المعلّم/ة',
+            'review.lbl.since'          => 'منذ متى في المدرسة',
+            'review.lbl.years_de'       => 'عدد السنوات في ألمانيا',
+            'review.lbl.family_lang'    => 'لغة الأسرة / اللغة الأولى',
+            'review.lbl.de_level'       => 'مستوى الألمانية',
+            'review.lbl.school_origin'  => 'المدرسة في بلد المنشأ',
+            'review.lbl.years_origin'   => 'سنوات الدراسة في بلد المنشأ',
+            'review.lbl.interests'      => 'الاهتمامات',
+        
+            // Uploads
+            'review.lbl.zeugnis'        => 'الشهادة نصف السنوية',
+            'review.lbl.lebenslauf'     => 'السيرة الذاتية (CV)',
+            'review.lbl.later'          => 'تقديم لاحقًا',
+            'review.badge.uploaded'     => 'تم الرفع',
+            'review.badge.not_uploaded' => 'لم يتم الرفع',
+            'review.yes'                => 'نعم',
+            'review.no'                 => 'لا',
+        
+            // Buttons / Actions
+            'review.btn.home'   => 'إلى الصفحة الرئيسية',
+            'review.btn.newapp' => 'تقديم طلب آخر',
+            'review.btn.back'   => 'رجوع',
+            'review.btn.submit' => 'تقديم',
+        
+            // Errors / Flash / System texts
+            'review.err.invalid_request'     => 'طلب غير صالح.',
+            'review.flash.already_submitted' => 'تم إرسال هذا الطلب بالفعل ولا يمكن إرساله مرة أخرى أو تعديله.',
+            'review.flash.no_token'          => 'لا يوجد رمز وصول صالح. يرجى بدء العملية من جديد.',
+            'review.err.not_found_token'     => 'لم يتم العثور على طلب لهذا الرمز.',
+            'review.flash.submit_error'      => 'حدث خطأ أثناء الإرسال. يرجى المحاولة لاحقًا.',
+        
+            // Gender fallback
+            'review.gender.m' => 'ذكر',
+            'review.gender.w' => 'أنثى',
+            'review.gender.d' => 'متنوع',
+        
+            // Fallback
+            'review.value.empty' => '–',
+        
+            // =========================
+            // STATUS (AR)
+            // =========================
+            'status.hdr_title'   => 'تم حفظ الطلب بنجاح',
+            'status.hdr_message' => 'تم إرسال طلبك.',
+        
+            'status.h1' => 'تم حفظ طلبك بنجاح.',
+        
+            'status.success.title' => 'شكرًا لك!',
+            'status.success.body'  => 'تم إرسال طلبك وسيتم معالجته الآن.',
+        
+            'status.info.title' => 'ملاحظة مهمة',
+            'status.info.body'  => '<em>[عنصر نائب: سيتم توفير النص من العميل لاحقًا]</em>',
+        
+            'status.btn.pdf'    => 'تحميل / طباعة PDF',
+            'status.btn.newapp' => 'بدء طلب جديد',
+            'status.btn.home'   => 'إلى الصفحة الرئيسية',
+        
+            'status.ref' => 'المرجع: الطلب رقم #{id}',
+        
+            'status.err.invalid_request' => 'طلب غير صالح.',
+        
+            // =========================
+            // PDF (AR)
+            // =========================
+            'pdf.err.autoload_missing' => 'لم يتم العثور على Composer Autoload. يرجى تشغيل "composer install".',
+            'pdf.err.no_token'         => 'لا يوجد رمز وصول صالح. يرجى بدء العملية من جديد.',
+            'pdf.err.not_found'        => 'لم يتم العثور على الطلب.',
+            'pdf.err.server'           => 'خطأ في الخادم أثناء إنشاء ملف PDF.',
+        
+            'pdf.header_title' => 'الطلب – الملخص',
+            'pdf.footer_auto'  => 'مستند مُنشأ تلقائيًا',
+            'pdf.footer_page'  => 'الصفحة {cur} / {max}',
+        
+            'pdf.meta.ref'        => 'الطلب رقم #{id}',
+            'pdf.meta.created_at' => 'تاريخ الإنشاء',
+            'pdf.meta.status'     => 'الحالة',
+        
+            'pdf.top.title'        => 'نظرة سريعة',
+            'pdf.top.name'         => 'الاسم',
+            'pdf.top.reference'    => 'المرجع',
+            'pdf.top.generated'    => 'تاريخ الإنشاء',
+            'pdf.top.hint'         => 'ملاحظة',
+            'pdf.top.keep_note'    => 'يرجى الاحتفاظ بهذا المستند ضمن أوراقك.',
+            'pdf.hint_placeholder' => '[عنصر نائب: سيتم توفير النص من العميل لاحقًا]',
+        
+            'pdf.sec1.title' => '1) البيانات الشخصية',
+            'pdf.sec2.title' => '2) بيانات اتصال إضافية',
+            'pdf.sec3.title' => '3) المدرسة والاهتمامات',
+            'pdf.sec4.title' => '4) المستندات',
+        
+            'pdf.lbl.name'           => 'اسم العائلة',
+            'pdf.lbl.vorname'        => 'الاسم الأول',
+            'pdf.lbl.gender'         => 'الجنس',
+            'pdf.lbl.dob'            => 'تاريخ الميلاد',
+            'pdf.lbl.birthplace'     => 'مكان/بلد الميلاد',
+            'pdf.lbl.nationality'    => 'الجنسية',
+            'pdf.lbl.address'        => 'العنوان',
+            'pdf.lbl.phone'          => 'الهاتف',
+            'pdf.lbl.email_optional' => 'البريد الإلكتروني (اختياري)',
+            'pdf.lbl.more'           => 'معلومات إضافية',
+        
+            'pdf.lbl.school_current' => 'المدرسة الحالية',
+            'pdf.lbl.teacher'        => 'المعلّم/ة',
+            'pdf.lbl.teacher_email'  => 'بريد المعلّم/ة',
+            'pdf.lbl.since_school'   => 'منذ متى في المدرسة',
+            'pdf.lbl.years_in_de'    => 'منذ متى في ألمانيا',
+            'pdf.lbl.family_lang'    => 'لغة الأسرة',
+            'pdf.lbl.de_level'       => 'مستوى الألمانية',
+            'pdf.lbl.school_origin'  => 'المدرسة في بلد المنشأ',
+            'pdf.lbl.years_origin'   => 'سنوات الدراسة في بلد المنشأ',
+            'pdf.lbl.interests'      => 'الاهتمامات',
+        
+            'pdf.lbl.report'       => 'الشهادة نصف السنوية',
+            'pdf.lbl.cv'           => 'السيرة الذاتية (CV)',
+            'pdf.lbl.report_later' => 'تقديم الشهادة لاحقًا',
+        
+            'pdf.uploaded'     => 'تم الرفع',
+            'pdf.not_uploaded' => 'لم يتم الرفع',
+        
+            'pdf.contacts.none'    => '–',
+            'pdf.contacts.th.role' => 'الدور',
+            'pdf.contacts.th.name' => 'الاسم/المؤسسة',
+            'pdf.contacts.th.tel'  => 'الهاتف',
+            'pdf.contacts.th.mail' => 'البريد الإلكتروني',
+            'pdf.contacts.th.note' => 'ملاحظة',
+        
+            'pdf.gender.m' => 'ذكر',
+            'pdf.gender.w' => 'أنثى',
+            'pdf.gender.d' => 'متنوع',
+        
+            'pdf.yes' => 'نعم',
+            'pdf.no'  => 'لا',
+        
+            'pdf.sec4.note' => 'هذا المستند هو ملخص مُنشأ تلقائيًا للبيانات المُدخلة.',
+            'pdf.filename_prefix' => 'الطلب',
+        
+            // =========================
+            // ACCESS_CREATE (AR)
+            // =========================
+            'access_create.title'         => 'المتابعة مع البريد الإلكتروني',
+            'access_create.lead'          => 'يمكنك تسجيل الدخول باستخدام وصولك أو إنشاء وصول جديد.',
+            'access_create.tabs_login'    => 'تسجيل الدخول',
+            'access_create.tabs_register' => 'إنشاء وصول جديد',
+        
+            'access_create.login_title' => 'تسجيل الدخول (وصول موجود)',
+            'access_create.login_text'  => 'يرجى إدخال بريدك الإلكتروني وكلمة المرور.',
+            'access_create.email_label' => 'البريد الإلكتروني',
+            'access_create.pass_label'  => 'كلمة المرور',
+            'access_create.login_btn'   => 'تسجيل الدخول',
+            'access_create.login_err'   => 'البريد الإلكتروني/كلمة المرور غير صحيحة أو لم يتم التحقق من الوصول.',
+        
+            'access_create.reg_title'     => 'إنشاء وصول جديد',
+            'access_create.reg_text'      => 'سنرسل لك رمز تأكيد من 6 أرقام. بعد التأكيد بنجاح ستتلقى كلمة المرور عبر البريد الإلكتروني.',
+            'access_create.consent_label' => 'أوافق على استخدام بريدي الإلكتروني لعملية التسجيل.',
+            'access_create.send_btn'      => 'إرسال الرمز',
+            'access_create.code_label'    => 'رمز التأكيد',
+            'access_create.verify_btn'    => 'تحقق من الرمز',
+            'access_create.resend'        => 'إرسال الرمز مرة أخرى',
+        
+            'access_create.info_sent'    => 'لقد أرسلنا لك رمزًا. يرجى أيضًا التحقق من مجلد البريد العشوائي (Spam).',
+            'access_create.ok_verified'  => 'تم تأكيد البريد الإلكتروني. تم إرسال كلمة المرور. يمكنك الآن تسجيل الدخول.',
+            'access_create.email_in_use' => 'هذا البريد الإلكتروني لديه وصول بالفعل. يرجى تسجيل الدخول.',
+        
+            'access_create.error_email'     => 'يرجى إدخال بريد إلكتروني صالح.',
+            'access_create.error_consent'   => 'يرجى الموافقة على استخدام بريدك الإلكتروني.',
+            'access_create.error_rate'      => 'محاولات كثيرة جدًا. يرجى الانتظار قليلًا ثم المحاولة مرة أخرى.',
+            'access_create.error_code'      => 'الرمز غير صالح أو انتهت صلاحيته.',
+            'access_create.error_resend'    => 'لا يمكن إعادة الإرسال. يرجى البدء من جديد.',
+            'access_create.error_mail_send' => 'فشل إرسال البريد. يرجى المحاولة لاحقًا.',
+            'access_create.error_db'        => 'خطأ في الخادم (قاعدة البيانات).',
+        
+            'access_create.back'   => 'رجوع',
+            'access_create.cancel' => 'إلغاء',
+        
+            'access_create.mail_subject' => 'كلمة المرور الخاصة بك للتسجيل الإلكتروني',
+            'access_create.mail_body'    => "تم إنشاء وصولك.\n\nالبريد الإلكتروني: {email}\nكلمة المرور: {password}\n\nيرجى حفظ كلمة المرور في مكان آمن.",
+        
+            // =========================
+            // ACCESS_PORTAL (AR)
+            // =========================
+            'access_portal.title'    => 'طلباتي',
+            'access_portal.lead'     => 'هنا سترى طلباتك. يمكنك متابعة طلب موجود أو بدء طلب جديد.',
+            'access_portal.max_hint' => '{email} · الحد الأقصى {max} طلب/طلبات',
+        
+            'access_portal.btn_new'    => 'بدء طلب جديد',
+            'access_portal.btn_open'   => 'فتح',
+            'access_portal.btn_logout' => 'تسجيل الخروج',
+        
+            'access_portal.th_ref'     => 'المعرّف',
+            'access_portal.th_status'  => 'الحالة',
+            'access_portal.th_created' => 'تاريخ الإنشاء',
+            'access_portal.th_updated' => 'آخر تحديث',
+            'access_portal.th_token'   => 'Token',
+            'access_portal.th_action'  => 'إجراء',
+        
+            'access_portal.status_draft'     => 'مسودة',
+            'access_portal.status_submitted' => 'تم الإرسال',
+            'access_portal.status_withdrawn' => 'تم السحب',
+        
+            'access_portal.limit_reached' => 'لقد بلغت الحد الأقصى لعدد الطلبات لهذا البريد الإلكتروني.',
+            'access_portal.no_apps'       => 'لا توجد طلبات بعد.',
+            'access_portal.err_generic'   => 'حدث خطأ.',
+            'access_portal.csrf_invalid'  => 'طلب غير صالح.',
+        
+            // =========================
+            // ACCESS_LOGIN (AR)
+            // =========================
+            'access_login.title'            => 'الوصول إلى الطلب/الطلبات',
+            'access_login.lead'             => 'هنا يمكنك فتح طلب بدأته أو أرسلته سابقًا.',
+        
+            'access_login.login_box_title'  => 'تسجيل الدخول باستخدام Access-Token',
+            'access_login.login_box_text'   => 'يرجى إدخال رمز الوصول الشخصي (Access-Token) وتاريخ الميلاد.',
+        
+            'access_login.token_label'      => 'Access-Token',
+            'access_login.dob_label'        => 'تاريخ الميلاد (TT.MM.YYYY)',
+        
+            'access_login.login_btn'        => 'وصول',
+            'access_login.back'             => 'العودة إلى الصفحة الرئيسية',
+        
+            'access_login.login_ok'         => 'تم تحميل الطلب.',
+            'access_login.login_error'      => 'لم يتم العثور على تطابق بين Access-Token وتاريخ الميلاد.',
+            'access_login.login_error_token'=> 'يرجى إدخال Access-Token صالح.',
+            'access_login.login_error_dob'  => 'يرجى إدخال تاريخ ميلاد صالح بصيغة TT.MM.YYYY.',
+        
+            'access_login.csrf_invalid'     => 'طلب غير صالح.',
+            'access_login.internal_error'   => 'خطأ داخلي.',
+            'access_login.load_error'       => 'حدث خطأ أثناء تحميل الطلب.',
+        
+            // =========================
+            // PRIVACY (AR)
+            // =========================
+            'privacy.title' => 'حماية البيانات',
+            'privacy.h1'    => 'إشعار حماية البيانات لطلب التسجيل الإلكتروني «BES اللغة والاندماج»',
+        
+            'privacy.s1_title'     => '1. الجهة المسؤولة',
+            'privacy.s1_body_html' => '<strong>مدينة أولدنبورغ / المدارس المهنية</strong><br>(يرجى إدخال اسم الجهة/المدرسة بالتفصيل والعنوان والهاتف والبريد الإلكتروني)',
+        
+            'privacy.s2_title'     => '2. مسؤول/ة حماية البيانات',
+            'privacy.s2_body_html' => '(يرجى إدخال بيانات التواصل لمسؤول/ة حماية البيانات)',
+        
+            'privacy.s3_title' => '3. أغراض المعالجة',
+            'privacy.s3_li1'   => 'استلام ومعالجة طلبك للالتحاق بصف اللغة («BES اللغة والاندماج»)',
+            'privacy.s3_li2'   => 'التواصل معك (استفسارات، إبلاغ بقرار القبول)',
+            'privacy.s3_li3'   => 'التخطيط التنظيمي المدرسي (التوزيع على BBS)',
+        
+            'privacy.s4_title' => '4. الأسس القانونية',
+            'privacy.s4_li1'   => 'المادة 6(1)(هـ) من GDPR بالاقتران مع أحكام قانون المدارس في ولاية سكسونيا السفلى',
+            'privacy.s4_li2'   => 'المادة 6(1)(ج) من GDPR (الوفاء بالالتزامات القانونية)',
+            'privacy.s4_li3'   => 'المادة 6(1)(أ) من GDPR (الموافقة)، بقدر ما يتم تقديم بيانات/مرفقات طوعية',
+        
+            'privacy.s5_title' => '5. فئات البيانات الشخصية',
+            'privacy.s5_li1'   => 'البيانات الأساسية (الاسم، تاريخ الميلاد، الجنسية، العنوان، بيانات الاتصال)',
+            'privacy.s5_li2'   => 'معلومات مدرسية (المدرسة الحالية، مستوى اللغة، الاهتمامات)',
+            'privacy.s5_li3'   => 'مستندات اختيارية (مثل آخر شهادة نصف سنوية)',
+            'privacy.s5_li4'   => 'جهات اتصال إضافية (الوالدان/المشرفون/المؤسسات)',
+        
+            'privacy.s6_title' => '6. المستلمون',
+            'privacy.s6_body'  => 'ضمن نطاق اختصاص مدينة أولدنبورغ والمدارس المهنية. لا يتم إرسال البيانات لأطراف ثالثة إلا إذا كان ذلك مطلوبًا قانونيًا (مثل السلطات المدرسية) أو بموافقتك.',
+        
+            'privacy.s7_title' => '7. نقل البيانات إلى دول ثالثة',
+            'privacy.s7_body'  => 'لا يتم نقل البيانات إلى دول ثالثة.',
+        
+            'privacy.s8_title' => '8. مدة التخزين',
+            'privacy.s8_body'  => 'سيتم تخزين بياناتك طوال مدة إجراءات الطلب/القبول ووفقًا لفترات الاحتفاظ القانونية ثم حذفها.',
+        
+            'privacy.s9_title' => '9. حقوقك',
+            'privacy.s9_li1'   => 'الاطلاع (المادة 15)، التصحيح (16)، الحذف (17)، تقييد المعالجة (18)',
+            'privacy.s9_li2'   => 'الاعتراض (21) على المعالجات للمصلحة العامة',
+            'privacy.s9_li3'   => 'سحب الموافقات (المادة 7(3)) بأثر مستقبلي',
+            'privacy.s9_li4'   => 'حق تقديم شكوى لدى جهة الرقابة: مفوض/ة حماية البيانات في سكسونيا السفلى',
+        
+            'privacy.s10_title' => '10. الاستضافة والسجلات',
+            'privacy.s10_body'  => 'يتم تشغيل التطبيق على خوادم المدينة أو في مركز بيانات بلدي. تتم معالجة البيانات التقنية الضرورية فقط (مثل سجلات الخادم للبحث عن الأخطاء). لا يتم تضمين CDN خارجي. يتم تعيين ملف تعريف ارتباط لغوي فقط.',
+        
+            'privacy.s11_title'    => '11. ملفات تعريف الارتباط',
+            'privacy.s11_li1_html' => '<strong>lang</strong> – يحفظ اللغة المختارة (صالحة 12 شهرًا). الهدف: سهولة الاستخدام.',
+            'privacy.s11_li2'      => 'جلسة PHP – ضرورية تقنيًا لسير النموذج، وتُحذف عند انتهاء الجلسة.',
+        
+            'privacy.stand_label' => 'التحديث',
+            'privacy.stand_hint'  => 'يرجى التحقق بانتظام من وجود أي تغييرات.',
+            'privacy.back_home'   => 'إلى الصفحة الرئيسية',
+        
+            // =========================
+            // IMPRINT (AR)
+            // =========================
+            'imprint.title' => 'بيانات النشر',
+            'imprint.h1'    => 'بيانات النشر',
+        
+            'imprint.s1_title'     => 'مزود الخدمة',
+            'imprint.s1_body_html' => '<strong>مدينة ***</strong><br>المدارس المهنية<br>(يرجى إدخال العنوان بالتفصيل)<br>الهاتف: (يرجى الإضافة)<br>البريد الإلكتروني: (يرجى الإضافة)',
+        
+            'imprint.s2_title'     => 'الممثل القانوني',
+            'imprint.s2_body_html' => '(مثلًا: عمدة المدينة ****<br>أو إدارة/قيادة BBS المعنية)',
+        
+            'imprint.s3_title'     => 'المسؤول عن المحتوى وفق § 18 الفقرة 2 من MStV',
+            'imprint.s3_body_html' => '(الاسم، الوظيفة، التواصل، مثلًا: إدارة BBS أو المكتب الإعلامي)',
+        
+            'imprint.s4_title'     => 'رقم التعريف الضريبي (VAT)',
+            'imprint.s4_body_html' => '(إن وُجد؛ وإلا يمكن حذف هذا القسم)',
+        
+            'imprint.s5_title' => 'جهة الإشراف',
+            'imprint.s5_body'  => '(الجهة البلدية/المدرسية المختصة، مثلًا: القسم الإقليمي لهيئة التعليم الحكومية)',
+        
+            'imprint.s6_title' => 'المسؤولية عن المحتوى',
+            'imprint.s6_body'  => 'تم إعداد محتوى صفحاتنا بعناية كبيرة. ومع ذلك لا يمكننا ضمان صحة المحتوى أو اكتماله أو حداثته. وبصفتنا جهة عامة، نتحمل مسؤولية محتوياتنا وفق § 7 الفقرة 1 من TMG.',
+        
+            'imprint.s7_title' => 'المسؤولية عن الروابط',
+            'imprint.s7_body'  => 'لا يتضمن عرضنا محتوى خارجيًا ينقل بيانات شخصية إلى أطراف ثالثة. إذا قمنا بالربط مع عروض معلومات لجهات عامة أخرى، فلا نتحمل مسؤولية محتواها.',
+        
+            'imprint.s8_title' => 'حقوق النشر',
+            'imprint.s8_body'  => 'تخضع المحتويات والأعمال التي أنشأتها مدينة أولدنبورغ لحقوق النشر الألمانية. يتم تمييز مساهمات الأطراف الثالثة على أنها كذلك. يتطلب النسخ أو المعالجة أو التوزيع أو أي استخدام خارج حدود حقوق النشر موافقة خطية من مدينة أولدنبورغ أو صاحب الحق.',
+        
+            'imprint.stand_label' => 'التحديث',
+            'imprint.stand_hint'  => 'تنطبق هذه البيانات على النموذج الإلكتروني «BES اللغة والاندماج».',
+            'imprint.back_home'   => 'إلى الصفحة الرئيسية',
+        
+            // =========================
+            // VERIFY_EMAIL (AR)
+            // =========================
+            'verify_email.title' => 'تأكيد البريد الإلكتروني',
+            'verify_email.h1'    => 'تأكيد البريد الإلكتروني',
+        
+            'verify_email.lead_sent'    => 'لقد أرسلنا رمز تأكيد إلى {email}.',
+            'verify_email.lead_generic' => 'يرجى إدخال رمز التأكيد الذي وصل عبر البريد الإلكتروني. إذا لم تجد البريد، يمكنك إعادة إرسال الرمز إلى عنوانك.',
+        
+            'verify_email.code_label'  => 'رمز التأكيد (6 أرقام)',
+            'verify_email.email_label' => 'عنوان بريدك الإلكتروني',
+        
+            'verify_email.btn_verify' => 'تأكيد',
+            'verify_email.btn_resend' => 'إرسال الرمز مرة أخرى',
+            'verify_email.hint_spam'  => 'يرجى أيضًا التحقق من مجلد البريد العشوائي (Spam).',
+        
+            'verify_email.back' => 'رجوع',
+        
+            'verify_email.csrf_invalid' => 'طلب غير صالح.',
+            'verify_email.ok_verified'  => 'تم تأكيد البريد الإلكتروني بنجاح.',
+            'verify_email.ok_sent'      => 'تم إرسال رمز جديد إلى {email}.',
+        
+            'verify_email.warn_cooldown'     => 'يرجى الانتظار قليلًا قبل طلب الرمز مرة أخرى.',
+            'verify_email.error_send'        => 'فشل الإرسال. يرجى المحاولة لاحقًا.',
+            'verify_email.error_email'       => 'يرجى إدخال بريد إلكتروني صالح.',
+            'verify_email.error_no_session'  => 'لم يتم العثور على عملية تحقق نشطة. يرجى طلب رمز جديد.',
+            'verify_email.error_expired'     => 'الرمز غير صالح أو انتهت صلاحيته.',
+            'verify_email.error_invalid'     => 'الرمز غير صالح أو انتهت صلاحيته.',
+            'verify_email.error_code_format' => 'يرجى إدخال رمز صالح مكوّن من 6 أرقام.',
+            'verify_email.error_rate'        => 'محاولات كثيرة جدًا. يرجى طلب رمز جديد.',
+        
+            // =========================
+            // VALIDATION (AR) – global
+            // =========================
+            'val.required' => 'مطلوب.',
+            'val.only_letters' => 'يرجى استخدام أحرف فقط.',
+            'val.gender_choose' => 'يرجى اختيار الجنس.',
+            'val.date_format' => 'يوم.شهر.سنة',
+            'val.date_invalid' => 'تاريخ غير صالح.',
+            'val.plz_whitelist' => 'فقط الرموز البريدية في أولدنبورغ (26121–26135).',
+            'val.phone_vorwahl' => 'رمز المنطقة: 2–6 أرقام.',
+            'val.phone_nummer' => 'الرقم: 3–12 رقمًا.',
+            'val.email_invalid' => 'بريد إلكتروني غير صالح.',
+            'val.email_no_iserv' => 'يرجى استخدام بريد خاص (ليس IServ).',
+            'val.max_1500' => 'بحد أقصى 1500 حرف.',
+            'val.kontakt_row_name_missing' => 'الاسم/الوصف مفقود',
+            'val.kontakt_row_tel_or_mail'  => 'أدخل الهاتف أو البريد الإلكتروني',
+            'val.kontakt_row_mail_invalid' => 'بريد إلكتروني غير صالح',
+            'val.kontakt_row_tel_invalid'  => 'هاتف غير صالح',
         ],
 
+        
         'ru' => [
             'index.title' => 'Добро пожаловать на онлайн-регистрацию – языковые курсы',
             'index.lead'  => 'Сервис для недавно прибывших в Ольденбург. Эта форма помогает связаться с вами и подобрать подходящие варианты.',
