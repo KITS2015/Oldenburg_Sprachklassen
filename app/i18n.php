@@ -23,7 +23,7 @@ $GLOBALS['APP_LANGUAGES'] = [
     'ru' => 'Русский',
     'tr' => 'Türkçe',
     'fa' => 'فارسی',
-	'vn' => '',
+    'vn' => 'Tiếng Việt',
 ];
 
 function i18n_languages(): array {
