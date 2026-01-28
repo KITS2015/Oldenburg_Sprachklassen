@@ -18,7 +18,7 @@ require_once __DIR__ . '/../app/db.php';
 $autoload = __DIR__ . '/../vendor/autoload.php';
 if (!is_file($autoload)) {
     http_response_code(500);
-    exit('Composer Autoload nicht gefunden. Bitte "composer install" ausführen.');
+    exit(t('pdf.err.autoload_missing'));
 }
 require_once $autoload;
 
@@ -26,13 +26,16 @@ use TCPDF;
 
 function s(mixed $v): string { return trim((string)$v); }
 function dash(mixed $v): string { $t = trim((string)$v); return $t !== '' ? $t : '–'; }
-function yn(mixed $v): string {
-    $t = s($v);
-    if ($t === '1' || strtolower($t) === 'ja' || strtolower($t) === 'true') return 'Ja';
-    if ($t === '0' || strtolower($t) === 'nein' || strtolower($t) === 'false') return 'Nein';
-    return $t !== '' ? $t : '–';
+
+// i18n yes/no + fallback
+function yn_i18n(mixed $v): string {
+    $t = strtolower(s($v));
+    if ($t === '1' || $t === 'ja' || $t === 'true')  return t('pdf.yes');
+    if ($t === '0' || $t === 'nein' || $t === 'false') return t('pdf.no');
+    return $t !== '' ? (string)$v : '–';
 }
-function h(string $v): string {
+
+function hpdf(string $v): string {
     return htmlspecialchars($v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 function join_nonempty(array $parts, string $sep = ' '): string {
@@ -43,12 +46,12 @@ function join_nonempty(array $parts, string $sep = ' '): string {
     }
     return $p ? implode($sep, $p) : '';
 }
-function gender_label(string $g): string {
+function gender_label_i18n(string $g): string {
     $g = strtolower(trim($g));
     return match ($g) {
-        'm' => 'männlich',
-        'w' => 'weiblich',
-        'd' => 'divers',
+        'm' => t('pdf.gender.m'),
+        'w' => t('pdf.gender.w'),
+        'd' => t('pdf.gender.d'),
         default => $g !== '' ? $g : '–',
     };
 }
@@ -95,9 +98,10 @@ function fetch_uploads(PDO $pdo, int $appId): array {
 }
 
 final class AppPdf extends TCPDF {
-    public string $headerTitle = 'Bewerbung – Zusammenfassung';
+    public string $headerTitle = '';
     public string $headerSub   = '';
     public string $footerLeft  = '';
+
     public function Header(): void {
         $this->SetY(10);
         $this->SetFont('dejavusans', 'B', 14);
@@ -110,7 +114,6 @@ final class AppPdf extends TCPDF {
             $this->SetTextColor(0, 0, 0);
         }
 
-        // Linie
         $this->Line(15, 26, 195, 26);
         $this->Ln(4);
     }
@@ -120,20 +123,34 @@ final class AppPdf extends TCPDF {
         $this->SetFont('dejavusans', '', 8);
         $this->SetTextColor(110, 110, 110);
 
-        $left = $this->footerLeft !== '' ? $this->footerLeft : 'Automatisch erzeugtes Dokument';
+        $left = $this->footerLeft !== '' ? $this->footerLeft : t('pdf.footer_auto');
         $this->Cell(0, 5, $left, 0, 0, 'L');
 
-        $page = 'Seite '.$this->getAliasNumPage().' / '.$this->getAliasNbPages();
+        $page = t('pdf.footer_page');
+        $page = str_replace(
+            ['{cur}', '{max}'],
+            [$this->getAliasNumPage(), $this->getAliasNbPages()],
+            $page
+        );
         $this->Cell(0, 5, $page, 0, 0, 'R');
 
         $this->SetTextColor(0, 0, 0);
     }
 }
 
+// simple placeholder replace
+function tr_pdf(string $key, array $vars = []): string {
+    $s = t($key);
+    foreach ($vars as $k => $v) {
+        $s = str_replace('{' . $k . '}', (string)$v, $s);
+    }
+    return $s;
+}
+
 $token = current_access_token();
 if ($token === '') {
     http_response_code(403);
-    exit('Kein gültiger Zugangscode. Bitte beginnen Sie den Vorgang neu.');
+    exit(t('pdf.err.no_token'));
 }
 
 try {
@@ -141,7 +158,7 @@ try {
     $app = fetch_application($pdo, $token);
     if (!$app) {
         http_response_code(404);
-        exit('Bewerbung nicht gefunden.');
+        exit(t('pdf.err.not_found'));
     }
 
     $appId  = (int)$app['id'];
@@ -179,7 +196,7 @@ try {
 
     // Derived / display values
     $generatedAt = (new DateTimeImmutable('now'))->format('d.m.Y H:i');
-    $ref = 'Bewerbung #'.$appId;
+    $ref = tr_pdf('pdf.meta.ref', ['id' => (string)$appId]);
 
     $fullName = trim(join_nonempty([s($p['vorname'] ?? $pDb['vorname'] ?? ''), s($p['name'] ?? $pDb['name'] ?? '')]));
     if ($fullName === '') $fullName = '–';
@@ -211,13 +228,15 @@ try {
     $pdf = new AppPdf('P', 'mm', 'A4', true, 'UTF-8', false);
     $pdf->SetCreator('BBS Bewerbungssystem');
     $pdf->SetAuthor('BBS Bewerbungssystem');
-    $pdf->SetTitle('Bewerbung – Zusammenfassung');
+    $pdf->SetTitle(t('pdf.header_title'));
     $pdf->SetSubject('Bewerbung');
     $pdf->SetMargins(15, 30, 15);
     $pdf->SetAutoPageBreak(true, 18);
 
-    $pdf->headerTitle = 'Bewerbung – Zusammenfassung';
-    $pdf->headerSub   = $ref.' • Erstellt am '.$generatedAt.' • Status: '.($status !== '' ? $status : '–');
+    $pdf->headerTitle = t('pdf.header_title');
+    $pdf->headerSub   = $ref
+        . ' • ' . t('pdf.meta.created_at') . ' ' . $generatedAt
+        . ' • ' . t('pdf.meta.status') . ': ' . ($status !== '' ? $status : '–');
     $pdf->footerLeft  = $ref;
 
     $pdf->AddPage();
@@ -243,27 +262,27 @@ try {
     ';
 
     // Cover/meta block
-    $hintPlaceholder = '[PLATZHALTER: Textbaustein vom Kunden folgt]';
+    $hintPlaceholder = t('pdf.hint_placeholder');
 
-    $htmlTop = $css.'
+    $htmlTop = $css . '
       <div class="card">
-        <div class="h2">Kurzübersicht</div>
+        <div class="h2">' . hpdf(t('pdf.top.title')) . '</div>
         <table class="tbl">
           <tr>
-            <td class="k">Name</td><td class="v">'.h($fullName).'</td>
+            <td class="k">' . hpdf(t('pdf.top.name')) . '</td><td class="v">' . hpdf($fullName) . '</td>
           </tr>
           <tr>
-            <td class="k">Referenz</td><td class="v">'.h($ref).'</td>
+            <td class="k">' . hpdf(t('pdf.top.reference')) . '</td><td class="v">' . hpdf($ref) . '</td>
           </tr>
           <tr>
-            <td class="k">Erstellt am</td><td class="v">'.h($generatedAt).'</td>
+            <td class="k">' . hpdf(t('pdf.top.generated')) . '</td><td class="v">' . hpdf($generatedAt) . '</td>
           </tr>
           <tr>
-            <td class="k">Hinweis</td><td class="v"><span class="tag">'.h($hintPlaceholder).'</span></td>
+            <td class="k">' . hpdf(t('pdf.top.hint')) . '</td><td class="v"><span class="tag">' . hpdf($hintPlaceholder) . '</span></td>
           </tr>
         </table>
         <div class="small" style="margin-top:6px;">
-          Bitte bewahren Sie dieses Dokument für Ihre Unterlagen auf.
+          ' . hpdf(t('pdf.top.keep_note')) . '
         </div>
       </div>
       <div class="sep"></div>
@@ -273,21 +292,21 @@ try {
     // Section 1: Personal
     $htmlPersonal = '
       <div class="card">
-        <div class="h2">1) Persönliche Daten</div>
+        <div class="h2">' . hpdf(t('pdf.sec1.title')) . '</div>
         <table class="tbl">
-          <tr><td class="k">Name</td><td class="v">'.h(dash($p['name'] ?? $pDb['name'] ?? null)).'</td></tr>
-          <tr><td class="k">Vorname</td><td class="v">'.h(dash($p['vorname'] ?? $pDb['vorname'] ?? null)).'</td></tr>
-          <tr><td class="k">Geschlecht</td><td class="v">'.h(gender_label(s($p['geschlecht'] ?? $pDb['geschlecht'] ?? ''))).'</td></tr>
-          <tr><td class="k">Geburtsdatum</td><td class="v">'.h(dash($p['geburtsdatum'] ?? $pDb['geburtsdatum'] ?? null)).'</td></tr>
-          <tr><td class="k">Geburtsort/Land</td><td class="v">'.h(dash($p['geburtsort_land'] ?? $pDb['geburtsort_land'] ?? null)).'</td></tr>
-          <tr><td class="k">Staatsangehörigkeit</td><td class="v">'.h(dash($p['staatsang'] ?? $pDb['staatsang'] ?? null)).'</td></tr>
-          <tr><td class="k">Adresse</td><td class="v">'.h(dash(join_nonempty([
+          <tr><td class="k">' . hpdf(t('pdf.lbl.name')) . '</td><td class="v">' . hpdf(dash($p['name'] ?? $pDb['name'] ?? null)) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.vorname')) . '</td><td class="v">' . hpdf(dash($p['vorname'] ?? $pDb['vorname'] ?? null)) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.gender')) . '</td><td class="v">' . hpdf(gender_label_i18n(s($p['geschlecht'] ?? $pDb['geschlecht'] ?? ''))) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.dob')) . '</td><td class="v">' . hpdf(dash($p['geburtsdatum'] ?? $pDb['geburtsdatum'] ?? null)) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.birthplace')) . '</td><td class="v">' . hpdf(dash($p['geburtsort_land'] ?? $pDb['geburtsort_land'] ?? null)) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.nationality')) . '</td><td class="v">' . hpdf(dash($p['staatsang'] ?? $pDb['staatsang'] ?? null)) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.address')) . '</td><td class="v">' . hpdf(dash(join_nonempty([
               $p['strasse'] ?? $pDb['strasse'] ?? '',
               join_nonempty([$p['plz'] ?? $pDb['plz'] ?? '', $p['wohnort'] ?? $pDb['wohnort'] ?? ''], ' ')
-          ], ', '))).'</td></tr>
-          <tr><td class="k">Telefon</td><td class="v">'.h(dash($p['telefon'] ?? $pDb['telefon'] ?? null)).'</td></tr>
-          <tr><td class="k">E-Mail (optional)</td><td class="v">'.h(dash($p['email'] ?? $pDb['email'] ?? null)).'</td></tr>
-          <tr><td class="k">Weitere Angaben</td><td class="v">'.h(dash($p['weitere_angaben'] ?? $pDb['weitere_angaben'] ?? null)).'</td></tr>
+          ], ', '))) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.phone')) . '</td><td class="v">' . hpdf(dash($p['telefon'] ?? $pDb['telefon'] ?? null)) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.email_optional')) . '</td><td class="v">' . hpdf(dash($p['email'] ?? $pDb['email'] ?? null)) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.more')) . '</td><td class="v">' . hpdf(dash($p['weitere_angaben'] ?? $pDb['weitere_angaben'] ?? null)) . '</td></tr>
         </table>
       </div>
       <div class="sep"></div>
@@ -297,16 +316,16 @@ try {
     // Section 2: Contacts
     $htmlContacts = '
       <div class="card">
-        <div class="h2">2) Weitere Kontaktdaten</div>
+        <div class="h2">' . hpdf(t('pdf.sec2.title')) . '</div>
     ';
 
     $validContacts = [];
     if (is_array($contacts)) {
         foreach ($contacts as $c) {
-            $name = s($c['name'] ?? '');
+            $name  = s($c['name'] ?? '');
             $rolle = s($c['rolle'] ?? '');
-            $tel = s($c['tel'] ?? '');
-            $mail = s($c['mail'] ?? '');
+            $tel   = s($c['tel'] ?? '');
+            $mail  = s($c['mail'] ?? '');
             $notiz = s($c['notiz'] ?? '');
 
             if ($name === '' && $rolle === '' && $tel === '' && $mail === '' && $notiz === '') {
@@ -327,11 +346,11 @@ try {
           <table class="table">
             <thead>
               <tr>
-                <th style="width:16%;">Rolle</th>
-                <th style="width:26%;">Name/Einrichtung</th>
-                <th style="width:18%;">Telefon</th>
-                <th style="width:24%;">E-Mail</th>
-                <th style="width:16%;">Notiz</th>
+                <th style="width:16%;">' . hpdf(t('pdf.contacts.th.role')) . '</th>
+                <th style="width:26%;">' . hpdf(t('pdf.contacts.th.name')) . '</th>
+                <th style="width:18%;">' . hpdf(t('pdf.contacts.th.tel')) . '</th>
+                <th style="width:24%;">' . hpdf(t('pdf.contacts.th.mail')) . '</th>
+                <th style="width:16%;">' . hpdf(t('pdf.contacts.th.note')) . '</th>
               </tr>
             </thead>
             <tbody>
@@ -339,17 +358,17 @@ try {
         foreach ($validContacts as $c) {
             $htmlContacts .= '
               <tr>
-                <td>'.h(dash($c['rolle'])).'</td>
-                <td>'.h(dash($c['name'])).'</td>
-                <td>'.h(dash($c['tel'])).'</td>
-                <td>'.h(dash($c['mail'])).'</td>
-                <td>'.h(dash($c['notiz'])).'</td>
+                <td>' . hpdf(dash($c['rolle'])) . '</td>
+                <td>' . hpdf(dash($c['name'])) . '</td>
+                <td>' . hpdf(dash($c['tel'])) . '</td>
+                <td>' . hpdf(dash($c['mail'])) . '</td>
+                <td>' . hpdf(dash($c['notiz'])) . '</td>
               </tr>
             ';
         }
         $htmlContacts .= '</tbody></table>';
     } else {
-        $htmlContacts .= '<div class="small">–</div>';
+        $htmlContacts .= '<div class="small">' . hpdf(t('pdf.contacts.none')) . '</div>';
     }
 
     $htmlContacts .= '</div><div class="sep"></div>';
@@ -358,18 +377,18 @@ try {
     // Section 3: School
     $htmlSchool = '
       <div class="card">
-        <div class="h2">3) Schule &amp; Interessen</div>
+        <div class="h2">' . hpdf(t('pdf.sec3.title')) . '</div>
         <table class="tbl">
-          <tr><td class="k">Aktuelle Schule</td><td class="v">'.h(dash($schoolLabel)).'</td></tr>
-          <tr><td class="k">Lehrer*in</td><td class="v">'.h(dash($scl['klassenlehrer'] ?? null)).'</td></tr>
-          <tr><td class="k">E-Mail Lehrkraft</td><td class="v">'.h(dash($scl['mail_lehrkraft'] ?? null)).'</td></tr>
-          <tr><td class="k">Seit wann an der Schule</td><td class="v">'.h(dash($since)).'</td></tr>
-          <tr><td class="k">Seit wann in Deutschland</td><td class="v">'.h(dash($scl['jahre_in_de'] ?? null)).'</td></tr>
-          <tr><td class="k">Familiensprache</td><td class="v">'.h(dash($scl['familiensprache'] ?? null)).'</td></tr>
-          <tr><td class="k">Deutsch-Niveau</td><td class="v">'.h(dash($scl['deutsch_niveau'] ?? null)).'</td></tr>
-          <tr><td class="k">Schule im Herkunftsland</td><td class="v">'.h(dash($scl['schule_herkunft'] ?? null)).'</td></tr>
-          <tr><td class="k">Jahre Schule im Herkunftsland</td><td class="v">'.h(dash($scl['jahre_schule_herkunft'] ?? null)).'</td></tr>
-          <tr><td class="k">Interessen</td><td class="v">'.h(dash($interessen)).'</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.school_current')) . '</td><td class="v">' . hpdf(dash($schoolLabel)) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.teacher')) . '</td><td class="v">' . hpdf(dash($scl['klassenlehrer'] ?? null)) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.teacher_email')) . '</td><td class="v">' . hpdf(dash($scl['mail_lehrkraft'] ?? null)) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.since_school')) . '</td><td class="v">' . hpdf(dash($since)) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.years_in_de')) . '</td><td class="v">' . hpdf(dash($scl['jahre_in_de'] ?? null)) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.family_lang')) . '</td><td class="v">' . hpdf(dash($scl['familiensprache'] ?? null)) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.de_level')) . '</td><td class="v">' . hpdf(dash($scl['deutsch_niveau'] ?? null)) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.school_origin')) . '</td><td class="v">' . hpdf(dash($scl['schule_herkunft'] ?? null)) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.years_origin')) . '</td><td class="v">' . hpdf(dash($scl['jahre_schule_herkunft'] ?? null)) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.interests')) . '</td><td class="v">' . hpdf(dash($interessen)) . '</td></tr>
         </table>
       </div>
       <div class="sep"></div>
@@ -379,14 +398,14 @@ try {
     // Section 4: Uploads
     $htmlUploads = '
       <div class="card">
-        <div class="h2">4) Unterlagen</div>
+        <div class="h2">' . hpdf(t('pdf.sec4.title')) . '</div>
         <table class="tbl">
-          <tr><td class="k">Halbjahreszeugnis</td><td class="v">'.h($has['zeugnis'] ? 'hochgeladen' : 'nicht hochgeladen').'</td></tr>
-          <tr><td class="k">Lebenslauf</td><td class="v">'.h($has['lebenslauf'] ? 'hochgeladen' : 'nicht hochgeladen').'</td></tr>
-          <tr><td class="k">Zeugnis später nachreichen</td><td class="v">'.h(yn($upl['zeugnis_spaeter'] ?? '0')).'</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.report')) . '</td><td class="v">' . hpdf($has['zeugnis'] ? t('pdf.uploaded') : t('pdf.not_uploaded')) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.cv')) . '</td><td class="v">' . hpdf($has['lebenslauf'] ? t('pdf.uploaded') : t('pdf.not_uploaded')) . '</td></tr>
+          <tr><td class="k">' . hpdf(t('pdf.lbl.report_later')) . '</td><td class="v">' . hpdf(yn_i18n($upl['zeugnis_spaeter'] ?? '0')) . '</td></tr>
         </table>
         <div class="small" style="margin-top:6px;">
-          Dieses Dokument ist eine automatisch erzeugte Zusammenfassung der eingegebenen Daten.
+          ' . hpdf(t('pdf.sec4.note')) . '
         </div>
       </div>
     ';
@@ -394,7 +413,7 @@ try {
 
     // Dateiname
     $safeName = preg_replace('/[^a-z0-9_\-]+/i', '_', s(($p['name'] ?? '') . '_' . ($p['vorname'] ?? ''))) ?: 'bewerbung';
-    $fileName = 'Bewerbung_' . $safeName . '_' . $appId . '.pdf';
+    $fileName = t('pdf.filename_prefix') . '_' . $safeName . '_' . $appId . '.pdf';
 
     $pdf->Output($fileName, 'I');
     exit;
@@ -402,5 +421,5 @@ try {
 } catch (Throwable $e) {
     error_log('application_pdf.php: ' . $e->getMessage());
     http_response_code(500);
-    exit('Serverfehler beim Erzeugen des PDFs.');
+    exit(t('pdf.err.server'));
 }
