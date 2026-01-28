@@ -89,6 +89,11 @@ function i18n_url(string $path, ?string $lang = null): string {
 function i18n_dict(): array {
     return [
         'de' => [
+
+            // =======================
+            // STEP Start: Index (DE)
+            // =======================
+        
             'index.title' => 'Willkommen zur Online-Anmeldung – Sprachklassen',
             'index.lead'  => 'Dieses Angebot richtet sich an neu zugewanderte Menschen in Oldenburg. Das Formular hilft uns, Kontakt aufzunehmen und passende Angebote zu finden.',
             'index.bullets' => [
@@ -113,10 +118,15 @@ function i18n_dict(): array {
                 '<strong>Mit E-Mail:</strong> Sie erhalten einen Bestätigungscode und können mehrere Bewerbungen anlegen und später wieder aufrufen.',
                 '<strong>Ohne E-Mail:</strong> Sie erhalten einen persönlichen Zugangscode (Access-Token). Bitte notieren/fotografieren Sie diesen – ohne verifizierte E-Mail ist keine Wiederherstellung möglich.',
             ],
+        
             'index.btn_noemail' => 'Ohne E-Mail fortfahren',
             'index.btn_create'  => 'Mit E-Mail fortfahren',
             'index.btn_load'    => 'Zugriff auf Bewerbung/en',
             'index.lang_label'  => 'Sprache / Language:',
+
+            // =======================
+            // STEP 1/4: PERSONAL (DE)
+            // =======================
 
             'personal.page_title' => 'Schritt 1/4 – Persönliche Daten',
             'personal.h1' => 'Schritt 1/4 – Persönliche Daten',
@@ -213,6 +223,68 @@ function i18n_dict(): array {
             'val.kontakt_row_tel_or_mail'  => 'Telefon ODER E-Mail angeben',
             'val.kontakt_row_mail_invalid' => 'E-Mail ungültig',
             'val.kontakt_row_tel_invalid'  => 'Telefon ungültig',
+
+            // =====================
+            // STEP 2/4: SCHOOL (DE)
+            // =====================
+            'school.page_title' => 'Schritt 2/4 – Schule & Interessen',
+            'school.h1' => 'Schritt 2/4 – Schule & Interessen',
+            'school.required_hint' => 'Pflichtfelder sind blau am Rahmen hervorgehoben.',
+            'school.form_error_hint' => 'Bitte prüfen Sie die markierten Felder.',
+            
+            'school.label.schule' => 'Aktuelle Schule',
+            'school.schule_choose' => '– bitte wählen –',
+            'school.label.schule_freitext' => 'Welche Schule ist das?',
+            'school.placeholder.schule_freitext' => 'Name der Schule',
+            
+            'school.label.klassenlehrer' => 'Verantwortliche*r Lehrer*in',
+            'school.placeholder.klassenlehrer' => 'Name der Lehrkraft',
+            'school.label.mail_lehrkraft' => 'E-Mail Lehrkraft (optional)',
+            'school.placeholder.mail_lehrkraft' => 'name@example.org',
+            
+            'school.label.since' => 'Seit wann an der Schule',
+            'school.since_month' => 'Monat',
+            'school.since_year' => 'Jahr',
+            'school.since_choose' => '– bitte wählen –',
+            
+            'school.label.jahre_in_de' => 'Jahre in Deutschland',
+            'school.placeholder.jahre_in_de' => 'z. B. 2',
+            'school.hint.jahre_in_de' => 'Hinweis: Für die Aufnahme gilt i. d. R. höchstens 3 Jahre in Deutschland.',
+            
+            'school.label.familiensprache' => 'Familiensprache / Erstsprache',
+            'school.placeholder.familiensprache' => 'z. B. Arabisch',
+            
+            'school.label.deutsch_niveau' => 'Deutsch-Niveau',
+            'school.deutsch_choose' => '– bitte wählen –',
+            'school.deutsch_note' => 'Falls vorhanden, bitte ungefähr angeben.',
+            
+            'school.label.schule_herkunft' => 'Waren Sie im Herkunftsland in der Schule?',
+            'school.schule_herkunft_yes' => 'Ja',
+            'school.schule_herkunft_no'  => 'Nein',
+            
+            'school.label.jahre_schule_herkunft' => 'Wie viele Jahre waren Sie dort in der Schule?',
+            'school.placeholder.jahre_schule_herkunft' => 'z. B. 6',
+            
+            'school.label.interessen' => 'Interessen',
+            'school.interessen_hint' => 'Optional. Mehrfachauswahl möglich.',
+            
+            'school.btn.back' => 'Zurück',
+            'school.btn.next' => 'Weiter',
+            'school.btn.cancel' => 'Abbrechen',
+            
+            // Validierung / Fehlertexte (School)
+            'val.school_required' => 'Bitte wählen Sie eine Schule aus.',
+            'val.school_freitext_required' => 'Bitte geben Sie den Namen der Schule ein.',
+            'val.teacher_name_required' => 'Erforderlich.',
+            'val.since_required' => 'Bitte Monat und Jahr auswählen.',
+            'val.jahre_in_de_required' => 'Erforderlich.',
+            'val.jahre_in_de_invalid' => 'Bitte eine gültige Zahl eingeben.',
+            'val.familiensprache_required' => 'Erforderlich.',
+            'val.deutsch_niveau_required' => 'Bitte auswählen.',
+            'val.schule_herkunft_required' => 'Bitte auswählen.',
+            'val.jahre_schule_herkunft_required' => 'Bitte Anzahl Jahre angeben.',
+            'val.jahre_schule_herkunft_invalid' => 'Bitte eine gültige Zahl eingeben.',
+        
         ],
 
         'en' => [
