@@ -452,6 +452,83 @@ function i18n_dict(): array {
             'status.ref' => 'Referenz: Bewerbung #{id}',
             
             'status.err.invalid_request' => 'Ungültige Anfrage.',
+
+            // ------------------------
+            // DE: application_pdf.php
+            // ------------------------
+            'pdf.err.autoload_missing' => 'Composer Autoload nicht gefunden. Bitte "composer install" ausführen.',
+            'pdf.err.no_token'         => 'Kein gültiger Zugangscode. Bitte beginnen Sie den Vorgang neu.',
+            'pdf.err.not_found'        => 'Bewerbung nicht gefunden.',
+            'pdf.err.server'           => 'Serverfehler beim Erzeugen des PDFs.',
+            
+            'pdf.header_title' => 'Bewerbung – Zusammenfassung',
+            'pdf.footer_auto'  => 'Automatisch erzeugtes Dokument',
+            'pdf.footer_page'  => 'Seite {cur} / {max}',
+            
+            'pdf.meta.ref'        => 'Bewerbung #{id}',
+            'pdf.meta.created_at' => 'Erstellt am',
+            'pdf.meta.status'     => 'Status',
+            
+            'pdf.top.title'       => 'Kurzübersicht',
+            'pdf.top.name'        => 'Name',
+            'pdf.top.reference'   => 'Referenz',
+            'pdf.top.generated'   => 'Erstellt am',
+            'pdf.top.hint'        => 'Hinweis',
+            'pdf.top.keep_note'   => 'Bitte bewahren Sie dieses Dokument für Ihre Unterlagen auf.',
+            'pdf.hint_placeholder'=> '[PLATZHALTER: Textbaustein vom Kunden folgt]',
+            
+            'pdf.sec1.title' => '1) Persönliche Daten',
+            'pdf.sec2.title' => '2) Weitere Kontaktdaten',
+            'pdf.sec3.title' => '3) Schule & Interessen',
+            'pdf.sec4.title' => '4) Unterlagen',
+            
+            'pdf.lbl.name'            => 'Name',
+            'pdf.lbl.vorname'         => 'Vorname',
+            'pdf.lbl.gender'          => 'Geschlecht',
+            'pdf.lbl.dob'             => 'Geburtsdatum',
+            'pdf.lbl.birthplace'      => 'Geburtsort/Land',
+            'pdf.lbl.nationality'     => 'Staatsangehörigkeit',
+            'pdf.lbl.address'         => 'Adresse',
+            'pdf.lbl.phone'           => 'Telefon',
+            'pdf.lbl.email_optional'  => 'E-Mail (optional)',
+            'pdf.lbl.more'            => 'Weitere Angaben',
+            
+            'pdf.lbl.school_current'  => 'Aktuelle Schule',
+            'pdf.lbl.teacher'         => 'Lehrer*in',
+            'pdf.lbl.teacher_email'   => 'E-Mail Lehrkraft',
+            'pdf.lbl.since_school'    => 'Seit wann an der Schule',
+            'pdf.lbl.years_in_de'     => 'Seit wann in Deutschland',
+            'pdf.lbl.family_lang'     => 'Familiensprache',
+            'pdf.lbl.de_level'        => 'Deutsch-Niveau',
+            'pdf.lbl.school_origin'   => 'Schule im Herkunftsland',
+            'pdf.lbl.years_origin'    => 'Jahre Schule im Herkunftsland',
+            'pdf.lbl.interests'       => 'Interessen',
+            
+            'pdf.lbl.report'          => 'Halbjahreszeugnis',
+            'pdf.lbl.cv'              => 'Lebenslauf',
+            'pdf.lbl.report_later'    => 'Zeugnis später nachreichen',
+            
+            'pdf.uploaded'     => 'hochgeladen',
+            'pdf.not_uploaded' => 'nicht hochgeladen',
+            
+            'pdf.contacts.none' => '–',
+            'pdf.contacts.th.role' => 'Rolle',
+            'pdf.contacts.th.name' => 'Name/Einrichtung',
+            'pdf.contacts.th.tel'  => 'Telefon',
+            'pdf.contacts.th.mail' => 'E-Mail',
+            'pdf.contacts.th.note' => 'Notiz',
+            
+            'pdf.gender.m' => 'männlich',
+            'pdf.gender.w' => 'weiblich',
+            'pdf.gender.d' => 'divers',
+            
+            'pdf.yes' => 'Ja',
+            'pdf.no'  => 'Nein',
+            
+            'pdf.sec4.note' => 'Dieses Dokument ist eine automatisch erzeugte Zusammenfassung der eingegebenen Daten.',
+            
+            'pdf.filename_prefix' => 'Bewerbung',
+
         
         ],
 
