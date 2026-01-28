@@ -50,10 +50,37 @@ try {
     $dbName = APP_DB_NAME;
     $admin->exec("CREATE DATABASE IF NOT EXISTS `$dbName` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
 
-    // 2) App-User anlegen/Rechte (idempotent)
-    $host = 'localhost';
-    $admin->exec("CREATE USER IF NOT EXISTS '".APP_DB_USER."'@'$host' IDENTIFIED BY '".APP_DB_PASS."'");
-    $admin->exec("GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX ON `$dbName`.* TO '".APP_DB_USER."'@'$host'");
+    // 2) App-User anlegen/Rechte (robust: localhost + 127.0.0.1 + IPv6)
+    $hosts = ['localhost', '127.0.0.1', '::1'];
+    
+    $user = APP_DB_USER;
+    $pass = APP_DB_PASS;
+    
+    // sauberes Quoting
+    $qUser = str_replace("`", "``", $user);
+    $qPass = $admin->quote($pass);
+    
+    foreach ($hosts as $host) {
+        $qHost = str_replace("`", "``", $host);
+    
+        // User ggf. anlegen
+        $admin->exec("CREATE USER IF NOT EXISTS `$qUser`@`$qHost` IDENTIFIED BY $qPass");
+    
+        // Passwort sicherstellen (CREATE USER IF NOT EXISTS ändert es nicht, wenn User schon existiert)
+        try {
+            $admin->exec("ALTER USER `$qUser`@`$qHost` IDENTIFIED BY $qPass");
+        } catch (Throwable $e) {
+            // ignorieren (z.B. falls ALTER USER auf alten Setups nicht erlaubt/anders ist)
+        }
+    
+        // Rechte: REFERENCES ist wichtig für Foreign Keys
+        $admin->exec("
+            GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES
+            ON `$dbName`.*
+            TO `$qUser`@`$qHost`
+        ");
+    }
+    
     $admin->exec("FLUSH PRIVILEGES");
 
     // 3) Mit App-User verbinden
