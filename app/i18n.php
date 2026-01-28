@@ -297,6 +297,40 @@ function i18n_dict(): array {
             // ---------------------
             'js.hint_years_gt3'  => 'Hinweis: Sie haben mehr als 3 Jahre in Deutschland. Bitte bewerben Sie sich über {link}.',
             'js.hint_level_b1p'  => 'Hinweis: Mit Deutsch-Niveau B1 oder höher bitte reguläre BBS-Bewerbung über {link}.',
+
+            // ==================================================
+            // form_upload.php (DE) – Schritt 3/4 Upload
+            // Einfügen in i18n_dict() unter 'de' => [ ... ]
+            // ==================================================
+            'upload.page_title' => 'Schritt 3/4 – Dokumente hochladen',
+            'upload.h1' => 'Schritt 3/4 – Dokumente hochladen',
+            'upload.required_hint' => 'Pflichtfelder sind blau am Rahmen hervorgehoben.',
+            'upload.form_error_hint' => 'Bitte prüfen Sie die markierten Felder.',
+            
+            'upload.info_title' => 'Hinweis:',
+            'upload.info_body'  => 'Bitte laden Sie – wenn vorhanden – passende Dokumente hoch. Akzeptiert werden PDF, JPG und PNG. Dateien werden vertraulich behandelt.',
+            
+            'upload.section_docs' => 'Dokumente',
+            'upload.docs_hint'    => 'Sie können mehrere Dateien hochladen. Große Dateien ggf. vorher verkleinern.',
+            
+            'upload.file_current' => 'Bereits hochgeladen:',
+            'upload.file_replace' => 'Ersetzen / neu hochladen',
+            'upload.file_remove'  => 'Datei entfernen',
+            
+            'upload.btn.back' => 'Zurück',
+            'upload.btn.next' => 'Weiter',
+            
+            // Allgemeine Upload-Labels (du kannst pro Feld eigene Keys ergänzen)
+            'upload.label.generic' => 'Datei hochladen',
+            'upload.help.generic'  => 'Optional',
+            
+            // Validierung / Fehler
+            'val.upload_required'      => 'Bitte laden Sie eine Datei hoch.',
+            'val.upload_err_php'       => 'Upload fehlgeschlagen (Serverfehler).',
+            'val.upload_type'          => 'Ungültiger Dateityp. Erlaubt: PDF, JPG, PNG.',
+            'val.upload_too_large'     => 'Die Datei ist zu groß.',
+            'val.upload_move_failed'   => 'Datei konnte nicht gespeichert werden.',
+            'val.upload_remove_failed' => 'Datei konnte nicht entfernt werden.',
         
         ],
 
