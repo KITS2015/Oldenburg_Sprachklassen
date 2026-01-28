@@ -19,6 +19,10 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
         'samesite' => 'Lax',
     ]);
     session_start();
+    
+    require_once APP_APPDIR . '/i18n.php';
+    i18n_detect_lang();
+
 }
 
 // -------------------------
