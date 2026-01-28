@@ -9,9 +9,18 @@ require __DIR__ . '/../app/config.php';
  * Helpers
  */
 function pdo_admin(): PDO {
-    return pdo(DB_ADMIN_DSN, DB_ADMIN_USER, DB_ADMIN_PASS, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    ]);
+    // Primär: DSN aus config.php
+    try {
+        return pdo(DB_ADMIN_DSN, DB_ADMIN_USER, DB_ADMIN_PASS, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        ]);
+    } catch (Throwable $e) {
+        // Fallback: localhost (Socket). Hilft bei Debian-Defaults (root via unix_socket)
+        $fallbackDsn = 'mysql:host=localhost;port=3306;charset=utf8mb4';
+        return pdo($fallbackDsn, DB_ADMIN_USER, DB_ADMIN_PASS, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        ]);
+    }
 }
 
 function pdo_app(string $dbName): PDO {
@@ -50,37 +59,37 @@ try {
     $dbName = APP_DB_NAME;
     $admin->exec("CREATE DATABASE IF NOT EXISTS `$dbName` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
 
-    // 2) App-User anlegen/Rechte (robust: localhost + 127.0.0.1 + IPv6)
+    // 2) App-User anlegen/Rechte (robust: localhost + 127.0.0.1 + ::1)
+    //    - behebt die häufigste Neuinstallationsfalle (user@localhost aber DSN 127.0.0.1)
+    //    - REFERENCES wird für Foreign Keys benötigt
     $hosts = ['localhost', '127.0.0.1', '::1'];
-    
+
     $user = APP_DB_USER;
     $pass = APP_DB_PASS;
-    
-    // sauberes Quoting
+
+    // sauberes Quoting für Identifier
     $qUser = str_replace("`", "``", $user);
     $qPass = $admin->quote($pass);
-    
+
     foreach ($hosts as $host) {
         $qHost = str_replace("`", "``", $host);
-    
-        // User ggf. anlegen
+
         $admin->exec("CREATE USER IF NOT EXISTS `$qUser`@`$qHost` IDENTIFIED BY $qPass");
-    
-        // Passwort sicherstellen (CREATE USER IF NOT EXISTS ändert es nicht, wenn User schon existiert)
+
+        // Passwort sicherstellen (CREATE USER IF NOT EXISTS ändert es nicht, wenn User existiert)
         try {
             $admin->exec("ALTER USER `$qUser`@`$qHost` IDENTIFIED BY $qPass");
         } catch (Throwable $e) {
-            // ignorieren (z.B. falls ALTER USER auf alten Setups nicht erlaubt/anders ist)
+            // ignore
         }
-    
-        // Rechte: REFERENCES ist wichtig für Foreign Keys
+
         $admin->exec("
             GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES
             ON `$dbName`.*
             TO `$qUser`@`$qHost`
         ");
     }
-    
+
     $admin->exec("FLUSH PRIVILEGES");
 
     // 3) Mit App-User verbinden
@@ -412,15 +421,12 @@ try {
         $app->exec("ALTER TABLE school ADD COLUMN interessen VARCHAR(500) NULL AFTER deutsch_niveau");
     }
 
-    // remove legacy column deutsch_jahre if it exists? -> NO destructive changes in init_db
-    // but make sure legacy installs accept A0
+    // make sure legacy installs accept A0
     try {
         $app->exec("ALTER TABLE school MODIFY COLUMN deutsch_niveau ENUM('kein','A0','A1','A2','B1','B2','C1','C2') NULL");
     } catch (Throwable $e) {
         // ignore
     }
-
-    // legacy clean-up: if old schema had deutsch_jahre, we leave it (no destructive changes)
 
     // ============================
     // uploads
