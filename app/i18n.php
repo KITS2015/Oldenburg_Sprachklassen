@@ -2,20 +2,40 @@
 // app/i18n.php
 declare(strict_types=1);
 
+/**
+ * Zentrale i18n-Helfer
+ * - Sprach-Erkennung: GET > Session > Cookie > Browser > de
+ * - t(): String-Übersetzung
+ * - t_arr(): Array-Übersetzung (Bullets etc.)
+ * - i18n_languages(): verfügbare Sprachen (Anzeige)
+ * - i18n_is_rtl(): RTL-Check
+ * - i18n_dir(): 'rtl'|'ltr'
+ * - i18n_url(): hängt ?lang=... an interne Links
+ */
+
 // Verfügbare Sprachen (Anzeige)
 $GLOBALS['APP_LANGUAGES'] = [
-  'de' => 'Deutsch',
-  'en' => 'English',
-  'fr' => 'Français',
-  'uk' => 'Українська',
-  'ar' => 'العربية',
-  'ru' => 'Русский',
-  'tr' => 'Türkçe',
-  'fa' => 'فارسی',
+    'de' => 'Deutsch',
+    'en' => 'English',
+    'fr' => 'Français',
+    'uk' => 'Українська',
+    'ar' => 'العربية',
+    'ru' => 'Русский',
+    'tr' => 'Türkçe',
+    'fa' => 'فارسی',
 ];
+
+function i18n_languages(): array {
+    return (array)($GLOBALS['APP_LANGUAGES'] ?? []);
+}
 
 function i18n_is_rtl(string $lang): bool {
     return in_array($lang, ['ar', 'fa'], true);
+}
+
+function i18n_dir(?string $lang = null): string {
+    $lang = $lang ?: (string)($_SESSION['lang'] ?? 'de');
+    return i18n_is_rtl($lang) ? 'rtl' : 'ltr';
 }
 
 /**
@@ -42,17 +62,28 @@ function i18n_detect_lang(): string {
     if ($lang === '' || !isset($langs[$lang])) $lang = 'de';
 
     $_SESSION['lang'] = $lang;
+
+    // Cookie synchron halten
     if (!isset($_COOKIE['lang']) || (string)$_COOKIE['lang'] !== $lang) {
-        setcookie('lang', $lang, time() + 60*60*24*365, '/');
-        $_COOKIE['lang'] = $lang;
+        setcookie('lang', $lang, time() + 60 * 60 * 24 * 365, '/');
+        $_COOKIE['lang'] = $lang; // im aktuellen Request verfügbar
     }
 
     return $lang;
 }
 
 /**
- * Translation dictionary
- * (Hier kommen jetzt deine Index-Texte rein.)
+ * Interne URL mit aktueller Sprache (hängt lang= an, falls nicht vorhanden).
+ */
+function i18n_url(string $path, ?string $lang = null): string {
+    $lang = $lang ?: (string)($_SESSION['lang'] ?? 'de');
+    $sep  = (strpos($path, '?') !== false) ? '&' : '?';
+    if (preg_match('/(?:\?|&)lang=/', $path)) return $path;
+    return $path . $sep . 'lang=' . rawurlencode($lang);
+}
+
+/**
+ * Translation dictionary (Index-Texte komplett, 1:1 aus deiner index.php)
  */
 function i18n_dict(): array {
     return [
@@ -149,12 +180,165 @@ function i18n_dict(): array {
             'index.lang_label'  => 'Langue:',
         ],
 
-        // TODO: uk, ar, ru, tr, fa kannst du 1:1 aus index.php übertragen.
+        'uk' => [
+            'index.title' => 'Ласкаво просимо до онлайн-реєстрації – мовні класи',
+            'index.lead'  => 'Ця послуга для людей, які нещодавно прибули до Ольденбурга. Форма допоможе нам зв’язатися з вами та підібрати відповідні курси.',
+            'index.bullets' => [
+                'Підготуйте контактні дані та документ, що посвідчує особу (за наявності).',
+                'Форму можна заповнювати різними мовами.',
+                'Ваші дані обробляються конфіденційно відповідно до GDPR.',
+            ],
+            'index.info_p' => [
+                'Шановна ученице, шановний учню!',
+                'Ви подаєте заявку на місце у класі вивчення мови «BES Мова та інтеграція» у професійній школі (BBS) міста Ольденбург. Ви не подаєтеся до конкретної школи. Після 20 лютого вам повідомлять, яка школа зарахує вас до класу.',
+                'Вас можуть зарахувати лише за таких умов:',
+            ],
+            'index.info_bullets' => [
+                'вам потрібна інтенсивна підтримка з німецької мови (рівень нижче B1);',
+                'на початок наступного навчального року ви перебуваєте в Німеччині не більше 3 років;',
+                'станом на 30 вересня цього року вам щонайменше 16 і не більше 18 років;',
+                'у наступному навчальному році ви підлягаєте обов’язковому шкільному навчанню.',
+            ],
+            'index.access_title' => 'Конфіденційність та доступ',
+            'index.access_intro' => 'Ви можете продовжити з електронною поштою або без неї. Доступ до збережених заяв можливий лише за допомогою особистого токена доступу та дати народження.',
+            'index.access_points' => [
+                '<strong>З e-mail:</strong> ви отримаєте код підтвердження і зможете пізніше продовжити заповнення.',
+                '<strong>Без e-mail:</strong> ви отримаєте особистий токен доступу. Занотуйте/сфотографуйте його — без підтвердженої e-mail відновлення неможливе.',
+            ],
+            'index.btn_noemail' => 'Продовжити без e-mail',
+            'index.btn_create'  => 'Створити доступ за e-mail',
+            'index.btn_load'    => 'Завантажити заявку',
+            'index.lang_label'  => 'Мова:',
+        ],
+
+        'ar' => [
+            'index.title' => 'مرحبًا بكم في التسجيل الإلكتروني – صفوف اللغة',
+            'index.lead'  => 'هذه الخدمة مخصّصة للوافدين الجدد إلى أولدنبورغ. يساعدنا النموذج على التواصل معكم واختيار الدورة المناسبة.',
+            'index.bullets' => [
+                'يرجى تجهيز بيانات الاتصال ووثيقة الهوية إن وُجدت.',
+                'يمكن تعبئة النموذج بعدة لغات.',
+                'تُعالج بياناتكم بسرية وفق اللائحة العامة لحماية البيانات (GDPR).',
+            ],
+            'index.info_p' => [
+                'عزيزتي الطالبة، عزيزي الطالب،',
+                'بهذا التقديم تتقدّم/ين للحصول على مقعد في صف تعلّم اللغة «BES اللغة والاندماج» في إحدى المدارس المهنية (BBS) في أولدنبورغ. لا تتقدّم/ين إلى مدرسة بعينها. بعد 20 فبراير سيتم إبلاغك بأي مدرسة ستقبلك في الصف.',
+                'لا يمكن قبولك إلا إذا توفّرت الشروط التالية جميعها:',
+            ],
+            'index.info_bullets' => [
+                'تحتاج/ين إلى دعم مكثّف في اللغة الألمانية (مستوى أقل من B1).',
+                'عند بداية العام الدراسي القادم لا تتجاوز مدة إقامتك في ألمانيا 3 سنوات.',
+                'في تاريخ 30 سبتمبر من هذا العام يكون عمرك بين 16 و18 عامًا.',
+                'تكون/ين خاضعًا/ة للتعليم الإلزامي في العام الدراسي القادم.',
+            ],
+            'index.access_title' => 'الخصوصية والوصول',
+            'index.access_intro' => 'يمكنك المتابعة مع عنوان بريد إلكتروني أو بدونه. لا يمكن الوصول إلى الطلبات المحفوظة إلا باستخدام رمز الوصول الشخصي وتاريخ الميلاد.',
+            'index.access_points' => [
+                '<strong>مع البريد الإلكتروني:</strong> ستتلقى رمز تحقق ويمكنك متابعة طلبك لاحقًا.',
+                '<strong>بدون بريد إلكتروني:</strong> ستحصل على رمز وصول شخصي. يُرجى حفظه/تصويره — بدون بريد إلكتروني مُوثَّق لا يمكن الاستعادة.',
+            ],
+            'index.btn_noemail' => 'المتابعة دون بريد إلكتروني',
+            'index.btn_create'  => 'إنشاء وصول عبر البريد',
+            'index.btn_load'    => 'تحميل الطلب',
+            'index.lang_label'  => 'اللغة:',
+        ],
+
+        'ru' => [
+            'index.title' => 'Добро пожаловать на онлайн-регистрацию – языковые курсы',
+            'index.lead'  => 'Сервис для недавно прибывших в Ольденбург. Эта форма помогает связаться с вами и подобрать подходящие варианты.',
+            'index.bullets' => [
+                'Подготовьте контактные данные и документ, удостоверяющий личность (если есть).',
+                'Форму можно заполнить на разных языках.',
+                'Ваши данные обрабатываются конфиденциально в соответствии с GDPR.',
+            ],
+            'index.info_p' => [
+                'Уважаемая ученица, уважаемый ученик!',
+                'Этой заявкой вы подаётесь на место в языковом классе «BES Язык и интеграция» профессиональной школы (BBS) в Ольденбурге. Вы не подаётесь в конкретную школу. После 20 февраля вам сообщат, какая школа примет вас в класс.',
+                'Поступить можно только при выполнении всех следующих условий:',
+            ],
+            'index.info_bullets' => [
+                'вам требуется интенсивная поддержка по немецкому языку (уровень ниже B1);',
+                'к началу следующего учебного года вы находитесь в Германии не более 3 лет;',
+                'на 30 сентября текущего года вам не менее 16 и не более 18 лет;',
+                'в следующем учебном году на вас распространяется обязанность школьного обучения.',
+            ],
+            'index.access_title' => 'Конфиденциальность и доступ',
+            'index.access_intro' => 'Можно продолжить с электронной почтой или без неё. Доступ к сохранённым заявлениям возможен только с личным токеном доступа и датой рождения.',
+            'index.access_points' => [
+                '<strong>С e-mail:</strong> вы получите код подтверждения и сможете позже продолжить.',
+                '<strong>Без e-mail:</strong> вы получите личный токен доступа. Запишите/сфотографируйте его — без подтверждённого e-mail восстановление невозможно.',
+            ],
+            'index.btn_noemail' => 'Продолжить без e-mail',
+            'index.btn_create'  => 'Создать доступ через e-mail',
+            'index.btn_load'    => 'Загрузить заявление',
+            'index.lang_label'  => 'Язык:',
+        ],
+
+        'tr' => [
+            'index.title' => 'Çevrimiçi Kayıt – Dil Kursları',
+            'index.lead'  => 'Bu hizmet, Oldenburg’a yeni gelen kişiler içindir. Form, sizinle iletişim kurmamıza ve uygun kurs seçeneklerini bulmamıza yardımcı olur.',
+            'index.bullets' => [
+                'Lütfen iletişim bilgilerinizi ve kimlik belgenizi (varsa) hazırlayın.',
+                'Formu birden fazla dilde doldurabilirsiniz.',
+                'Verileriniz GDPR kapsamında gizli tutulur.',
+            ],
+            'index.info_p' => [
+                'Sevgili öğrenci,',
+                'Bu başvuru ile Oldenburg’daki bir mesleki okulda (BBS) “BES Dil ve Uyum” dil öğrenme sınıfına başvuruyorsunuz. Belirli bir BBS’e başvurmuyorsunuz. 20 Şubat’tan sonra hangi okulun sizi kabul edeceği bildirilecektir.',
+                'Aşağıdaki koşulların tümü sağlandığında kabul edilebilirsiniz:',
+            ],
+            'index.info_bullets' => [
+                'Yoğun Almanca desteğine ihtiyacınız var (Almanca seviyeniz B1’in altında).',
+                'Gelecek öğretim yılının başlangıcında Almanya’da en fazla 3 yıldır bulunuyorsunuz.',
+                'Bu yıl 30 Eylül tarihi itibarıyla yaşınız en az 16, en fazla 18’dir.',
+                'Gelecek öğretim yılında okul zorunluluğuna tabisiniz.',
+            ],
+            'index.access_title' => 'Gizlilik ve Erişim',
+            'index.access_intro' => 'E-posta ile veya e-posta olmadan devam edebilirsiniz. Kaydedilmiş başvurulara erişim yalnızca kişisel erişim kodu ve doğum tarihi ile mümkündür.',
+            'index.access_points' => [
+                '<strong>E-postayla:</strong> Doğrulama kodu alır ve başvurunuza daha sonra devam edebilirsiniz.',
+                '<strong>E-posta olmadan:</strong> Kişisel bir erişim kodu alırsınız. Lütfen not edin/fotoğraflayın — doğrulanmış e-posta olmadan kurtarma yoktur.',
+            ],
+            'index.btn_noemail' => 'E-posta olmadan devam et',
+            'index.btn_create'  => 'E-posta ile erişim oluştur',
+            'index.btn_load'    => 'Başvuruyu yükle',
+            'index.lang_label'  => 'Dil:',
+        ],
+
+        'fa' => [
+            'index.title' => 'ثبت‌نام آنلاین – کلاس‌های زبان',
+            'index.lead'  => 'این خدمت برای افراد تازه‌وارد به اولدن‌بورگ است. این فرم به ما کمک می‌کند با شما تماس بگیریم و گزینه‌های مناسب را بیابیم.',
+            'index.bullets' => [
+                'لطفاً اطلاعات تماس و در صورت امکان مدرک هویتی را آماده داشته باشید.',
+                'می‌توانید فرم را به چند زبان تکمیل کنید.',
+                'داده‌های شما مطابق مقررات GDPR محرمانه نگه‌داری می‌شود.',
+            ],
+            'index.info_p' => [
+                'دانش‌آموز گرامی،',
+                'با این درخواست برای یک جایگاه در کلاس یادگیری زبان «BES زبان و ادغام» در یکی از مدارس فنی‌وحرفه‌ای (BBS) اولدن‌بورگ اقدام می‌کنید. شما برای یک مدرسه مشخص اقدام نمی‌کنید. پس از ۲۰ فوریه به شما اطلاع داده می‌شود که کدام مدرسه شما را در کلاس می‌پذیرد.',
+                'پذیرش تنها در صورت برآورده شدن همه شرایط زیر ممکن است:',
+            ],
+            'index.info_bullets' => [
+                'به پشتیبانی فشرده زبان آلمانی نیاز دارید (سطح زیر B1).',
+                'در آغاز سال تحصیلی آینده حداکثر ۳ سال است که در آلمان هستید.',
+                'در تاریخ ۳۰ سپتامبر امسال سن شما حداقل ۱۶ و حداکثر ۱۸ سال است.',
+                'در سال تحصیلی آینده مشمول تحصیل اجباری هستید.',
+            ],
+            'index.access_title' => 'حریم خصوصی و دسترسی',
+            'index.access_intro' => 'می‌توانید با ایمیل یا بدون آن ادامه دهید. دسترسی به درخواست‌های ذخیره‌شده فقط با کُد دسترسی شخصی و تاریخ تولد امکان‌پذیر است.',
+            'index.access_points' => [
+                '<strong>با ایمیل:</strong> یک کُد تأیید دریافت می‌کنید و می‌توانید بعداً ادامه دهید.',
+                '<strong>بدون ایمیل:</strong> یک کُد دسترسی شخصی دریافت می‌کنید. لطفاً آن را یادداشت/تصویر کنید — بدون ایمیل تأیید شده، بازیابی ممکن نیست.',
+            ],
+            'index.btn_noemail' => 'ادامه بدون ایمیل',
+            'index.btn_create'  => 'ایجاد دسترسی با ایمیل',
+            'index.btn_load'    => 'بارگذاری درخواست',
+            'index.lang_label'  => 'زبان:',
+        ],
     ];
 }
 
 /**
- * t('key') returns a string; falls back to DE; then key.
+ * t('key') returns string; fallback: DE; then key.
  */
 function t(string $key, ?string $lang = null): string {
     $lang = $lang ?: (string)($_SESSION['lang'] ?? 'de');
@@ -170,7 +354,7 @@ function t(string $key, ?string $lang = null): string {
 }
 
 /**
- * t_arr('key') returns array (e.g. bullets). Falls back to DE; else [].
+ * t_arr('key') returns array; fallback: DE; else [].
  */
 function t_arr(string $key, ?string $lang = null): array {
     $lang = $lang ?: (string)($_SESSION['lang'] ?? 'de');
