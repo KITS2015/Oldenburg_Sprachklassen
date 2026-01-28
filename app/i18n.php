@@ -529,6 +529,49 @@ function i18n_dict(): array {
             
             'pdf.filename_prefix' => 'Bewerbung',
 
+            // ------------------------
+            // DE: access_create.php
+            // ------------------------
+            'access_create.title'         => 'Mit E-Mail fortfahren',
+            'access_create.lead'          => 'Sie können sich mit Ihrem Zugang anmelden oder einen neuen Zugang erstellen.',
+            'access_create.tabs_login'    => 'Anmelden',
+            'access_create.tabs_register' => 'Neuen Zugang erstellen',
+            
+            'access_create.login_title' => 'Anmelden (bestehender Zugang)',
+            'access_create.login_text'  => 'Bitte geben Sie Ihre E-Mail-Adresse und Ihr Passwort ein.',
+            'access_create.email_label' => 'E-Mail-Adresse',
+            'access_create.pass_label'  => 'Passwort',
+            'access_create.login_btn'   => 'Anmelden',
+            'access_create.login_err'   => 'E-Mail/Passwort ist falsch oder der Zugang ist nicht verifiziert.',
+            
+            'access_create.reg_title'     => 'Neuen Zugang erstellen',
+            'access_create.reg_text'      => 'Wir senden Ihnen einen 6-stelligen Bestätigungscode. Nach erfolgreicher Bestätigung erhalten Sie Ihr Passwort per E-Mail.',
+            'access_create.consent_label' => 'Ich stimme zu, dass meine E-Mail für den Anmeldeprozess verwendet wird.',
+            'access_create.send_btn'      => 'Code senden',
+            'access_create.code_label'    => 'Bestätigungscode',
+            'access_create.verify_btn'    => 'Code prüfen',
+            'access_create.resend'        => 'Code erneut senden',
+            
+            'access_create.info_sent'    => 'Wir haben Ihnen einen Code gesendet. Bitte prüfen Sie auch den Spam-Ordner.',
+            'access_create.ok_verified'  => 'E-Mail bestätigt. Passwort wurde gesendet. Sie können sich jetzt anmelden.',
+            'access_create.email_in_use' => 'Diese E-Mail hat bereits einen Zugang. Bitte melden Sie sich an.',
+            
+            'access_create.error_email'     => 'Bitte geben Sie eine gültige E-Mail-Adresse an.',
+            'access_create.error_consent'   => 'Bitte stimmen Sie der Nutzung Ihrer E-Mail zu.',
+            'access_create.error_rate'      => 'Zu viele Versuche. Bitte warten Sie kurz und versuchen Sie es erneut.',
+            'access_create.error_code'      => 'Der Code ist ungültig oder abgelaufen.',
+            'access_create.error_resend'    => 'Erneuter Versand nicht möglich. Starten Sie bitte erneut.',
+            'access_create.error_mail_send' => 'E-Mail-Versand fehlgeschlagen. Bitte später erneut versuchen.',
+            'access_create.error_db'        => 'Serverfehler (DB).',
+            
+            'access_create.back'   => 'Zurück',
+            'access_create.cancel' => 'Abbrechen',
+            
+            // Passwort-Mail (Fallback, wenn keine eigene Funktion existiert)
+            'access_create.mail_subject' => 'Ihr Passwort für die Online-Anmeldung',
+            'access_create.mail_body'    => "Ihr Zugang wurde erstellt.\n\nE-Mail: {email}\nPasswort: {password}\n\nBitte bewahren Sie das Passwort sicher auf.",
+            
+
         
         ],
 
