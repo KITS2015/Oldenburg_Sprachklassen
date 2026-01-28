@@ -116,6 +116,102 @@ function i18n_dict(): array {
             'index.btn_create'  => 'Mit E-Mail fortfahren',
             'index.btn_load'    => 'Zugriff auf Bewerbung/en',
             'index.lang_label'  => 'Sprache / Language:',
+
+            'personal.page_title' => 'Schritt 1/4 – Persönliche Daten',
+            'personal.h1' => 'Schritt 1/4 – Persönliche Daten',
+            'personal.required_hint' => 'Pflichtfelder sind blau am Rahmen hervorgehoben.',
+            'personal.form_error_hint' => 'Bitte prüfen Sie die markierten Felder.',
+            
+            'personal.alert_email_title' => 'E-Mail-Login aktiv:',
+            'personal.alert_email_line1' => 'Angemeldet mit der E-Mail-Adresse {email}.',
+            'personal.alert_email_line2' => 'Diese E-Mail wird nur für den Zugangscode (Access-Token) und zum Wiederfinden Ihrer Bewerbung verwendet.',
+            'personal.alert_email_line3' => 'Unten können Sie eine E-Mail-Adresse der Schülerin / des Schülers angeben (falls vorhanden).',
+            
+            'personal.alert_noemail_title' => 'Hinweis (ohne E-Mail):',
+            'personal.alert_noemail_body' => 'Bitte notieren/fotografieren Sie Ihren Zugangscode (Access-Token), den Sie nach dem Speichern auf dieser Seite angezeigt bekommen. Ohne verifizierte E-Mail ist eine Wiederherstellung nur mit Token + Geburtsdatum möglich.',
+            
+            'personal.label.name' => 'Name',
+            'personal.label.vorname' => 'Vorname',
+            'personal.label.geschlecht' => 'Geschlecht',
+            'personal.gender.m' => 'männlich',
+            'personal.gender.w' => 'weiblich',
+            'personal.gender.d' => 'divers',
+            
+            'personal.label.geburtsdatum' => 'Geboren am',
+            'personal.label.geburtsdatum_hint' => '(TT.MM.JJJJ)',
+            'personal.placeholder.geburtsdatum' => 'TT.MM.JJJJ',
+            
+            'personal.age_hint' => 'Hinweis: Sind Sie am 30.09.{year} unter 16 oder über 18 Jahre alt, können Sie nicht in die Sprachlernklasse der BBS aufgenommen werden. Bitte bewerben Sie sich für eine andere Klasse hier:',
+            'personal.age_redirect_msg' => "Hinweis: Sind Sie am 30.09.{year} unter 16 oder über 18 Jahre alt, können Sie nicht in die Sprachlernklasse der BBS aufgenommen werden. Bitte bewerben Sie sich für eine andere Klasse einer BBS hier:\n{url}",
+            
+            'personal.label.geburtsort_land' => 'Geburtsort / Geburtsland',
+            'personal.label.staatsang' => 'Staatsangehörigkeit',
+            
+            'personal.label.strasse' => 'Straße, Nr.',
+            'personal.label.plz' => 'PLZ',
+            'personal.plz_choose' => '– bitte wählen –',
+            'personal.plz_hint' => 'Nur Oldenburg (Oldb).',
+            'personal.label.wohnort' => 'Wohnort',
+            
+            'personal.label.telefon' => 'Telefonnummer',
+            'personal.label.telefon_vorwahl_help' => 'Vorwahl mit/ohne 0',
+            'personal.label.telefon_nummer_help' => 'Rufnummer',
+            'personal.placeholder.telefon_vorwahl' => '(0)441',
+            'personal.placeholder.telefon_nummer' => '123456',
+            
+            'personal.label.email' => 'E-Mail-Adresse der Schülerin / des Schülers (optional, keine IServ-Adresse)',
+            'personal.email_help' => 'Diese E-Mail gehört zur Schülerin / zum Schüler (falls vorhanden) und ist unabhängig von der E-Mail-Adresse für den Zugangscode.',
+            'personal.placeholder.email' => 'name@example.org',
+            
+            'personal.label.kontakte' => 'Weitere Kontaktdaten',
+            'personal.kontakte_hint' => '(z. B. Eltern, Betreuer, Einrichtung)',
+            'personal.kontakte_error' => 'Bitte prüfen Sie die zusätzlichen Kontakte.',
+            'personal.kontakte_add' => '+ Kontakt hinzufügen',
+            'personal.kontakte_remove_title' => 'Kontakt entfernen',
+            
+            'personal.table.role' => 'Rolle',
+            'personal.table.name' => 'Name / Einrichtung',
+            'personal.table.tel'  => 'Telefon',
+            'personal.table.mail' => 'E-Mail',
+            'personal.table.note_header' => 'Notiz',
+            'personal.placeholder.kontakt_name' => 'Name oder Bezeichnung',
+            'personal.placeholder.kontakt_tel'  => '+49 …',
+            'personal.placeholder.kontakt_note' => 'z. B. Erreichbarkeit, Sprache, Hinweise',
+            
+            'personal.contact_role.none' => '–',
+            'personal.contact_role.mutter' => 'Mutter',
+            'personal.contact_role.vater' => 'Vater',
+            'personal.contact_role.elternteil' => 'Elternteil',
+            'personal.contact_role.betreuer' => 'Betreuer*in',
+            'personal.contact_role.einrichtung' => 'Einrichtung',
+            'personal.contact_role.sonstiges' => 'Sonstiges',
+            
+            'personal.label.weitere_angaben' => 'Weitere Angaben (z. B. Förderstatus):',
+            'personal.placeholder.weitere_angaben' => 'Hier können Sie z. B. besonderen Förderbedarf, sonderpädagogische Unterstützungsbedarfe oder weitere Hinweise angeben.',
+            'personal.weitere_angaben_help' => 'Optional. Maximal 1500 Zeichen.',
+            'personal.btn.cancel' => 'Abbrechen',
+            'personal.btn.next' => 'Weiter',
+            
+            'personal.dsgvo_text_prefix' => 'Ich habe die',
+            'personal.dsgvo_link_text' => 'Datenschutzhinweise',
+            'personal.dsgvo_text_suffix' => 'gelesen und bin einverstanden.',
+            
+            // Validierungs-/Fehlertexte
+            'val.required' => 'Erforderlich.',
+            'val.only_letters' => 'Bitte nur Buchstaben.',
+            'val.gender_choose' => 'Bitte wählen Sie ein Geschlecht aus.',
+            'val.date_format' => 'TT.MM.JJJJ',
+            'val.date_invalid' => 'Ungültiges Datum.',
+            'val.plz_whitelist' => 'Nur PLZ aus Oldenburg (26121–26135).',
+            'val.phone_vorwahl' => 'Vorwahl 2–6 Ziffern.',
+            'val.phone_nummer' => 'Rufnummer 3–12 Ziffern.',
+            'val.email_invalid' => 'Ungültige E-Mail.',
+            'val.email_no_iserv' => 'Bitte private E-Mail (keine IServ).',
+            'val.max_1500' => 'Bitte maximal 1500 Zeichen.',
+            'val.kontakt_row_name_missing' => 'Name/Bezeichnung fehlt',
+            'val.kontakt_row_tel_or_mail'  => 'Telefon ODER E-Mail angeben',
+            'val.kontakt_row_mail_invalid' => 'E-Mail ungültig',
+            'val.kontakt_row_tel_invalid'  => 'Telefon ungültig',
         ],
 
         'en' => [
