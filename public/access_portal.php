@@ -20,52 +20,19 @@ $languages = [
   'de' => 'Deutsch','en' => 'English','fr' => 'Français','uk' => 'Українська',
   'ar' => 'العربية','ru' => 'Русский','tr' => 'Türkçe','fa' => 'فارسی',
 ];
-$lang = strtolower($_COOKIE['lang'] ?? 'de');
+$lang = strtolower((string)($_COOKIE['lang'] ?? 'de'));
 if (!array_key_exists($lang, $languages)) { $lang = 'de'; }
 $rtl  = in_array($lang, ['ar','fa'], true);
 $dir  = $rtl ? 'rtl' : 'ltr';
 
-$t = [
-  'de' => [
-    'title' => 'Meine Bewerbungen',
-    'lead'  => 'Hier sehen Sie Ihre Bewerbungen. Sie können eine bestehende Bewerbung fortsetzen oder eine neue starten.',
-    'btn_new' => 'Neue Bewerbung starten',
-    'btn_open' => 'Öffnen',
-    'btn_logout' => 'Abmelden',
-    'th_ref' => 'ID',
-    'th_status' => 'Status',
-    'th_created' => 'Erstellt',
-    'th_updated' => 'Aktualisiert',
-    'th_token' => 'Token',
-    'th_action' => 'Aktion',
-    'status_draft' => 'Entwurf',
-    'status_submitted' => 'Abgeschickt',
-    'status_withdrawn' => 'Zurückgezogen',
-    'limit_reached' => 'Sie haben die maximale Anzahl an Bewerbungen für diese E-Mail erreicht.',
-    'no_apps' => 'Noch keine Bewerbungen vorhanden.',
-    'err_generic' => 'Es ist ein Fehler aufgetreten.',
-  ],
-  'en' => [
-    'title' => 'My applications',
-    'lead'  => 'Here you can see your applications. Continue an existing one or start a new one.',
-    'btn_new' => 'Start new application',
-    'btn_open' => 'Open',
-    'btn_logout' => 'Log out',
-    'th_ref' => 'ID',
-    'th_status' => 'Status',
-    'th_created' => 'Created',
-    'th_updated' => 'Updated',
-    'th_token' => 'Token',
-    'th_action' => 'Action',
-    'status_draft' => 'Draft',
-    'status_submitted' => 'Submitted',
-    'status_withdrawn' => 'Withdrawn',
-    'limit_reached' => 'You have reached the maximum number of applications for this email.',
-    'no_apps' => 'No applications yet.',
-    'err_generic' => 'An error occurred.',
-  ],
-];
-$text = $t[$lang] ?? $t['en'];
+// Mini helper: placeholder replace für i18n
+function tr(string $key, array $vars = []): string {
+    $s = t($key);
+    foreach ($vars as $k => $v) {
+        $s = str_replace('{'.$k.'}', (string)$v, $s);
+    }
+    return $s;
+}
 
 // ------------------------------------------------------------
 // Helpers
@@ -86,11 +53,11 @@ function issue_token32(): string {
     return bin2hex(random_bytes(16)); // 32 hex
 }
 
-function status_label(string $status, array $text): string {
+function status_label(string $status): string {
     return match ($status) {
-        'submitted' => $text['status_submitted'] ?? $status,
-        'withdrawn' => $text['status_withdrawn'] ?? $status,
-        default     => $text['status_draft'] ?? $status,
+        'submitted' => t('access_portal.status_submitted'),
+        'withdrawn' => t('access_portal.status_withdrawn'),
+        default     => t('access_portal.status_draft'),
     };
 }
 
@@ -143,10 +110,9 @@ function load_application_into_session(string $token, string $email): bool {
 // ------------------------------------------------------------
 // POST Actions
 $errors = [];
-$info = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!csrf_check()) { http_response_code(400); exit('Ungültige Anfrage.'); }
+    if (!csrf_check()) { http_response_code(400); exit(t('access_portal.csrf_invalid')); }
 
     $action = (string)($_POST['action'] ?? '');
 
@@ -171,10 +137,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'open') {
         $token = trim((string)($_POST['token'] ?? ''));
         if ($token === '') {
-            $errors[] = $text['err_generic'];
+            $errors[] = t('access_portal.err_generic');
         } else {
             if (!load_application_into_session($token, $email)) {
-                $errors[] = $text['err_generic'];
+                $errors[] = t('access_portal.err_generic');
             } else {
                 if (!empty($_SESSION['application_readonly'])) {
                     header('Location: /form_review.php');
@@ -199,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $count = (int)$stCount->fetchColumn();
 
             if ($count >= $max) {
-                $errors[] = $text['limit_reached'];
+                $errors[] = t('access_portal.limit_reached');
             } else {
                 // Token
                 $token = issue_token32();
@@ -230,7 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } catch (Throwable $e) {
             error_log('access_portal new application: '.$e->getMessage());
-            $errors[] = $text['err_generic'];
+            $errors[] = t('access_portal.err_generic');
         }
     }
 }
@@ -253,12 +219,12 @@ try {
     $apps = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
 } catch (Throwable $e) {
     error_log('access_portal list applications: '.$e->getMessage());
-    $errors[] = $text['err_generic'];
+    $errors[] = t('access_portal.err_generic');
 }
 
 // ------------------------------------------------------------
 // Rendering
-$title     = $text['title'];
+$title     = t('access_portal.title');
 $html_lang = $lang;
 $html_dir  = $dir;
 
@@ -276,10 +242,10 @@ code.smalltoken { font-size: .85em; }
     <div class="card-body p-4 p-md-5">
       <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
         <div>
-          <h1 class="h4 mb-1"><?= h($text['title']) ?></h1>
-          <div class="text-muted"><?= h($text['lead']) ?></div>
+          <h1 class="h4 mb-1"><?= h(t('access_portal.title')) ?></h1>
+          <div class="text-muted"><?= h(t('access_portal.lead')) ?></div>
           <div class="small text-muted mt-1">
-            <?= h($email) ?> · max. <?= (int)$maxTokens ?> Bewerbungen
+            <?= h(tr('access_portal.max_hint', ['email' => $email, 'max' => (int)$maxTokens])) ?>
           </div>
         </div>
         <div class="d-flex gap-2">
@@ -287,7 +253,7 @@ code.smalltoken { font-size: .85em; }
             <?php csrf_field(); ?>
             <input type="hidden" name="action" value="new">
             <button class="btn btn-primary">
-              <?= h($text['btn_new']) ?>
+              <?= h(t('access_portal.btn_new')) ?>
             </button>
           </form>
 
@@ -295,7 +261,7 @@ code.smalltoken { font-size: .85em; }
             <?php csrf_field(); ?>
             <input type="hidden" name="action" value="logout">
             <button class="btn btn-outline-secondary">
-              <?= h($text['btn_logout']) ?>
+              <?= h(t('access_portal.btn_logout')) ?>
             </button>
           </form>
         </div>
@@ -310,25 +276,25 @@ code.smalltoken { font-size: .85em; }
       <?php endif; ?>
 
       <?php if (empty($apps)): ?>
-        <div class="alert alert-info mb-0"><?= h($text['no_apps']) ?></div>
+        <div class="alert alert-info mb-0"><?= h(t('access_portal.no_apps')) ?></div>
       <?php else: ?>
         <div class="table-responsive">
           <table class="table align-middle">
             <thead>
               <tr>
-                <th><?= h($text['th_ref']) ?></th>
-                <th><?= h($text['th_status']) ?></th>
-                <th><?= h($text['th_created']) ?></th>
-                <th><?= h($text['th_updated']) ?></th>
-                <th><?= h($text['th_token']) ?></th>
-                <th><?= h($text['th_action']) ?></th>
+                <th><?= h(t('access_portal.th_ref')) ?></th>
+                <th><?= h(t('access_portal.th_status')) ?></th>
+                <th><?= h(t('access_portal.th_created')) ?></th>
+                <th><?= h(t('access_portal.th_updated')) ?></th>
+                <th><?= h(t('access_portal.th_token')) ?></th>
+                <th><?= h(t('access_portal.th_action')) ?></th>
               </tr>
             </thead>
             <tbody>
               <?php foreach ($apps as $a): ?>
                 <tr>
                   <td><?= (int)$a['id'] ?></td>
-                  <td><?= h(status_label((string)$a['status'], $text)) ?></td>
+                  <td><?= h(status_label((string)$a['status'])) ?></td>
                   <td><?= h((string)$a['created_at']) ?></td>
                   <td><?= h((string)$a['updated_at']) ?></td>
                   <td><code class="smalltoken"><?= h((string)$a['token']) ?></code></td>
@@ -338,7 +304,7 @@ code.smalltoken { font-size: .85em; }
                       <input type="hidden" name="action" value="open">
                       <input type="hidden" name="token" value="<?= h((string)$a['token']) ?>">
                       <button class="btn btn-sm btn-outline-primary">
-                        <?= h($text['btn_open']) ?>
+                        <?= h(t('access_portal.btn_open')) ?>
                       </button>
                     </form>
                   </td>
