@@ -5,118 +5,20 @@ declare(strict_types=1);
 require __DIR__ . '/wizard/_common.php';
 require_once __DIR__ . '/../app/functions_form.php'; // DB-/Save-Helper
 
-// --- Sprache / RTL aus _common.php ---
-$lang     = current_lang();
-$html_lang = $lang;
-$html_dir  = is_rtl_lang($lang) ? 'rtl' : 'ltr';
+$lang = (string)($_SESSION['lang'] ?? 'de');
 
-// --- Übersetzungen nur für diese Seite (Schritt 1) ---
-// (Später kannst du das in /app/i18n/*.php auslagern – aber so ist es erstmal komplett lauffähig.)
-$TT = [
-  'de' => [
-    'step_title' => 'Schritt 1/4 – Persönliche Daten',
-    'required_hint' => 'Pflichtfelder sind blau am Rahmen hervorgehoben.',
-    'errors_hint' => 'Bitte prüfen Sie die markierten Felder.',
-
-    'email_login_active' => 'E-Mail-Login aktiv:',
-    'email_login_text' => 'Angemeldet mit der E-Mail-Adresse',
-    'email_login_text2' => 'Diese E-Mail wird nur für den Zugangscode (Access-Token) und zum Wiederfinden Ihrer Bewerbung verwendet.',
-    'email_login_text3' => 'Unten können Sie eine E-Mail-Adresse der Schülerin / des Schülers angeben (falls vorhanden).',
-
-    'noemail_hint_title' => 'Hinweis (ohne E-Mail):',
-    'noemail_hint_text' => 'Bitte notieren/fotografieren Sie Ihren Zugangscode (Access-Token), den Sie nach dem Speichern auf dieser Seite angezeigt bekommen.',
-    'noemail_hint_text2' => 'Ohne verifizierte E-Mail ist eine Wiederherstellung nur mit Token + Geburtsdatum möglich.',
-
-    'name' => 'Name',
-    'vorname' => 'Vorname',
-    'gender' => 'Geschlecht',
-    'male' => 'männlich',
-    'female' => 'weiblich',
-    'diverse' => 'divers',
-
-    'born_on' => 'Geboren am',
-    'dmy' => '(TT.MM.JJJJ)',
-    'birthplace' => 'Geburtsort / Geburtsland',
-    'nationality' => 'Staatsangehörigkeit',
-    'street' => 'Straße, Nr.',
-    'plz' => 'PLZ',
-    'plz_choose' => '– bitte wählen –',
-    'plz_hint' => 'Nur Oldenburg (Oldb).',
-    'city' => 'Wohnort',
-
-    'phone' => 'Telefonnummer',
-    'phone_area' => 'Vorwahl mit/ohne 0',
-    'phone_number' => 'Rufnummer',
-
-    'student_email_label' => 'E-Mail-Adresse der Schülerin / des Schülers (optional, keine IServ-Adresse)',
-    'student_email_hint1' => 'Diese E-Mail gehört zur Schülerin / zum Schüler (falls vorhanden)',
-    'student_email_hint2' => 'und ist unabhängig von der E-Mail-Adresse für den Zugangscode.',
-
-    'contacts_title' => 'Weitere Kontaktdaten',
-    'contacts_sub' => '(z. B. Eltern, Betreuer, Einrichtung)',
-    'contacts_err' => 'Bitte prüfen Sie die zusätzlichen Kontakte.',
-    'role' => 'Rolle',
-    'name_org' => 'Name / Einrichtung',
-    'tel' => 'Telefon',
-    'email' => 'E-Mail',
-    'note' => 'Notiz',
-    'add_contact' => '+ Kontakt hinzufügen',
-    'remove_contact' => 'Kontakt entfernen',
-
-    'roles' => [
-      ''            => '–',
-      'Mutter'      => 'Mutter',
-      'Vater'       => 'Vater',
-      'Elternteil'  => 'Elternteil',
-      'Betreuer*in' => 'Betreuer*in',
-      'Einrichtung' => 'Einrichtung',
-      'Sonstiges'   => 'Sonstiges',
-    ],
-
-    'more_info' => 'Weitere Angaben (z. B. Förderstatus):',
-    'more_info_ph' => 'Hier können Sie z. B. besonderen Förderbedarf, sonderpädagogische Unterstützungsbedarfe oder weitere Hinweise angeben.',
-    'more_info_hint' => 'Optional. Maximal 1500 Zeichen.',
-
-    'privacy' => 'Ich habe die Datenschutzhinweise gelesen und bin einverstanden.',
-    'privacy_link' => 'Datenschutzhinweise',
-
-    'cancel' => 'Abbrechen',
-    'next' => 'Weiter',
-
-    'age_hint' => 'Hinweis: Sind Sie am 30.09.%Y% unter 16 oder über 18 Jahre alt, können Sie nicht in die Sprachlernklasse der BBS aufgenommen werden. Bitte bewerben Sie sich für eine andere Klasse hier:',
-    'age_confirm' => 'Hinweis: Sind Sie am 30.09.%Y% unter 16 oder über 18 Jahre alt, können Sie nicht in die Sprachlernklasse der BBS aufgenommen werden. Bitte bewerben Sie sich für eine andere Klasse einer BBS hier:\n%URL%',
-    'redirect_title' => 'Weiterleitung',
-    'req_required' => 'Erforderlich.',
-    'req_letters' => 'Bitte nur Buchstaben.',
-    'req_gender' => 'Bitte wählen Sie ein Geschlecht aus.',
-    'req_dmy' => 'TT.MM.JJJJ',
-    'req_invalid_date' => 'Ungültiges Datum.',
-    'plz_only' => 'Nur PLZ aus Oldenburg (26121–26135).',
-    'area_len' => 'Vorwahl 2–6 Ziffern.',
-    'num_len' => 'Rufnummer 3–12 Ziffern.',
-    'bad_email' => 'Ungültige E-Mail.',
-    'no_iserv' => 'Bitte private E-Mail (keine IServ).',
-    'more_len' => 'Bitte maximal 1500 Zeichen.',
-    'contact_missing_name' => 'Name/Bezeichnung fehlt',
-    'contact_need_tel_or_mail' => 'Telefon ODER E-Mail angeben',
-    'contact_mail_invalid' => 'E-Mail ungültig',
-    'contact_tel_invalid' => 'Telefon ungültig',
-    'contacts_check' => 'Bitte prüfen Sie die zusätzlichen Kontakte.',
-  ],
-];
-
-// Fallback: wenn Sprache nicht vorhanden -> de
-$tx = $TT[$lang] ?? $TT['de'];
-
-function t(array $tx, string $key): string {
-    return (string)($tx[$key] ?? $key);
+/**
+ * Kleine Helper für Platzhalter in i18n-Strings.
+ * Beispiel: tr('key', ['{year}' => '2026'])
+ */
+function tr(string $key, array $vars = []): string {
+    $s = t($key);
+    if ($vars) $s = strtr($s, $vars);
+    return $s;
 }
-function t_roles(array $tx): array {
-    return (array)($tx['roles'] ?? []);
+function tr_arr(string $key): array {
+    return t_arr($key);
 }
-
-$errors = [];
-$kontakt_errors = [];
 
 // --- Modus erkennen ---
 $modeParam    = (string)($_GET['mode'] ?? '');
@@ -126,13 +28,17 @@ $emailMode    = ($modeParam === 'email');
 // --- E-Mail-Flow absichern & vorbereiten ---
 if ($emailMode) {
     if (empty($_SESSION['access']) || ($_SESSION['access']['mode'] ?? '') !== 'email' || empty($_SESSION['access']['email'])) {
-        header('Location: /index.php');
+        header('Location: ' . i18n_url('/index.php', $lang));
         exit;
     }
     if (function_exists('current_access_token') && function_exists('issue_access_token')) {
         if (current_access_token() === '') { issue_access_token(); }
     }
+    // WICHTIG: KEIN Überschreiben der Bewerber-E-Mail!
 }
+
+$errors = [];
+$kontakt_errors = [];
 
 // Helper
 function age_on_reference(string $dmy, int $year): ?int {
@@ -143,6 +49,7 @@ function age_on_reference(string $dmy, int $year): ?int {
     $diff = $bd->diff($ref);
     return $diff->y;
 }
+
 function field_error(string $key, array $errors): string {
     if (empty($errors[$key])) return '';
     return '<div class="invalid-feedback d-block">'.h((string)$errors[$key]).'</div>';
@@ -154,40 +61,51 @@ $refYear = (int)date('Y');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_check()) { http_response_code(400); exit('Ungültige Anfrage.'); }
 
+    // Pflichtfelder – E-Mail des Bewerbers ist OPTIONAL
     $req = [
-        'name','vorname','geschlecht','geburtsdatum','geburtsort_land','staatsang','strasse','plz',
-        'telefon_vorwahl','telefon_nummer','dsgvo_ok'
+        'name',
+        'vorname',
+        'geschlecht',
+        'geburtsdatum',
+        'geburtsort_land',
+        'staatsang',
+        'strasse',
+        'plz',
+        'telefon_vorwahl',
+        'telefon_nummer',
+        'dsgvo_ok'
     ];
 
     foreach ($req as $f) {
         if ($f === 'dsgvo_ok') {
             if (($_POST['dsgvo_ok'] ?? '') !== '1') {
-                $errors['dsgvo_ok'] = $tx['req_required'];
+                $errors['dsgvo_ok'] = tr('val.required');
             }
         } else {
             if (empty($_POST[$f])) {
-                $errors[$f] = $tx['req_required'];
+                $errors[$f] = tr('val.required');
             }
         }
     }
 
+    // Feldvalidierungen
     if (!isset($errors['name']) && !preg_match('/^[\p{L} .\'-]+$/u', (string)$_POST['name'])) {
-        $errors['name'] = $tx['req_letters'];
+        $errors['name'] = tr('val.only_letters');
     }
     if (!isset($errors['vorname']) && !preg_match('/^[\p{L} .\'-]+$/u', (string)$_POST['vorname'])) {
-        $errors['vorname'] = $tx['req_letters'];
+        $errors['vorname'] = tr('val.only_letters');
     }
     if (!in_array(($_POST['geschlecht'] ?? ''), ['m','w','d'], true)) {
-        $errors['geschlecht'] = $tx['req_gender'];
+        $errors['geschlecht'] = tr('val.gender_choose');
     }
 
     if (!isset($errors['geburtsdatum'])) {
         if (!preg_match('/^\d{2}\.\d{2}\.\d{4}$/', (string)$_POST['geburtsdatum'])) {
-            $errors['geburtsdatum'] = $tx['req_dmy'];
+            $errors['geburtsdatum'] = tr('val.date_format');
         } else {
-            [$tDay,$tMon,$tYear] = explode('.', (string)$_POST['geburtsdatum']);
-            if (!checkdate((int)$tMon,(int)$tDay,(int)$tYear)) {
-                $errors['geburtsdatum'] = $tx['req_invalid_date'];
+            [$t,$m,$j] = explode('.', (string)$_POST['geburtsdatum']);
+            if (!checkdate((int)$m,(int)$t,(int)$j)) {
+                $errors['geburtsdatum'] = tr('val.date_invalid');
             }
         }
     }
@@ -196,15 +114,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($errors['geburtsdatum'])) {
         $age = age_on_reference((string)$_POST['geburtsdatum'], $refYear);
         if ($age !== null && ($age < 16 || $age > 18)) {
-            $msg = str_replace(
-                ['%Y%','%URL%'],
-                [(string)$refYear, 'https://bbs-ol.de/'],
-                (string)$tx['age_confirm']
-            );
-            echo '<!doctype html><html lang="'.h($lang).'" dir="'.h($html_dir).'"><head><meta charset="utf-8"><title>'.h((string)$tx['redirect_title']).'</title></head><body>';
+            $url = 'https://bbs-ol.de/';
+            $msg = tr('personal.age_redirect_msg', ['{year}' => (string)$refYear, '{url}' => $url]);
+
+            echo '<!doctype html><html><head><meta charset="utf-8"><title>Redirect</title></head><body>';
             echo '<script>';
             echo 'if (confirm('.json_encode($msg, JSON_UNESCAPED_UNICODE).')) {';
-            echo '  window.location.href = "https://bbs-ol.de/";';
+            echo '  window.location.href = '.json_encode($url).';';
             echo '} else { history.back(); }';
             echo '</script>';
             echo '</body></html>';
@@ -217,11 +133,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($errors['plz'])) {
         $plz = (string)($_POST['plz'] ?? '');
         if (!in_array($plz, $plzWhitelist, true)) {
-            $errors['plz'] = $tx['plz_only'];
+            $errors['plz'] = tr('val.plz_whitelist');
         }
     }
 
-    // Telefon normalisieren
+    // Telefon: +49 fix; normalisiert auf E.164 (+49 ohne 0)
     $telefon_pretty = '';
     $telefon_e164   = '';
     if (!isset($errors['telefon_vorwahl']) || !isset($errors['telefon_nummer'])) {
@@ -232,12 +148,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!isset($errors['telefon_vorwahl'])) {
             if ($vv === '' || strlen($vv) < 2 || strlen($vv) > 6) {
-                $errors['telefon_vorwahl'] = $tx['area_len'];
+                $errors['telefon_vorwahl'] = tr('val.phone_vorwahl');
             }
         }
         if (!isset($errors['telefon_nummer'])) {
             if ($vn === '' || strlen($vn) < 3 || strlen($vn) > 12) {
-                $errors['telefon_nummer'] = $tx['num_len'];
+                $errors['telefon_nummer'] = tr('val.phone_nummer');
             }
         }
         if (!isset($errors['telefon_vorwahl']) && !isset($errors['telefon_nummer'])) {
@@ -248,26 +164,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // E-Mail optional
+    // E-Mail des Bewerbers (OPTIONAL)
     $email_raw = trim((string)($_POST['email'] ?? ''));
     if ($email_raw !== '') {
         if (!filter_var($email_raw, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = $tx['bad_email'];
+            $errors['email'] = tr('val.email_invalid');
         } elseif (preg_match('/@iserv\.de$/i', $email_raw)) {
-            $errors['email'] = $tx['no_iserv'];
+            $errors['email'] = tr('val.email_no_iserv');
         }
     }
 
-    // Weitere Angaben optional
+    // Weitere Angaben (optional)
     $weitere_angaben_raw = trim((string)($_POST['weitere_angaben'] ?? ''));
     if ($weitere_angaben_raw !== '') {
         $weitere_angaben_raw = str_replace("\0", '', $weitere_angaben_raw);
         if (mb_strlen($weitere_angaben_raw) > 1500) {
-            $errors['weitere_angaben'] = $tx['more_len'];
+            $errors['weitere_angaben'] = tr('val.max_1500');
         }
     }
 
-    // Zusatzkontakte
+    // ---------- Strukturierte Zusatzkontakte ----------
     $roles  = $_POST['kontakt_role'] ?? [];
     $names  = $_POST['kontakt_name'] ?? [];
     $tels   = $_POST['kontakt_tel']  ?? [];
@@ -288,17 +204,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($isEmpty) continue;
 
         $rowErr = [];
-        if ($name === '') $rowErr[] = $tx['contact_missing_name'];
-        if ($tel === '' && $mail === '') $rowErr[] = $tx['contact_need_tel_or_mail'];
-        if ($mail !== '' && !filter_var($mail, FILTER_VALIDATE_EMAIL)) $rowErr[] = $tx['contact_mail_invalid'];
-        if ($tel  !== '' && !preg_match('/^[0-9 +\/()\-]+$/', $tel))    $rowErr[] = $tx['contact_tel_invalid'];
+        if ($name === '') $rowErr[] = tr('val.kontakt_row_name_missing');
+        if ($tel === '' && $mail === '') $rowErr[] = tr('val.kontakt_row_tel_or_mail');
+        if ($mail !== '' && !filter_var($mail, FILTER_VALIDATE_EMAIL)) $rowErr[] = tr('val.kontakt_row_mail_invalid');
+        if ($tel  !== '' && !preg_match('/^[0-9 +\/()\-]+$/', $tel))    $rowErr[] = tr('val.kontakt_row_tel_invalid');
         if ($rowErr) $kontakt_errors[$i] = $rowErr;
 
         $contacts[] = ['rolle'=>$role,'name'=>$name,'tel'=>$tel,'mail'=>$mail,'notiz'=>$note];
     }
-    if ($kontakt_errors) $errors['kontakte'] = $tx['contacts_check'];
+    if ($kontakt_errors) $errors['kontakte'] = tr('personal.kontakte_error');
 
-    // Speichern
+    // ---------- Speichern, wenn valide ----------
     if (!$errors) {
         $_SESSION['form']['personal'] = [
             'name'            => trim((string)$_POST['name']),
@@ -326,21 +242,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (function_exists('flash_set')) {
             if ($save['ok']) {
                 $tokenToShow = $save['token'] ?? current_access_token();
-                flash_set('success', 'Daten gespeichert. Access-Token: ' . $tokenToShow);
+                // Flash-Text kannst du später auch i18n-keyen; hier erstmal neutral:
+                flash_set('success', 'OK. Access-Token: ' . $tokenToShow);
             } elseif (($save['err'] ?? '') === 'nur Session (DOB fehlt)') {
-                flash_set('info', 'Daten zwischengespeichert. Mit Geburtsdatum werden sie dauerhaft gesichert.');
+                flash_set('info', 'OK (Session).');
             } else {
-                flash_set('warning', 'Daten gespeichert (Session). Hinweis: '. ($save['err'] ?? ''));
+                flash_set('warning', 'OK (Session).');
             }
         }
 
-        header('Location: /form_school.php');
+        header('Location: ' . i18n_url('/form_school.php', $lang));
         exit;
     }
 }
 
-// ---------- Header ----------
-$title = (string)$tx['step_title'];
+// ---------- Header-Infos ----------
+$title     = tr('personal.page_title');
+$html_lang = $lang;
+$html_dir  = i18n_dir($lang);
+
 require __DIR__ . '/partials/header.php';
 require APP_APPDIR . '/header.php';
 
@@ -368,68 +288,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if (!$prevKontakte) $prevKontakte = [['rolle'=>'','name'=>'','tel'=>'','mail'=>'','notiz'=>'']];
 
 $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POST['weitere_angaben'] ?? '');
+
+// Kontakte-Rollen (i18n)
+$roleOptions = [
+    ''            => tr('personal.contact_role.none'),
+    'Mutter'      => tr('personal.contact_role.mutter'),
+    'Vater'       => tr('personal.contact_role.vater'),
+    'Elternteil'  => tr('personal.contact_role.elternteil'),
+    'Betreuer*in' => tr('personal.contact_role.betreuer'),
+    'Einrichtung' => tr('personal.contact_role.einrichtung'),
+    'Sonstiges'   => tr('personal.contact_role.sonstiges'),
+];
+
+$datenschutzUrl = i18n_url('/datenschutz.php', $lang);
+$indexUrl       = i18n_url('/index.php', $lang);
 ?>
+
 <div class="container py-4">
   <?php if (function_exists('flash_render')) { flash_render(); } ?>
 
   <?php if ($emailMode): ?>
     <div class="alert alert-success">
-      <strong><?= h($tx['email_login_active']) ?></strong><br>
-      <?= h($tx['email_login_text']) ?> <code><?= h((string)$_SESSION['access']['email']) ?></code>.<br>
-      <?= h($tx['email_login_text2']) ?><br>
-      <?= h($tx['email_login_text3']) ?>
+      <strong><?= h(tr('personal.alert_email_title')) ?></strong>
+      <?= h(tr('personal.alert_email_line1', ['{email}' => (string)($_SESSION['access']['email'] ?? '')])) ?><br>
+      <?= h(tr('personal.alert_email_line2')) ?><br>
+      <?= h(tr('personal.alert_email_line3')) ?>
     </div>
   <?php endif; ?>
 
   <?php if ($noEmailMode): ?>
     <div class="alert alert-warning">
-      <strong><?= h($tx['noemail_hint_title']) ?></strong>
-      <?= h($tx['noemail_hint_text']) ?><br>
-      <?= h($tx['noemail_hint_text2']) ?>
+      <strong><?= h(tr('personal.alert_noemail_title')) ?></strong>
+      <?= h(tr('personal.alert_noemail_body')) ?>
     </div>
   <?php endif; ?>
 
   <div class="card shadow border-0 rounded-4">
     <div class="card-body p-4 p-md-5">
-      <h1 class="h4 mb-2"><?= h($tx['step_title']) ?></h1>
-      <div class="text-muted small mb-3"><?= h($tx['required_hint']) ?></div>
+      <h1 class="h4 mb-2"><?= h(tr('personal.h1')) ?></h1>
+      <div class="text-muted small mb-3"><?= h(tr('personal.required_hint')) ?></div>
 
       <?php if ($errors): ?>
-        <div class="alert alert-danger"><?= h($tx['errors_hint']) ?></div>
+        <div class="alert alert-danger"><?= h(tr('personal.form_error_hint')) ?></div>
       <?php endif; ?>
 
       <form method="post" action="" novalidate class="mt-3" id="personalForm">
         <?php csrf_field(); ?>
 
+        <!-- Reihe 1: Name / Vorname -->
         <div class="row g-3">
           <div class="col-md-6">
-            <label class="form-label"><?= h($tx['name']) ?></label>
+            <label class="form-label"><?= h(tr('personal.label.name')) ?></label>
             <input name="name" class="form-control is-required<?= has_err('name',$errors) ?>" value="<?= old('name','personal') ?>" required>
             <?= field_error('name', $errors) ?>
           </div>
           <div class="col-md-6">
-            <label class="form-label"><?= h($tx['vorname']) ?></label>
+            <label class="form-label"><?= h(tr('personal.label.vorname')) ?></label>
             <input name="vorname" class="form-control is-required<?= has_err('vorname',$errors) ?>" value="<?= old('vorname','personal') ?>" required>
             <?= field_error('vorname', $errors) ?>
           </div>
         </div>
 
+        <!-- Reihe 2: Geschlecht / Geburtsdatum -->
         <div class="row g-3 mt-0">
           <div class="col-md-6">
-            <label class="form-label d-block"><?= h($tx['gender']) ?></label>
+            <label class="form-label d-block"><?= h(tr('personal.label.geschlecht')) ?></label>
             <?php $g = $_SESSION['form']['personal']['geschlecht'] ?? ($_POST['geschlecht'] ?? ''); ?>
             <?php $gErr = !empty($errors['geschlecht']); ?>
 
             <div class="<?= $gErr ? 'border border-danger rounded p-2' : 'is-required-group' ?>" role="group" aria-label="Geschlecht">
               <div class="btn-group" role="group">
                 <input type="radio" class="btn-check" name="geschlecht" id="g_m" value="m" <?= $g==='m'?'checked':''; ?> required>
-                <label class="btn btn-outline-primary" for="g_m"><?= h($tx['male']) ?></label>
+                <label class="btn btn-outline-primary" for="g_m"><?= h(tr('personal.gender.m')) ?></label>
 
                 <input type="radio" class="btn-check" name="geschlecht" id="g_w" value="w" <?= $g==='w'?'checked':''; ?>>
-                <label class="btn btn-outline-primary" for="g_w"><?= h($tx['female']) ?></label>
+                <label class="btn btn-outline-primary" for="g_w"><?= h(tr('personal.gender.w')) ?></label>
 
                 <input type="radio" class="btn-check" name="geschlecht" id="g_d" value="d" <?= $g==='d'?'checked':''; ?>>
-                <label class="btn btn-outline-primary" for="g_d"><?= h($tx['diverse']) ?></label>
+                <label class="btn btn-outline-primary" for="g_d"><?= h(tr('personal.gender.d')) ?></label>
               </div>
             </div>
 
@@ -437,62 +373,74 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
           </div>
 
           <div class="col-md-6">
-            <label class="form-label"><?= h($tx['born_on']) ?> <span class="text-muted"><?= h($tx['dmy']) ?></span></label>
-            <input id="geburtsdatum" name="geburtsdatum" class="form-control is-required<?= has_err('geburtsdatum',$errors) ?>" placeholder="TT.MM.JJJJ" value="<?= old('geburtsdatum','personal') ?>" required>
+            <label class="form-label">
+              <?= h(tr('personal.label.geburtsdatum')) ?>
+              <span class="text-muted"><?= h(tr('personal.label.geburtsdatum_hint')) ?></span>
+            </label>
+            <input
+              id="geburtsdatum"
+              name="geburtsdatum"
+              class="form-control is-required<?= has_err('geburtsdatum',$errors) ?>"
+              placeholder="<?= h(tr('personal.placeholder.geburtsdatum')) ?>"
+              value="<?= old('geburtsdatum','personal') ?>"
+              required>
             <?= field_error('geburtsdatum', $errors) ?>
             <div class="form-text">
-              <?= h(str_replace('%Y%', (string)$refYear, (string)$tx['age_hint'])) ?>
+              <?= h(tr('personal.age_hint', ['{year}' => (string)$refYear])) ?>
               <a href="https://bbs-ol.de/" target="_blank" rel="noopener">https://bbs-ol.de/</a>
             </div>
           </div>
         </div>
 
+        <!-- Reihe 3: Geburtsort/Geburtsland / Staatsangehörigkeit -->
         <div class="row g-3 mt-0">
           <div class="col-md-6">
-            <label class="form-label"><?= h($tx['birthplace']) ?></label>
+            <label class="form-label"><?= h(tr('personal.label.geburtsort_land')) ?></label>
             <input name="geburtsort_land" class="form-control is-required<?= has_err('geburtsort_land',$errors) ?>" value="<?= old('geburtsort_land','personal') ?>" required>
             <?= field_error('geburtsort_land', $errors) ?>
           </div>
           <div class="col-md-6">
-            <label class="form-label"><?= h($tx['nationality']) ?></label>
+            <label class="form-label"><?= h(tr('personal.label.staatsang')) ?></label>
             <input name="staatsang" class="form-control is-required<?= has_err('staatsang',$errors) ?>" value="<?= old('staatsang','personal') ?>" required>
             <?= field_error('staatsang', $errors) ?>
           </div>
         </div>
 
+        <!-- Reihe 4: Straße / PLZ / Wohnort -->
         <div class="row g-3 mt-0">
           <div class="col-md-6">
-            <label class="form-label"><?= h($tx['street']) ?></label>
+            <label class="form-label"><?= h(tr('personal.label.strasse')) ?></label>
             <input name="strasse" class="form-control is-required<?= has_err('strasse',$errors) ?>" value="<?= old('strasse','personal') ?>" required>
             <?= field_error('strasse', $errors) ?>
           </div>
 
           <div class="col-md-3">
-            <label class="form-label"><?= h($tx['plz']) ?></label>
-            <?php
-              $plzList = ['26121','26122','26123','26125','26127','26129','26131','26133','26135'];
-              // ACHTUNG: old() ist escaped -> für Vergleich brauchen wir raw
-              $rawPlz = (string)($_SESSION['form']['personal']['plz'] ?? ($_POST['plz'] ?? ''));
-            ?>
+            <label class="form-label"><?= h(tr('personal.label.plz')) ?></label>
             <select name="plz" class="form-select is-required<?= has_err('plz',$errors) ?>" required>
-              <option value=""><?= h($tx['plz_choose']) ?></option>
-              <?php foreach ($plzList as $plz): ?>
-                <option value="<?= h($plz) ?>" <?= ($plz === $rawPlz) ? 'selected' : '' ?>><?= h($plz) ?></option>
-              <?php endforeach; ?>
+              <option value=""><?= h(tr('personal.plz_choose')) ?></option>
+              <?php
+                $plzList = ['26121','26122','26123','26125','26127','26129','26131','26133','26135'];
+                $currentPlz = old('plz','personal');
+                foreach ($plzList as $plz) {
+                    $sel = ($plz === $currentPlz) ? 'selected' : '';
+                    echo '<option value="'.h($plz).'" '.$sel.'>'.h($plz).'</option>';
+                }
+              ?>
             </select>
             <?= field_error('plz', $errors) ?>
-            <div class="form-text"><?= h($tx['plz_hint']) ?></div>
+            <div class="form-text"><?= h(tr('personal.plz_hint')) ?></div>
           </div>
 
           <div class="col-md-3">
-            <label class="form-label"><?= h($tx['city']) ?></label>
+            <label class="form-label"><?= h(tr('personal.label.wohnort')) ?></label>
             <input name="wohnort" class="form-control" value="<?= h($_SESSION['form']['personal']['wohnort'] ?? 'Oldenburg (Oldb)') ?>" readonly>
           </div>
         </div>
 
+        <!-- Reihe 5: Telefon (geteilt) / Bewerber-E-Mail -->
         <div class="row g-3 mt-0">
           <div class="col-md-6">
-            <label class="form-label"><?= h($tx['phone']) ?></label>
+            <label class="form-label"><?= h(tr('personal.label.telefon')) ?></label>
             <div class="row g-2">
               <div class="col-5 col-sm-4">
                 <div class="input-group">
@@ -502,12 +450,12 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
                     class="form-control is-required<?= has_err('telefon_vorwahl',$errors) ?>"
                     inputmode="numeric"
                     pattern="^0?\d{2,6}$"
-                    placeholder="(0)441"
+                    placeholder="<?= h(tr('personal.placeholder.telefon_vorwahl')) ?>"
                     value="<?= h($_SESSION['form']['personal']['telefon_vorwahl'] ?? ($_POST['telefon_vorwahl'] ?? '')) ?>"
                     required>
                 </div>
                 <?= field_error('telefon_vorwahl', $errors) ?>
-                <div class="form-text"><?= h($tx['phone_area']) ?></div>
+                <div class="form-text"><?= h(tr('personal.label.telefon_vorwahl_help')) ?></div>
               </div>
 
               <div class="col-7 col-sm-8">
@@ -516,34 +464,37 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
                   class="form-control is-required<?= has_err('telefon_nummer',$errors) ?>"
                   inputmode="numeric"
                   pattern="^\d[\d\s\-\/()]{2,}$"
-                  placeholder="123456"
+                  placeholder="<?= h(tr('personal.placeholder.telefon_nummer')) ?>"
                   value="<?= h($_SESSION['form']['personal']['telefon_nummer'] ?? ($_POST['telefon_nummer'] ?? '')) ?>"
                   required>
                 <?= field_error('telefon_nummer', $errors) ?>
-                <div class="form-text"><?= h($tx['phone_number']) ?></div>
+                <div class="form-text"><?= h(tr('personal.label.telefon_nummer_help')) ?></div>
               </div>
             </div>
           </div>
 
           <div class="col-md-6">
-            <label class="form-label"><?= h($tx['student_email_label']) ?></label>
+            <label class="form-label"><?= h(tr('personal.label.email')) ?></label>
             <input
               name="email"
               type="email"
               class="form-control<?= has_err('email',$errors) ?>"
-              value="<?= old('email','personal') ?>"
+              value="<?= h(old('email','personal')) ?>"
+              placeholder="<?= h(tr('personal.placeholder.email')) ?>"
             >
             <?= field_error('email', $errors) ?>
-            <div class="form-text">
-              <?= h($tx['student_email_hint1']) ?><br>
-              <?= h($tx['student_email_hint2']) ?>
-            </div>
+            <div class="form-text"><?= h(tr('personal.email_help')) ?></div>
           </div>
         </div>
 
+        <!-- Kontakte -->
         <div class="row g-3 mt-0">
           <div class="col-12">
-            <label class="form-label"><?= h($tx['contacts_title']) ?> <span class="text-muted"><?= h($tx['contacts_sub']) ?></span></label>
+            <label class="form-label">
+              <?= h(tr('personal.label.kontakte')) ?>
+              <span class="text-muted"><?= h(tr('personal.kontakte_hint')) ?></span>
+            </label>
+
             <?php if (!empty($errors['kontakte'])): ?>
               <div class="text-danger mb-2 small"><?= h((string)$errors['kontakte']) ?></div>
             <?php endif; ?>
@@ -552,14 +503,14 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
               <table class="table table-sm align-middle table-contacts">
                 <thead>
                   <tr>
-                    <th style="width:14rem"><?= h($tx['role']) ?></th>
-                    <th style="width:20rem"><?= h($tx['name_org']) ?></th>
-                    <th style="width:16rem"><?= h($tx['tel']) ?></th>
-                    <th style="width:20rem"><?= h($tx['email']) ?></th>
+                    <th style="width:14rem"><?= h(tr('personal.table.role')) ?></th>
+                    <th style="width:20rem"><?= h(tr('personal.table.name')) ?></th>
+                    <th style="width:16rem"><?= h(tr('personal.table.tel')) ?></th>
+                    <th style="width:20rem"><?= h(tr('personal.table.mail')) ?></th>
                     <th style="width:4rem"></th>
                   </tr>
                   <tr>
-                    <th colspan="5" class="text-muted fw-normal"><?= h($tx['note']) ?></th>
+                    <th colspan="5" class="text-muted fw-normal"><?= h(tr('personal.table.note_header')) ?></th>
                   </tr>
                 </thead>
 
@@ -567,27 +518,30 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
                 <?php foreach ($prevKontakte as $idx => $k):
                   $rowHasErr = isset($kontakt_errors[$idx]);
                   $rowClass  = $rowHasErr ? 'table-danger' : '';
-                  $rolesMap  = t_roles($tx);
                 ?>
                   <tr class="contact-main <?= $rowClass ?>">
                     <td>
                       <select name="kontakt_role[]" class="form-select form-select-sm">
-                        <?php foreach ($rolesMap as $rv=>$rl): ?>
-                          <option value="<?= h((string)$rv) ?>" <?= ((string)$rv === (string)($k['rolle'] ?? '')) ? 'selected' : '' ?>>
-                            <?= h((string)$rl) ?>
-                          </option>
-                        <?php endforeach; ?>
+                        <?php
+                          $cur = (string)($k['rolle'] ?? '');
+                          foreach ($roleOptions as $rv => $rl) {
+                              $sel = ($rv === $cur) ? 'selected' : '';
+                              echo '<option value="'.h($rv).'" '.$sel.'>'.h($rl).'</option>';
+                          }
+                        ?>
                       </select>
                     </td>
-                    <td><input name="kontakt_name[]" class="form-control form-control-sm" value="<?= h((string)($k['name'] ?? '')) ?>" placeholder="<?= h((string)$tx['name_org']) ?>"></td>
-                    <td><input name="kontakt_tel[]"  class="form-control form-control-sm" value="<?= h((string)($k['tel'] ?? ''))  ?>" placeholder="+49 …"></td>
-                    <td><input name="kontakt_mail[]" class="form-control form-control-sm" value="<?= h((string)($k['mail'] ?? '')) ?>" placeholder="name@example.org"></td>
-                    <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)" title="<?= h((string)$tx['remove_contact']) ?>">&times;</button></td>
+                    <td><input name="kontakt_name[]" class="form-control form-control-sm" value="<?= h((string)($k['name'] ?? '')) ?>" placeholder="<?= h(tr('personal.placeholder.kontakt_name')) ?>"></td>
+                    <td><input name="kontakt_tel[]"  class="form-control form-control-sm" value="<?= h((string)($k['tel'] ?? ''))  ?>" placeholder="<?= h(tr('personal.placeholder.kontakt_tel')) ?>"></td>
+                    <td><input name="kontakt_mail[]" class="form-control form-control-sm" value="<?= h((string)($k['mail'] ?? '')) ?>" placeholder="<?= h(tr('personal.placeholder.email')) ?>"></td>
+                    <td>
+                      <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)" title="<?= h(tr('personal.kontakte_remove_title')) ?>">&times;</button>
+                    </td>
                   </tr>
 
                   <tr class="contact-note <?= $rowClass ?>">
                     <td colspan="5">
-                      <textarea name="kontakt_notiz[]" class="form-control form-control-sm" rows="3" placeholder="<?= h((string)$tx['note']) ?>"><?= h((string)($k['notiz'] ?? '')) ?></textarea>
+                      <textarea name="kontakt_notiz[]" class="form-control form-control-sm" rows="3" placeholder="<?= h(tr('personal.placeholder.kontakt_note')) ?>"><?= h((string)($k['notiz'] ?? '')) ?></textarea>
                     </td>
                   </tr>
                 <?php endforeach; ?>
@@ -595,50 +549,52 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
               </table>
             </div>
 
-            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addRow()"><?= h($tx['add_contact']) ?></button>
+            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addRow()"><?= h(tr('personal.kontakte_add')) ?></button>
 
             <template id="row-template">
               <tr class="contact-main">
                 <td>
                   <select name="kontakt_role[]" class="form-select form-select-sm">
-                    <?php foreach (t_roles($tx) as $rv=>$rl): ?>
+                    <?php foreach ($roleOptions as $rv => $rl): ?>
                       <option value="<?= h((string)$rv) ?>"><?= h((string)$rl) ?></option>
                     <?php endforeach; ?>
                   </select>
                 </td>
-                <td><input name="kontakt_name[]" class="form-control form-control-sm" placeholder="<?= h((string)$tx['name_org']) ?>"></td>
-                <td><input name="kontakt_tel[]"  class="form-control form-control-sm" placeholder="+49 …"></td>
-                <td><input name="kontakt_mail[]" class="form-control form-control-sm" placeholder="name@example.org"></td>
-                <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">&times;</button></td>
+                <td><input name="kontakt_name[]" class="form-control form-control-sm" placeholder="<?= h(tr('personal.placeholder.kontakt_name')) ?>"></td>
+                <td><input name="kontakt_tel[]"  class="form-control form-control-sm" placeholder="<?= h(tr('personal.placeholder.kontakt_tel')) ?>"></td>
+                <td><input name="kontakt_mail[]" class="form-control form-control-sm" placeholder="<?= h(tr('personal.placeholder.email')) ?>"></td>
+                <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)" title="<?= h(tr('personal.kontakte_remove_title')) ?>">&times;</button></td>
               </tr>
               <tr class="contact-note">
                 <td colspan="5">
-                  <textarea name="kontakt_notiz[]" class="form-control form-control-sm" rows="3" placeholder="<?= h((string)$tx['note']) ?>"></textarea>
+                  <textarea name="kontakt_notiz[]" class="form-control form-control-sm" rows="3" placeholder="<?= h(tr('personal.placeholder.kontakt_note')) ?>"></textarea>
                 </td>
               </tr>
             </template>
 
             <?php if ($kontakt_errors): ?>
               <div class="small text-danger mt-2">
-                <?php foreach ($kontakt_errors as $i=>$msgs) echo 'Kontakt '.($i+1).': '.h(implode(', ', $msgs)).'<br>'; ?>
+                <?php foreach ($kontakt_errors as $i=>$msgs) echo h('Kontakt '.($i+1).': '.implode(', ', $msgs)).'<br>'; ?>
               </div>
             <?php endif; ?>
           </div>
         </div>
 
+        <!-- Weitere Angaben -->
         <div class="row g-3 mt-0">
           <div class="col-12">
-            <label class="form-label"><?= h($tx['more_info']) ?></label>
+            <label class="form-label"><?= h(tr('personal.label.weitere_angaben')) ?></label>
             <textarea
               name="weitere_angaben"
               class="form-control<?= has_err('weitere_angaben',$errors) ?>"
               rows="4"
-              placeholder="<?= h($tx['more_info_ph']) ?>"><?= h((string)$prevWeitereAngaben) ?></textarea>
+              placeholder="<?= h(tr('personal.placeholder.weitere_angaben')) ?>"><?= h((string)$prevWeitereAngaben) ?></textarea>
             <?= field_error('weitere_angaben', $errors) ?>
-            <div class="form-text"><?= h($tx['more_info_hint']) ?></div>
+            <div class="form-text"><?= h(tr('personal.weitere_angaben_help')) ?></div>
           </div>
         </div>
 
+        <!-- DSGVO -->
         <div class="row g-3 mt-0">
           <div class="col-12">
             <?php $ok = $_SESSION['form']['personal']['dsgvo_ok'] ?? ($_POST['dsgvo_ok'] ?? ''); ?>
@@ -647,8 +603,9 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
             <div class="form-check <?= $dsgvoErr ? 'border border-danger rounded p-2' : 'is-required-check' ?>">
               <input class="form-check-input<?= has_err('dsgvo_ok',$errors) ?>" type="checkbox" id="dsgvo_ok" name="dsgvo_ok" value="1" <?= $ok==='1'?'checked':''; ?> required>
               <label class="form-check-label" for="dsgvo_ok">
-                <?= h($tx['privacy']) ?>
-                <a href="/datenschutz.php" target="_blank" rel="noopener"><?= h($tx['privacy_link']) ?></a>
+                <?= h(tr('personal.dsgvo_text_prefix')) ?>
+                <a href="<?= h($datenschutzUrl) ?>" target="_blank" rel="noopener"><?= h(tr('personal.dsgvo_link_text')) ?></a>
+                <?= h(tr('personal.dsgvo_text_suffix')) ?>
               </label>
               <?= field_error('dsgvo_ok', $errors) ?>
             </div>
@@ -656,8 +613,8 @@ $prevWeitereAngaben = $_SESSION['form']['personal']['weitere_angaben'] ?? ($_POS
         </div>
 
         <div class="mt-4 d-flex gap-2">
-          <a href="/index.php" class="btn btn-outline-secondary"><?= h($tx['cancel']) ?></a>
-          <button class="btn btn-primary"><?= h($tx['next']) ?></button>
+          <a href="<?= h($indexUrl) ?>" class="btn btn-outline-secondary"><?= h(tr('personal.btn.cancel')) ?></a>
+          <button class="btn btn-primary"><?= h(tr('personal.btn.next')) ?></button>
         </div>
       </form>
     </div>
@@ -696,14 +653,7 @@ function removeRow(btn){
 (function(){
   const REF_YEAR = new Date().getFullYear();
   const URL_REDIRECT = "https://bbs-ol.de/";
-  const msg = <?= json_encode(str_replace(['%Y%','%URL%'], ['"+REF_YEAR+"', URL_REDIRECT], (string)$tx['age_confirm']), JSON_UNESCAPED_UNICODE) ?>;
-  // msg enthält Platzhalter-String-Building -> wir ersetzen REF_YEAR dynamisch unten
-
-  function buildMsg(){
-    return <?= json_encode((string)$tx['age_confirm'], JSON_UNESCAPED_UNICODE) ?>
-      .replace('%Y%', String(REF_YEAR))
-      .replace('%URL%', URL_REDIRECT);
-  }
+  const msg = <?= json_encode(tr('personal.age_redirect_msg', ['{year}' => (string)$refYear, '{url}' => 'https://bbs-ol.de/']), JSON_UNESCAPED_UNICODE) ?>;
 
   function parseDMY(dmy){
     const m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(dmy || "");
@@ -725,7 +675,7 @@ function removeRow(btn){
     if(!dob) return true;
     const age = ageOnRef(dob);
     if (age < 16 || age > 18) {
-      if (confirm(buildMsg())) {
+      if (confirm(msg)) {
         window.location.href = URL_REDIRECT;
       }
       return false;
