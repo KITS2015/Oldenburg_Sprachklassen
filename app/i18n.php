@@ -345,6 +345,93 @@ function i18n_dict(): array {
             'upload.ajax.unknown_action' => 'Unbekannte Aktion',
             'upload.ajax.server_error'   => 'Serverfehler beim Upload',
 
+            // ------------------------
+            // DE: form_review.php
+            // ------------------------
+            'review.page_title' => 'Schritt 4/4 – Zusammenfassung & Bewerbung',
+            
+            'review.h1'          => 'Schritt 4/4 – Zusammenfassung & Bewerbung',
+            'review.subhead'     => 'Bitte prüfen Sie Ihre Angaben. Mit „Bewerben“ senden Sie die Daten ab.',
+            
+            'review.readonly_alert' => 'Diese Bewerbung wurde bereits abgeschickt. Die Angaben können nur noch angesehen, aber nicht mehr geändert oder erneut eingereicht werden.',
+            
+            'review.info.p1' => 'Liebe Schülerin, lieber Schüler,',
+            'review.info.p2' => 'wenn Sie auf <strong>„bewerben“</strong> klicken, haben Sie sich für die <strong>BES Sprache und Integration</strong> an einer Oldenburger BBS beworben.',
+            'review.info.p3' => 'Es handelt sich noch nicht um eine finale Anmeldung, sondern um eine <strong>Bewerbung</strong>. Nach dem <strong>20.02.</strong> erhalten Sie die Information, ob / an welcher BBS Sie aufgenommen werden. Bitte prüfen Sie regelmäßig Ihren Briefkasten und Ihr E-Mail-Postfach. Bitte achten Sie darauf, dass am Briefkasten Ihr Name sichtbar ist, damit Sie Briefe bekommen können.',
+            'review.info.p4' => 'Sie erhalten mit der Zusage der Schule die Aufforderung, diese Dateien nachzureichen (falls Sie es heute noch nicht hochgeladen haben):',
+            'review.info.li1' => 'letztes Halbjahreszeugnis',
+            
+            // Accordion Überschriften
+            'review.acc.personal' => 'Persönliche Daten',
+            'review.acc.school'   => 'Schule & Interessen',
+            'review.acc.uploads'  => 'Unterlagen',
+            
+            // Labels: Personal
+            'review.lbl.name'            => 'Name',
+            'review.lbl.vorname'         => 'Vorname',
+            'review.lbl.geschlecht'      => 'Geschlecht',
+            'review.lbl.geburtsdatum'    => 'Geboren am',
+            'review.lbl.geburtsort'      => 'Geburtsort / Geburtsland',
+            'review.lbl.staatsang'       => 'Staatsangehörigkeit',
+            'review.lbl.strasse'         => 'Straße, Nr.',
+            'review.lbl.plz_ort'         => 'PLZ / Wohnort',
+            'review.lbl.telefon'         => 'Telefon',
+            'review.lbl.email'           => 'E-Mail (Schüler*in, optional)',
+            'review.lbl.weitere_angaben' => 'Weitere Angaben (z. B. Förderstatus)',
+            
+            'review.contacts.title'   => 'Weitere Kontakte',
+            'review.contacts.optional'=> 'optional',
+            'review.contacts.none'    => '–',
+            
+            'review.contacts.th.role' => 'Rolle',
+            'review.contacts.th.name' => 'Name / Einrichtung',
+            'review.contacts.th.tel'  => 'Telefon',
+            'review.contacts.th.mail' => 'E-Mail',
+            'review.contacts.note'    => 'Notiz:',
+            
+            // Labels: School
+            'review.lbl.school_current' => 'Aktuelle Schule',
+            'review.lbl.klassenlehrer'  => 'Verantwortliche*r Lehrer*in',
+            'review.lbl.mail_lehrkraft' => 'E-Mail Lehrkraft',
+            'review.lbl.since'          => 'Seit wann an der Schule',
+            'review.lbl.years_de'       => 'Jahre in Deutschland',
+            'review.lbl.family_lang'    => 'Familiensprache / Erstsprache',
+            'review.lbl.de_level'       => 'Deutsch-Niveau',
+            'review.lbl.school_origin'  => 'Schule im Herkunftsland',
+            'review.lbl.years_origin'   => 'Jahre Schule im Herkunftsland',
+            'review.lbl.interests'      => 'Interessen',
+            
+            // Uploads
+            'review.lbl.zeugnis'      => 'Halbjahreszeugnis',
+            'review.lbl.lebenslauf'   => 'Lebenslauf',
+            'review.lbl.later'        => 'Später nachreichen',
+            'review.badge.uploaded'   => 'hochgeladen',
+            'review.badge.not_uploaded'=> 'nicht hochgeladen',
+            'review.yes'              => 'Ja',
+            'review.no'               => 'Nein',
+            
+            // Buttons / Actions
+            'review.btn.home'   => 'Zur Startseite',
+            'review.btn.newapp' => 'Weitere Bewerbung einreichen',
+            'review.btn.back'   => 'Zurück',
+            'review.btn.submit' => 'Bewerben',
+            
+            // Errors / Flash / Systemtexte
+            'review.err.invalid_request' => 'Ungültige Anfrage.',
+            'review.flash.already_submitted' => 'Diese Bewerbung wurde bereits abgeschickt und kann nicht erneut eingereicht oder geändert werden.',
+            'review.flash.no_token'          => 'Kein gültiger Zugangscode. Bitte starten Sie den Vorgang neu.',
+            'review.err.not_found_token'     => 'Bewerbung zu diesem Token nicht gefunden.',
+            'review.flash.submit_error'      => 'Beim Übermitteln ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
+            
+            // Gender fallback (falls du es nicht über personal.gender.* lösen willst)
+            'review.gender.m' => 'männlich',
+            'review.gender.w' => 'weiblich',
+            'review.gender.d' => 'divers',
+            
+            // Fallback Anzeige
+            'review.value.empty' => '–',
+
+
         
         ],
 
