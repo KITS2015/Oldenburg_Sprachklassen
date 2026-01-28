@@ -50,7 +50,9 @@ $langLabel = function_exists('t') ? t('index.lang_label') : 'Sprache';
 <header class="border-bottom bg-white">
   <div class="container py-2">
     <div class="d-flex justify-content-end">
-      <form method="get" action="<?= htmlspecialchars($path, ENT_QUOTES, 'UTF-8') ?>" class="d-flex align-items-center gap-2">
+        <form method="get"
+              action="<?= htmlspecialchars($path, ENT_QUOTES, 'UTF-8') ?>"
+              class="d-flex flex-nowrap align-items-center gap-2">
         <?php
         // alle bestehenden Query-Parameter als hidden übernehmen (außer lang)
         foreach ($query as $k => $v) {
@@ -60,9 +62,9 @@ $langLabel = function_exists('t') ? t('index.lang_label') : 'Sprache';
         }
         ?>
 
-        <label class="fw-semibold mb-0" for="lang">
-          <?= htmlspecialchars((string)$langLabel, ENT_QUOTES, 'UTF-8') ?>
-        </label>
+          <label class="fw-semibold mb-0 text-nowrap" for="lang">
+            <?= htmlspecialchars((string)$langLabel, ENT_QUOTES, 'UTF-8') ?>
+          </label>
 
         <select
           class="form-select form-select-sm"
