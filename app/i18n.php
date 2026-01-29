@@ -5013,6 +5013,651 @@ function i18n_dict(): array {
             'val.kontakt_row_mail_invalid' => 'ایمیل نامعتبر است',
             'val.kontakt_row_tel_invalid'  => 'تلفن نامعتبر است',
         ],
+
+        // =======================
+        // VN: in 'vn' => [ ... ] einfügen (komplett)
+        // =======================
+        'vn' => [
+        
+            // =======================
+            // STEP Start: Index (VN)
+            // =======================
+            'index.title' => 'Chào mừng đến với đăng ký trực tuyến – Lớp học tiếng',
+            'index.lead'  => 'Dịch vụ này dành cho những người mới đến Oldenburg. Biểu mẫu giúp chúng tôi liên hệ với bạn và tìm các lựa chọn phù hợp.',
+            'index.bullets' => [
+                'Vui lòng chuẩn bị thông tin liên hệ và giấy tờ tùy thân (nếu có).',
+                'Bạn có thể điền biểu mẫu bằng nhiều ngôn ngữ.',
+                'Dữ liệu của bạn được xử lý bảo mật theo GDPR.',
+            ],
+            'index.info_p' => [
+                'Em học sinh thân mến,',
+                'Với đơn này, bạn đăng ký một chỗ trong lớp học tiếng “BES Ngôn ngữ và Hội nhập” tại một trường dạy nghề (BBS) ở Oldenburg. Bạn không đăng ký vào một BBS cụ thể. Sau ngày 20 tháng 2, bạn sẽ được thông báo trường nào sẽ tiếp nhận bạn vào lớp.',
+                'Bạn chỉ có thể được nhận nếu đáp ứng các điều kiện sau:',
+            ],
+            'index.info_bullets' => [
+                'Bạn cần được hỗ trợ tiếng Đức chuyên sâu (trình độ tiếng Đức dưới B1).',
+                'Vào đầu năm học tới, bạn ở Đức không quá 3 năm.',
+                'Vào ngày 30/09 năm nay, bạn ít nhất 16 tuổi và không quá 18 tuổi.',
+                'Trong năm học tới, bạn thuộc diện bắt buộc đi học.',
+            ],
+            'index.access_title' => 'Bảo mật & Truy cập',
+            'index.access_intro' => 'Bạn có thể tiếp tục có hoặc không có địa chỉ email. Việc truy cập các đơn đã lưu chỉ có thể thực hiện bằng mã truy cập cá nhân (Token) và ngày sinh.',
+            'index.access_points' => [
+                '<strong>Có email:</strong> Bạn nhận mã xác nhận và có thể tạo nhiều đơn và mở lại sau.',
+                '<strong>Không có email:</strong> Bạn nhận mã truy cập cá nhân (Access-Token). Vui lòng ghi lại/chụp ảnh mã này — nếu không có email đã xác minh thì không thể khôi phục.',
+            ],
+        
+            'index.btn_noemail' => 'Tiếp tục không dùng email',
+            'index.btn_create'  => 'Tiếp tục với email',
+            'index.btn_load'    => 'Truy cập đơn đăng ký',
+            'index.lang_label'  => 'Ngôn ngữ / Language:',
+        
+            // =======================
+            // STEP 1/4: PERSONAL (VN)
+            // =======================
+            'personal.page_title' => 'Bước 1/4 – Thông tin cá nhân',
+            'personal.h1' => 'Bước 1/4 – Thông tin cá nhân',
+            'personal.required_hint' => 'Các trường bắt buộc được đánh dấu bằng viền màu xanh.',
+            'personal.form_error_hint' => 'Vui lòng kiểm tra các trường được đánh dấu.',
+        
+            'personal.alert_email_title' => 'Đăng nhập bằng email đang hoạt động:',
+            'personal.alert_email_line1' => 'Đã đăng nhập bằng địa chỉ email {email}.',
+            'personal.alert_email_line2' => 'Email này chỉ được dùng cho mã truy cập (Access-Token) và để tìm lại đơn đăng ký của bạn.',
+            'personal.alert_email_line3' => 'Bên dưới bạn có thể nhập email của học sinh (nếu có).',
+        
+            'personal.alert_noemail_title' => 'Lưu ý (không có email):',
+            'personal.alert_noemail_body' => 'Vui lòng ghi lại/chụp ảnh mã truy cập (Access-Token) sẽ hiển thị sau khi lưu trang này. Nếu không có email đã xác minh, chỉ có thể khôi phục bằng token + ngày sinh.',
+        
+            'personal.label.name' => 'Họ',
+            'personal.label.vorname' => 'Tên',
+            'personal.label.geschlecht' => 'Giới tính',
+            'personal.gender.m' => 'nam',
+            'personal.gender.w' => 'nữ',
+            'personal.gender.d' => 'khác',
+        
+            'personal.label.geburtsdatum' => 'Ngày sinh',
+            'personal.label.geburtsdatum_hint' => '(DD.MM.YYYY)',
+            'personal.placeholder.geburtsdatum' => 'DD.MM.YYYY',
+        
+            'personal.age_hint' => 'Lưu ý: Nếu vào ngày 30.09.{year} bạn dưới 16 tuổi hoặc trên 18 tuổi, bạn không thể được nhận vào lớp học tiếng của BBS. Vui lòng đăng ký lớp khác tại đây:',
+            'personal.age_redirect_msg' => "Lưu ý: Nếu vào ngày 30.09.{year} bạn dưới 16 tuổi hoặc trên 18 tuổi, bạn không thể được nhận vào lớp học tiếng của BBS.\nVui lòng đăng ký một lớp khác tại BBS tại đây:\n{url}",
+        
+            'personal.label.geburtsort_land' => 'Nơi sinh / Quốc gia sinh',
+            'personal.label.staatsang' => 'Quốc tịch',
+        
+            'personal.label.strasse' => 'Đường, số nhà',
+            'personal.label.plz' => 'Mã bưu chính',
+            'personal.plz_choose' => '– vui lòng chọn –',
+            'personal.plz_hint' => 'Chỉ Oldenburg (Oldb).',
+            'personal.label.wohnort' => 'Thành phố',
+        
+            'personal.label.telefon' => 'Số điện thoại',
+            'personal.label.telefon_vorwahl_help' => 'Mã vùng có/không có số 0',
+            'personal.label.telefon_nummer_help' => 'Số',
+            'personal.placeholder.telefon_vorwahl' => '(0)441',
+            'personal.placeholder.telefon_nummer' => '123456',
+        
+            'personal.label.email' => 'Địa chỉ email của học sinh (tùy chọn, không phải email IServ)',
+            'personal.email_help' => 'Email này thuộc về học sinh (nếu có) và độc lập với email dùng cho mã truy cập.',
+            'personal.placeholder.email' => 'name@example.org',
+        
+            'personal.label.kontakte' => 'Thông tin liên hệ bổ sung',
+            'personal.kontakte_hint' => '(ví dụ: bố mẹ, người giám hộ, tổ chức)',
+            'personal.kontakte_error' => 'Vui lòng kiểm tra các liên hệ bổ sung.',
+            'personal.kontakte_add' => '+ Thêm liên hệ',
+            'personal.kontakte_remove_title' => 'Xóa liên hệ',
+        
+            'personal.table.role' => 'Vai trò',
+            'personal.table.name' => 'Tên / tổ chức',
+            'personal.table.tel'  => 'Điện thoại',
+            'personal.table.mail' => 'Email',
+            'personal.table.note_header' => 'Ghi chú',
+            'personal.placeholder.kontakt_name' => 'Tên hoặc mô tả',
+            'personal.placeholder.kontakt_tel'  => '+49 …',
+            'personal.placeholder.kontakt_note' => 'ví dụ: thời gian liên hệ, ngôn ngữ, ghi chú',
+        
+            'personal.contact_role.none' => '–',
+            'personal.contact_role.mutter' => 'Mẹ',
+            'personal.contact_role.vater' => 'Bố',
+            'personal.contact_role.elternteil' => 'Phụ huynh',
+            'personal.contact_role.betreuer' => 'Người giám hộ',
+            'personal.contact_role.einrichtung' => 'Tổ chức',
+            'personal.contact_role.sonstiges' => 'Khác',
+        
+            'personal.label.weitere_angaben' => 'Thông tin khác (ví dụ: nhu cầu hỗ trợ):',
+            'personal.placeholder.weitere_angaben' => 'Tại đây bạn có thể ghi nhu cầu hỗ trợ đặc biệt, nhu cầu hỗ trợ giáo dục đặc biệt hoặc các ghi chú khác.',
+            'personal.weitere_angaben_help' => 'Tùy chọn. Tối đa 1500 ký tự.',
+            'personal.btn.cancel' => 'Hủy',
+            'personal.btn.next' => 'Tiếp',
+        
+            'personal.dsgvo_text_prefix' => 'Tôi đã đọc',
+            'personal.dsgvo_link_text' => 'thông tin bảo vệ dữ liệu',
+            'personal.dsgvo_text_suffix' => 'và tôi đồng ý.',
+        
+            // =====================
+            // STEP 2/4: SCHOOL (VN)
+            // =====================
+            'school.page_title' => 'Bước 2/4 – Trường học & Sở thích',
+            'school.h1' => 'Bước 2/4 – Trường học & Sở thích',
+            'school.required_hint' => 'Các trường bắt buộc được đánh dấu bằng viền màu xanh.',
+            'school.form_error_hint' => 'Vui lòng kiểm tra các trường được đánh dấu.',
+        
+            'school.top_hint_title' => 'Lưu ý:',
+            'school.top_hint_body'  => 'Nếu bạn ở Đức <u>hơn 3 năm</u> hoặc đã có trình độ tiếng Đức <u>B1</u> trở lên, bạn không thể được nhận vào lớp học tiếng của BBS. Vui lòng đăng ký một lớp khác của BBS tại đây:',
+            'school.bbs_link_label' => 'https://bbs-ol.de/',
+        
+            'school.autohints_title' => 'Gợi ý',
+        
+            'school.label.schule_aktuell' => 'Trường hiện tại',
+            'school.search_placeholder'   => 'Tìm trường… (tên, đường, mã bưu chính)',
+            'school.select_choose'        => 'Vui lòng chọn…',
+            'school.option_other'         => 'Khác / không có trong danh sách',
+            'school.other_placeholder'    => 'Tên trường, đường, thành phố (tự nhập)',
+        
+            'school.label.teacher'        => 'Giáo viên phụ trách',
+            'school.label.teacher_mail'   => 'Email giáo viên phụ trách',
+        
+            'school.label.herkunft'       => 'Bạn có đi học ở nước xuất xứ không?',
+            'school.yes'                  => 'Có',
+            'school.no'                   => 'Không',
+            'school.label.herkunft_years' => 'Nếu có: bao nhiêu năm?',
+        
+            'school.label.since'          => 'Bạn học ở một trường tại Đức từ khi nào?',
+            'school.since_month'          => 'Tháng (MM)',
+            'school.since_year_ph'        => 'Năm (YYYY)',
+            'school.since_help'           => 'Nhập tháng+năm <strong>hoặc</strong> dùng ô nhập tự do.',
+            'school.label.since_text'     => 'Hoặc: nhập tự do (ví dụ: “từ mùa thu 2023”)',
+        
+            'school.label.years_in_de'    => 'Bạn ở Đức được bao nhiêu năm?',
+            'school.years_in_de_help'     => 'Lưu ý: &gt; 3 năm → Vui lòng nộp đơn BBS thông thường qua {link}.',
+        
+            'school.label.family_lang'    => 'Ngôn ngữ gia đình / tiếng mẹ đẻ',
+        
+            'school.label.level'          => 'Trình độ tiếng Đức của bạn là gì?',
+            'school.level_choose'         => 'Vui lòng chọn…',
+            'school.level_help'           => 'Lưu ý: B1 trở lên → vui lòng nộp đơn BBS thông thường qua {link}.',
+        
+            'school.label.interests'      => 'Sở thích (ít nhất 1, tối đa 2)',
+        
+            'school.btn.back'             => 'Quay lại',
+            'school.btn.next'             => 'Tiếp',
+        
+            // ---------------------
+            // Validation / Errors
+            // ---------------------
+            'val.school_free_required' => 'Vui lòng nhập tên trường (tự nhập).',
+            'val.school_invalid'       => 'Vui lòng chọn trường hợp lệ hoặc “Khác / không có trong danh sách”.',
+        
+            'val.since_required'       => 'Vui lòng nhập tháng+năm hoặc nội dung tự do.',
+            'val.month_invalid'        => 'Tháng phải từ 01–12.',
+            'val.year_invalid'         => 'Vui lòng nhập năm hợp lệ.',
+            'val.number_required'      => 'Vui lòng nhập số.',
+            'val.choose'               => 'Vui lòng chọn.',
+            'val.herkunft_years'       => 'Vui lòng nhập số năm.',
+        
+            'val.level_invalid'        => 'Lựa chọn không hợp lệ.',
+        
+            'val.interests_min1'       => 'Vui lòng chọn ít nhất 1 lĩnh vực.',
+            'val.interests_max2'       => 'Vui lòng chọn tối đa 2 lĩnh vực.',
+        
+            // ---------------------
+            // JS Live hints
+            // ---------------------
+            'js.hint_years_gt3'  => 'Lưu ý: Bạn ở Đức hơn 3 năm. Vui lòng đăng ký qua {link}.',
+            'js.hint_level_b1p'  => 'Lưu ý: Với trình độ B1 trở lên, vui lòng nộp đơn BBS thông thường qua {link}.',
+        
+            // =========================
+            // STEP 3/4: UPLOAD (VN)
+            // =========================
+            'upload.page_title' => 'Bước 3/4 – Tài liệu (tùy chọn)',
+            'upload.h1'         => 'Bước 3/4 – Tài liệu (tùy chọn)',
+        
+            'upload.intro'      => 'Bạn có thể tải tài liệu lên tại đây. Định dạng cho phép: <strong>PDF</strong>, <strong>JPG</strong> và <strong>PNG</strong>. Kích thước tối đa <strong>{max_mb} MB</strong> cho mỗi tệp.',
+            'upload.type.zeugnis'    => 'Bảng điểm học kỳ gần nhất',
+            'upload.type.lebenslauf' => 'Sơ yếu lý lịch (CV)',
+            'upload.type_hint'       => '(PDF/JPG/PNG, tối đa {max_mb} MB)',
+        
+            'upload.btn.remove' => 'Xóa',
+            'upload.btn.back'   => 'Quay lại',
+            'upload.btn.next'   => 'Tiếp',
+        
+            'upload.saved_prefix' => 'Đã lưu:',
+            'upload.empty'        => 'Chưa tải tệp nào lên.',
+            'upload.saved_html'   => 'Đã lưu: <strong>{filename}</strong>, {size_kb} KB, tải lên lúc {uploaded_at}',
+        
+            'upload.checkbox.zeugnis_spaeter' => 'Tôi sẽ nộp bảng điểm học kỳ sau khi được nhận.',
+        
+            'upload.flash.no_access' => 'Không tìm thấy quyền truy cập hợp lệ. Vui lòng bắt đầu lại.',
+            'upload.flash.saved'     => 'Đã lưu thông tin tải lên.',
+        
+            'upload.js.uploading'          => 'Đang tải lên…',
+            'upload.js.unexpected'         => 'Phản hồi không mong đợi từ máy chủ.',
+            'upload.js.upload_failed'      => 'Tải lên thất bại.',
+            'upload.js.delete_confirm'     => 'Bạn có chắc muốn xóa tệp đã tải lên không?',
+            'upload.js.delete_failed'      => 'Xóa thất bại.',
+            'upload.js.remove_confirm_btn' => 'Xóa tệp?',
+        
+            'upload.ajax.invalid_method'   => 'Phương thức không hợp lệ',
+            'upload.ajax.invalid_csrf'     => 'CSRF token không hợp lệ',
+            'upload.ajax.no_access'        => 'Không có quyền truy cập hợp lệ.',
+            'upload.ajax.invalid_field'    => 'Trường không hợp lệ',
+            'upload.ajax.no_file_sent'     => 'Không có tệp được gửi',
+            'upload.ajax.no_file_selected' => 'Chưa chọn tệp',
+            'upload.ajax.upload_error'     => 'Lỗi tải lên (mã {code})',
+            'upload.ajax.too_large'        => 'Tệp lớn hơn {max_mb} MB',
+            'upload.ajax.mime_only'        => 'Chỉ cho phép PDF, JPG hoặc PNG',
+            'upload.ajax.ext_only'         => 'Đuôi tệp không hợp lệ (chỉ pdf/jpg/jpeg/png)',
+            'upload.ajax.cannot_save'      => 'Không thể lưu tệp',
+            'upload.ajax.unknown_action'   => 'Hành động không xác định',
+            'upload.ajax.server_error'     => 'Lỗi máy chủ khi tải lên',
+        
+            // =========================
+            // STEP 4/4: REVIEW (VN)
+            // =========================
+            'review.page_title' => 'Bước 4/4 – Tóm tắt & Nộp đơn',
+        
+            'review.h1'      => 'Bước 4/4 – Tóm tắt & Nộp đơn',
+            'review.subhead' => 'Vui lòng kiểm tra thông tin. Nhấn “Nộp đơn” để gửi dữ liệu.',
+        
+            'review.readonly_alert' => 'Đơn này đã được gửi. Thông tin chỉ có thể xem, không thể chỉnh sửa hoặc gửi lại.',
+        
+            'review.info.p1' => 'Em học sinh thân mến,',
+            'review.info.p2' => 'khi bạn nhấn <strong>“Nộp đơn”</strong>, bạn đã nộp đơn vào <strong>BES Ngôn ngữ và Hội nhập</strong> tại một BBS ở Oldenburg.',
+            'review.info.p3' => 'Đây chưa phải là đăng ký cuối cùng mà là một <strong>đơn dự tuyển</strong>. Sau ngày <strong>20.02.</strong> bạn sẽ nhận thông tin có/ở BBS nào bạn được nhận. Vui lòng thường xuyên kiểm tra hộp thư và email. Hãy đảm bảo tên của bạn hiển thị trên hòm thư để nhận thư.',
+            'review.info.p4' => 'Khi được trường chấp nhận, bạn sẽ được yêu cầu nộp bổ sung các tài liệu sau (nếu hôm nay bạn chưa tải lên):',
+            'review.info.li1' => 'bảng điểm học kỳ gần nhất',
+        
+            'review.acc.personal' => 'Thông tin cá nhân',
+            'review.acc.school'   => 'Trường học & Sở thích',
+            'review.acc.uploads'  => 'Tài liệu',
+        
+            'review.lbl.name'            => 'Họ',
+            'review.lbl.vorname'         => 'Tên',
+            'review.lbl.geschlecht'      => 'Giới tính',
+            'review.lbl.geburtsdatum'    => 'Ngày sinh',
+            'review.lbl.geburtsort'      => 'Nơi sinh / Quốc gia sinh',
+            'review.lbl.staatsang'       => 'Quốc tịch',
+            'review.lbl.strasse'         => 'Đường, số nhà',
+            'review.lbl.plz_ort'         => 'Mã bưu chính / Thành phố',
+            'review.lbl.telefon'         => 'Điện thoại',
+            'review.lbl.email'           => 'Email (học sinh, tùy chọn)',
+            'review.lbl.weitere_angaben' => 'Thông tin khác (ví dụ: nhu cầu hỗ trợ)',
+        
+            'review.contacts.title'    => 'Liên hệ khác',
+            'review.contacts.optional' => 'tùy chọn',
+            'review.contacts.none'     => '–',
+        
+            'review.contacts.th.role' => 'Vai trò',
+            'review.contacts.th.name' => 'Tên / tổ chức',
+            'review.contacts.th.tel'  => 'Điện thoại',
+            'review.contacts.th.mail' => 'Email',
+            'review.contacts.note'    => 'Ghi chú:',
+        
+            'review.lbl.school_current' => 'Trường hiện tại',
+            'review.lbl.klassenlehrer'  => 'Giáo viên phụ trách',
+            'review.lbl.mail_lehrkraft' => 'Email giáo viên',
+            'review.lbl.since'          => 'Học tại trường từ khi nào',
+            'review.lbl.years_de'       => 'Số năm ở Đức',
+            'review.lbl.family_lang'    => 'Ngôn ngữ gia đình / tiếng mẹ đẻ',
+            'review.lbl.de_level'       => 'Trình độ tiếng Đức',
+            'review.lbl.school_origin'  => 'Trường ở nước xuất xứ',
+            'review.lbl.years_origin'   => 'Số năm học ở nước xuất xứ',
+            'review.lbl.interests'      => 'Sở thích',
+        
+            'review.lbl.zeugnis'        => 'Bảng điểm học kỳ',
+            'review.lbl.lebenslauf'     => 'Sơ yếu lý lịch (CV)',
+            'review.lbl.later'          => 'Nộp sau',
+            'review.badge.uploaded'     => 'đã tải lên',
+            'review.badge.not_uploaded' => 'chưa tải lên',
+            'review.yes'                => 'Có',
+            'review.no'                 => 'Không',
+        
+            'review.btn.home'   => 'Về trang chủ',
+            'review.btn.newapp' => 'Nộp thêm một đơn',
+            'review.btn.back'   => 'Quay lại',
+            'review.btn.submit' => 'Nộp đơn',
+        
+            'review.err.invalid_request'       => 'Yêu cầu không hợp lệ.',
+            'review.flash.already_submitted'   => 'Đơn này đã được gửi và không thể gửi lại hoặc chỉnh sửa.',
+            'review.flash.no_token'            => 'Không có mã truy cập hợp lệ. Vui lòng bắt đầu lại.',
+            'review.err.not_found_token'       => 'Không tìm thấy đơn với token này.',
+            'review.flash.submit_error'        => 'Có lỗi khi gửi. Vui lòng thử lại sau.',
+        
+            'review.gender.m' => 'nam',
+            'review.gender.w' => 'nữ',
+            'review.gender.d' => 'khác',
+        
+            'review.value.empty' => '–',
+        
+            // =========================
+            // STATUS (VN)
+            // =========================
+            'status.hdr_title'   => 'Đã lưu đơn thành công',
+            'status.hdr_message' => 'Đơn của bạn đã được gửi.',
+        
+            'status.h1' => 'Đơn của bạn đã được lưu thành công.',
+        
+            'status.success.title' => 'Cảm ơn!',
+            'status.success.body'  => 'Đơn của bạn đã được gửi và đang được xử lý.',
+        
+            'status.info.title' => 'Lưu ý quan trọng',
+            'status.info.body'  => '<em>[CHỖ TRỐNG: Văn bản từ khách hàng sẽ được bổ sung]</em>',
+        
+            'status.btn.pdf'    => 'Tải / In PDF',
+            'status.btn.newapp' => 'Bắt đầu đơn mới',
+            'status.btn.home'   => 'Về trang chủ',
+        
+            'status.ref' => 'Tham chiếu: Đơn #{id}',
+        
+            'status.err.invalid_request' => 'Yêu cầu không hợp lệ.',
+        
+            // =========================
+            // PDF (VN)
+            // =========================
+            'pdf.err.autoload_missing' => 'Không tìm thấy Composer Autoload. Vui lòng chạy "composer install".',
+            'pdf.err.no_token'         => 'Không có mã truy cập hợp lệ. Vui lòng bắt đầu lại.',
+            'pdf.err.not_found'        => 'Không tìm thấy đơn.',
+            'pdf.err.server'           => 'Lỗi máy chủ khi tạo PDF.',
+        
+            'pdf.header_title' => 'Đơn đăng ký – Tóm tắt',
+            'pdf.footer_auto'  => 'Tài liệu được tạo tự động',
+            'pdf.footer_page'  => 'Trang {cur} / {max}',
+        
+            'pdf.meta.ref'        => 'Đơn #{id}',
+            'pdf.meta.created_at' => 'Tạo lúc',
+            'pdf.meta.status'     => 'Trạng thái',
+        
+            'pdf.top.title'        => 'Tổng quan',
+            'pdf.top.name'         => 'Tên',
+            'pdf.top.reference'    => 'Tham chiếu',
+            'pdf.top.generated'    => 'Tạo lúc',
+            'pdf.top.hint'         => 'Lưu ý',
+            'pdf.top.keep_note'    => 'Vui lòng lưu tài liệu này cho hồ sơ của bạn.',
+            'pdf.hint_placeholder' => '[CHỖ TRỐNG: Văn bản từ khách hàng sẽ được bổ sung]',
+        
+            'pdf.sec1.title' => '1) Thông tin cá nhân',
+            'pdf.sec2.title' => '2) Thông tin liên hệ khác',
+            'pdf.sec3.title' => '3) Trường học & Sở thích',
+            'pdf.sec4.title' => '4) Tài liệu',
+        
+            'pdf.lbl.name'           => 'Họ',
+            'pdf.lbl.vorname'        => 'Tên',
+            'pdf.lbl.gender'         => 'Giới tính',
+            'pdf.lbl.dob'            => 'Ngày sinh',
+            'pdf.lbl.birthplace'     => 'Nơi sinh / Quốc gia sinh',
+            'pdf.lbl.nationality'    => 'Quốc tịch',
+            'pdf.lbl.address'        => 'Địa chỉ',
+            'pdf.lbl.phone'          => 'Điện thoại',
+            'pdf.lbl.email_optional' => 'Email (tùy chọn)',
+            'pdf.lbl.more'           => 'Thông tin khác',
+        
+            'pdf.lbl.school_current' => 'Trường hiện tại',
+            'pdf.lbl.teacher'        => 'Giáo viên',
+            'pdf.lbl.teacher_email'  => 'Email giáo viên',
+            'pdf.lbl.since_school'   => 'Học tại trường từ khi nào',
+            'pdf.lbl.years_in_de'    => 'Ở Đức từ khi nào',
+            'pdf.lbl.family_lang'    => 'Ngôn ngữ gia đình',
+            'pdf.lbl.de_level'       => 'Trình độ tiếng Đức',
+            'pdf.lbl.school_origin'  => 'Trường ở nước xuất xứ',
+            'pdf.lbl.years_origin'   => 'Số năm học ở nước xuất xứ',
+            'pdf.lbl.interests'      => 'Sở thích',
+        
+            'pdf.lbl.report'       => 'Bảng điểm học kỳ',
+            'pdf.lbl.cv'           => 'Sơ yếu lý lịch (CV)',
+            'pdf.lbl.report_later' => 'Nộp bảng điểm sau',
+        
+            'pdf.uploaded'     => 'đã tải lên',
+            'pdf.not_uploaded' => 'chưa tải lên',
+        
+            'pdf.contacts.none'    => '–',
+            'pdf.contacts.th.role' => 'Vai trò',
+            'pdf.contacts.th.name' => 'Tên / tổ chức',
+            'pdf.contacts.th.tel'  => 'Điện thoại',
+            'pdf.contacts.th.mail' => 'Email',
+            'pdf.contacts.th.note' => 'Ghi chú',
+        
+            'pdf.gender.m' => 'nam',
+            'pdf.gender.w' => 'nữ',
+            'pdf.gender.d' => 'khác',
+        
+            'pdf.yes' => 'Có',
+            'pdf.no'  => 'Không',
+        
+            'pdf.sec4.note' => 'Tài liệu này là bản tóm tắt tự động được tạo từ dữ liệu đã nhập.',
+            'pdf.filename_prefix' => 'DonDangKy',
+        
+            // =========================
+            // ACCESS_CREATE (VN)
+            // =========================
+            'access_create.title'         => 'Tiếp tục với email',
+            'access_create.lead'          => 'Bạn có thể đăng nhập bằng tài khoản hiện có hoặc tạo tài khoản mới.',
+            'access_create.tabs_login'    => 'Đăng nhập',
+            'access_create.tabs_register' => 'Tạo tài khoản mới',
+        
+            'access_create.login_title' => 'Đăng nhập (tài khoản đã có)',
+            'access_create.login_text'  => 'Vui lòng nhập email và mật khẩu.',
+            'access_create.email_label' => 'Địa chỉ email',
+            'access_create.pass_label'  => 'Mật khẩu',
+            'access_create.login_btn'   => 'Đăng nhập',
+            'access_create.login_err'   => 'Email/mật khẩu sai hoặc tài khoản chưa được xác minh.',
+        
+            'access_create.reg_title'     => 'Tạo tài khoản mới',
+            'access_create.reg_text'      => 'Chúng tôi sẽ gửi mã xác nhận 6 chữ số. Sau khi xác nhận thành công, mật khẩu sẽ được gửi qua email.',
+            'access_create.consent_label' => 'Tôi đồng ý rằng email của tôi được sử dụng cho quy trình đăng ký.',
+            'access_create.send_btn'      => 'Gửi mã',
+            'access_create.code_label'    => 'Mã xác nhận',
+            'access_create.verify_btn'    => 'Xác minh mã',
+            'access_create.resend'        => 'Gửi lại mã',
+        
+            'access_create.info_sent'    => 'Chúng tôi đã gửi mã. Vui lòng kiểm tra cả thư mục spam.',
+            'access_create.ok_verified'  => 'Email đã được xác minh. Mật khẩu đã được gửi. Bạn có thể đăng nhập ngay.',
+            'access_create.email_in_use' => 'Email này đã có tài khoản. Vui lòng đăng nhập.',
+        
+            'access_create.error_email'     => 'Vui lòng nhập địa chỉ email hợp lệ.',
+            'access_create.error_consent'   => 'Vui lòng đồng ý việc sử dụng email.',
+            'access_create.error_rate'      => 'Quá nhiều lần thử. Vui lòng đợi và thử lại.',
+            'access_create.error_code'      => 'Mã không hợp lệ hoặc đã hết hạn.',
+            'access_create.error_resend'    => 'Không thể gửi lại. Vui lòng bắt đầu lại.',
+            'access_create.error_mail_send' => 'Gửi email thất bại. Vui lòng thử lại sau.',
+            'access_create.error_db'        => 'Lỗi máy chủ (DB).',
+        
+            'access_create.back'   => 'Quay lại',
+            'access_create.cancel' => 'Hủy',
+        
+            'access_create.mail_subject' => 'Mật khẩu của bạn cho đăng ký trực tuyến',
+            'access_create.mail_body'    => "Tài khoản của bạn đã được tạo.\n\nEmail: {email}\nMật khẩu: {password}\n\nVui lòng giữ mật khẩu an toàn.",
+        
+            // =========================
+            // ACCESS_PORTAL (VN)
+            // =========================
+            'access_portal.title'    => 'Đơn của tôi',
+            'access_portal.lead'     => 'Tại đây bạn thấy các đơn của mình. Bạn có thể tiếp tục một đơn hoặc bắt đầu đơn mới.',
+            'access_portal.max_hint' => '{email} · tối đa {max} đơn',
+        
+            'access_portal.btn_new'    => 'Bắt đầu đơn mới',
+            'access_portal.btn_open'   => 'Mở',
+            'access_portal.btn_logout' => 'Đăng xuất',
+        
+            'access_portal.th_ref'     => 'ID',
+            'access_portal.th_status'  => 'Trạng thái',
+            'access_portal.th_created' => 'Tạo lúc',
+            'access_portal.th_updated' => 'Cập nhật lúc',
+            'access_portal.th_token'   => 'Token',
+            'access_portal.th_action'  => 'Hành động',
+        
+            'access_portal.status_draft'     => 'Bản nháp',
+            'access_portal.status_submitted' => 'Đã gửi',
+            'access_portal.status_withdrawn' => 'Đã rút',
+        
+            'access_portal.limit_reached' => 'Bạn đã đạt số lượng đơn tối đa cho email này.',
+            'access_portal.no_apps'       => 'Chưa có đơn nào.',
+            'access_portal.err_generic'   => 'Đã xảy ra lỗi.',
+            'access_portal.csrf_invalid'  => 'Yêu cầu không hợp lệ.',
+        
+            // =========================
+            // ACCESS_LOGIN (VN)
+            // =========================
+            'access_login.title'             => 'Truy cập đơn đăng ký',
+            'access_login.lead'              => 'Tại đây bạn có thể mở lại đơn đã bắt đầu hoặc đã gửi.',
+        
+            'access_login.login_box_title'   => 'Đăng nhập bằng Access-Token',
+            'access_login.login_box_text'    => 'Vui lòng nhập mã truy cập cá nhân (Access-Token) và ngày sinh.',
+        
+            'access_login.token_label'       => 'Access-Token',
+            'access_login.dob_label'         => 'Ngày sinh (DD.MM.YYYY)',
+        
+            'access_login.login_btn'         => 'Truy cập',
+            'access_login.back'              => 'Về trang chủ',
+        
+            'access_login.login_ok'          => 'Đã tải đơn.',
+            'access_login.login_error'       => 'Không tìm thấy kết hợp Access-Token và ngày sinh.',
+            'access_login.login_error_token' => 'Vui lòng nhập Access-Token hợp lệ.',
+            'access_login.login_error_dob'   => 'Vui lòng nhập ngày sinh hợp lệ theo định dạng DD.MM.YYYY.',
+        
+            'access_login.csrf_invalid'      => 'Yêu cầu không hợp lệ.',
+            'access_login.internal_error'    => 'Lỗi nội bộ.',
+            'access_login.load_error'        => 'Đã xảy ra lỗi khi tải đơn.',
+        
+            // =========================
+            // PRIVACY (VN)
+            // =========================
+            'privacy.title' => 'Bảo vệ dữ liệu',
+            'privacy.h1'    => 'Thông tin bảo vệ dữ liệu cho đơn đăng ký trực tuyến “BES Ngôn ngữ và Hội nhập”',
+        
+            'privacy.s1_title'     => '1. Đơn vị chịu trách nhiệm',
+            'privacy.s1_body_html' => '<strong>Thành phố Oldenburg / Trường dạy nghề</strong><br>(Vui lòng điền tên đơn vị/trường, địa chỉ, điện thoại, email)',
+        
+            'privacy.s2_title'     => '2. Cán bộ bảo vệ dữ liệu',
+            'privacy.s2_body_html' => '(Vui lòng điền thông tin liên hệ của cán bộ bảo vệ dữ liệu)',
+        
+            'privacy.s3_title' => '3. Mục đích xử lý',
+            'privacy.s3_li1'   => 'Tiếp nhận và xử lý đơn xin vào lớp học tiếng (“BES Ngôn ngữ và Hội nhập”)',
+            'privacy.s3_li2'   => 'Liên hệ với bạn (hỏi thêm thông tin, thông báo kết quả)',
+            'privacy.s3_li3'   => 'Lập kế hoạch tổ chức trường học (phân bổ tới một BBS)',
+        
+            'privacy.s4_title' => '4. Cơ sở pháp lý',
+            'privacy.s4_li1'   => 'Điều 6(1)(e) GDPR kết hợp với quy định giáo dục của bang Niedersachsen',
+            'privacy.s4_li2'   => 'Điều 6(1)(c) GDPR (thực hiện nghĩa vụ pháp lý)',
+            'privacy.s4_li3'   => 'Điều 6(1)(a) GDPR (đồng ý), khi cung cấp thông tin/tải lên tự nguyện',
+        
+            'privacy.s5_title' => '5. Loại dữ liệu cá nhân',
+            'privacy.s5_li1'   => 'Thông tin cơ bản (họ tên, ngày sinh, quốc tịch, địa chỉ, liên hệ)',
+            'privacy.s5_li2'   => 'Thông tin trường học (trường hiện tại, trình độ ngôn ngữ, sở thích)',
+            'privacy.s5_li3'   => 'Tài liệu tùy chọn (ví dụ: bảng điểm học kỳ gần nhất)',
+            'privacy.s5_li4'   => 'Liên hệ bổ sung (phụ huynh/người giám hộ/tổ chức)',
+        
+            'privacy.s6_title' => '6. Người nhận',
+            'privacy.s6_body'  => 'Trong phạm vi thẩm quyền của thành phố Oldenburg và các trường dạy nghề. Chỉ chuyển cho bên thứ ba khi bắt buộc theo pháp luật (ví dụ: cơ quan giáo dục) hoặc khi bạn đồng ý.',
+        
+            'privacy.s7_title' => '7. Chuyển dữ liệu ra nước thứ ba',
+            'privacy.s7_body'  => 'Không có việc chuyển dữ liệu ra nước thứ ba.',
+        
+            'privacy.s8_title' => '8. Thời hạn lưu trữ',
+            'privacy.s8_body'  => 'Dữ liệu của bạn được lưu trong thời gian xử lý đơn/tiếp nhận theo quy định và sẽ được xóa sau đó.',
+        
+            'privacy.s9_title' => '9. Quyền của bạn',
+            'privacy.s9_li1'   => 'Quyền truy cập (Điều 15), chỉnh sửa (16), xóa (17), hạn chế (18)',
+            'privacy.s9_li2'   => 'Quyền phản đối (Điều 21) đối với xử lý vì lợi ích công',
+            'privacy.s9_li3'   => 'Rút lại sự đồng ý (Điều 7(3)) có hiệu lực cho tương lai',
+            'privacy.s9_li4'   => 'Quyền khiếu nại tới cơ quan giám sát: Cơ quan bảo vệ dữ liệu bang Niedersachsen',
+        
+            'privacy.s10_title' => '10. Lưu trữ & nhật ký',
+            'privacy.s10_body'  => 'Ứng dụng chạy trên máy chủ của thành phố hoặc trung tâm dữ liệu công. Chỉ xử lý dữ liệu kỹ thuật cần thiết (ví dụ: log máy chủ để tìm lỗi). Không dùng CDN bên ngoài. Chỉ đặt cookie liên quan đến ngôn ngữ.',
+        
+            'privacy.s11_title'    => '11. Cookie',
+            'privacy.s11_li1_html' => '<strong>lang</strong> – lưu ngôn ngữ đã chọn (hiệu lực 12 tháng). Mục đích: thuận tiện sử dụng.',
+            'privacy.s11_li2'      => 'PHP-Session – cần thiết cho quy trình biểu mẫu, sẽ xóa khi kết thúc phiên.',
+        
+            'privacy.stand_label' => 'Cập nhật',
+            'privacy.stand_hint'  => 'Vui lòng kiểm tra định kỳ xem có thay đổi hay không.',
+            'privacy.back_home'   => 'Về trang chủ',
+        
+            // =========================
+            // IMPRINT (VN)
+            // =========================
+            'imprint.title' => 'Thông tin pháp lý',
+            'imprint.h1'    => 'Thông tin pháp lý',
+        
+            'imprint.s1_title'     => 'Nhà cung cấp dịch vụ',
+            'imprint.s1_body_html' => '<strong>Thành phố ***</strong><br>Trường dạy nghề<br>(Vui lòng điền địa chỉ chính xác)<br>Điện thoại: (bổ sung)<br>Email: (bổ sung)',
+        
+            'imprint.s2_title'     => 'Đại diện pháp lý',
+            'imprint.s2_body_html' => '(ví dụ: Thị trưởng thành phố ****<br>hoặc Ban giám hiệu của BBS)',
+        
+            'imprint.s3_title'     => 'Chịu trách nhiệm nội dung theo § 18 Abs. 2 MStV',
+            'imprint.s3_body_html' => '(Tên, chức vụ, liên hệ; ví dụ: Ban giám hiệu BBS hoặc phòng báo chí)',
+        
+            'imprint.s4_title'     => 'Mã số thuế VAT',
+            'imprint.s4_body_html' => '(nếu có; nếu không có, có thể bỏ phần này)',
+        
+            'imprint.s5_title' => 'Cơ quan giám sát',
+            'imprint.s5_body'  => '(cơ quan giám sát của thành phố / cơ quan giáo dục có thẩm quyền)',
+        
+            'imprint.s6_title' => 'Trách nhiệm nội dung',
+            'imprint.s6_body'  => 'Nội dung được soạn thảo cẩn thận. Tuy nhiên, chúng tôi không thể đảm bảo tính chính xác, đầy đủ và cập nhật. Là cơ quan công, chúng tôi chịu trách nhiệm về nội dung của mình theo pháp luật chung.',
+        
+            'imprint.s7_title' => 'Trách nhiệm liên kết',
+            'imprint.s7_body'  => 'Dịch vụ không chứa nội dung bên ngoài truyền dữ liệu cá nhân cho bên thứ ba. Nếu liên kết tới thông tin của cơ quan công khác, chúng tôi không chịu trách nhiệm về nội dung của họ.',
+        
+            'imprint.s8_title' => 'Bản quyền',
+            'imprint.s8_body'  => 'Nội dung và tác phẩm do thành phố Oldenburg tạo ra thuộc bản quyền Đức. Nội dung của bên thứ ba được đánh dấu. Mọi sao chép/xử lý/phân phối ngoài phạm vi bản quyền cần có sự đồng ý bằng văn bản của thành phố Oldenburg hoặc chủ sở hữu quyền.',
+        
+            'imprint.stand_label' => 'Cập nhật',
+            'imprint.stand_hint'  => 'Thông tin này áp dụng cho biểu mẫu trực tuyến “BES Ngôn ngữ và Hội nhập”.',
+        
+            'imprint.back_home' => 'Về trang chủ',
+        
+            // =========================
+            // VERIFY_EMAIL (VN)
+            // =========================
+            'verify_email.title' => 'Xác minh email',
+            'verify_email.h1'    => 'Xác minh email',
+        
+            'verify_email.lead_sent'    => 'Chúng tôi đã gửi mã xác nhận tới {email}.',
+            'verify_email.lead_generic' => 'Vui lòng nhập mã xác nhận nhận được qua email. Nếu bạn không thấy email, bạn có thể yêu cầu gửi lại mã.',
+        
+            'verify_email.code_label'  => 'Mã xác nhận (6 chữ số)',
+            'verify_email.email_label' => 'Địa chỉ email của bạn',
+        
+            'verify_email.btn_verify' => 'Xác nhận',
+            'verify_email.btn_resend' => 'Gửi lại mã',
+            'verify_email.hint_spam'  => 'Vui lòng kiểm tra cả thư mục spam.',
+        
+            'verify_email.back' => 'Quay lại',
+        
+            'verify_email.csrf_invalid' => 'Yêu cầu không hợp lệ.',
+            'verify_email.ok_verified'  => 'Email đã được xác minh thành công.',
+            'verify_email.ok_sent'      => 'Mã mới đã được gửi tới {email}.',
+        
+            'verify_email.warn_cooldown'     => 'Vui lòng đợi một chút trước khi yêu cầu lại mã.',
+            'verify_email.error_send'        => 'Gửi thất bại. Vui lòng thử lại sau.',
+            'verify_email.error_email'       => 'Vui lòng nhập email hợp lệ.',
+            'verify_email.error_no_session'  => 'Không tìm thấy phiên xác minh đang hoạt động. Vui lòng yêu cầu mã mới.',
+            'verify_email.error_expired'     => 'Mã không hợp lệ hoặc đã hết hạn.',
+            'verify_email.error_invalid'     => 'Mã không hợp lệ hoặc đã hết hạn.',
+            'verify_email.error_code_format' => 'Vui lòng nhập mã 6 chữ số hợp lệ.',
+            'verify_email.error_rate'        => 'Quá nhiều lần thử. Vui lòng yêu cầu mã mới.',
+        
+            // =========================
+            // VALIDATION (VN) – global
+            // =========================
+            'val.required' => 'Bắt buộc.',
+            'val.only_letters' => 'Vui lòng chỉ dùng chữ cái.',
+            'val.gender_choose' => 'Vui lòng chọn giới tính.',
+            'val.date_format' => 'DD.MM.YYYY',
+            'val.date_invalid' => 'Ngày không hợp lệ.',
+            'val.plz_whitelist' => 'Chỉ mã bưu chính Oldenburg (26121–26135).',
+            'val.phone_vorwahl' => 'Mã vùng: 2–6 chữ số.',
+            'val.phone_nummer' => 'Số: 3–12 chữ số.',
+            'val.email_invalid' => 'Email không hợp lệ.',
+            'val.email_no_iserv' => 'Vui lòng dùng email cá nhân (không phải IServ).',
+            'val.max_1500' => 'Tối đa 1500 ký tự.',
+            'val.kontakt_row_name_missing' => 'Thiếu tên/mô tả',
+            'val.kontakt_row_tel_or_mail'  => 'Nhập điện thoại HOẶC email',
+            'val.kontakt_row_mail_invalid' => 'Email không hợp lệ',
+            'val.kontakt_row_tel_invalid'  => 'Điện thoại không hợp lệ',
+        ],
+
     ];
 }
 
