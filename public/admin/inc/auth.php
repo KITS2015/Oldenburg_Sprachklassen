@@ -1,4 +1,3 @@
-// Datei: public/admin/inc/auth.php
 <?php
 declare(strict_types=1);
 
