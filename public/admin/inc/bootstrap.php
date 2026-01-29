@@ -1,4 +1,3 @@
-// Datei: public/admin/inc/bootstrap.php
 <?php
 declare(strict_types=1);
 
