@@ -21,4 +21,8 @@ function pdo(string $dsn, string $user, string $pass): PDO {
     PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
   ]);
   return $pdo;
+
+// Admin
+define('ADMIN_USER', 'admin');
+define('ADMIN_PASS_HASH', '$2y$10$...'); // password_hash() Output
 }
