@@ -539,7 +539,25 @@ try {
             $st2->execute([$userId, $roleId]);
         }
     }
-
+   
+    // Datei: bin/init_db.php (Ergänzung: Tabelle bbs)
+    
+    // ============================
+    // bbs (BoB-Backends / API-Clients)
+    // ============================
+    $app->exec("
+      CREATE TABLE IF NOT EXISTS bbs (
+        bbs_id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        bbs_schulnummer   VARCHAR(50)  NOT NULL,
+        bbs_bezeichnung   VARCHAR(255) NOT NULL,
+        rest_token_hash   CHAR(64)     NULL,
+        is_active         TINYINT(1)   NOT NULL DEFAULT 1,
+        created_at        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (bbs_id),
+        UNIQUE KEY uq_bbs_schulnummer (bbs_schulnummer)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ");
 
     
     echo "[OK] Datenbank ist aktuell (Tabellen/Spalten/Indizes ergänzt, nichts gelöscht).\n";
