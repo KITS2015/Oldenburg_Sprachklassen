@@ -4360,132 +4360,658 @@ function i18n_dict(): array {
             'val.kontakt_row_mail_invalid' => 'Geçersiz e-posta',
             'val.kontakt_row_tel_invalid'  => 'Geçersiz telefon',
         ],
-        
-                
+
+        // =======================
+        // FA: in 'fa' => [ ... ] einfügen (komplett)
+        // =======================
         'fa' => [
+        
+            // =======================
+            // STEP Start: Index (FA)
+            // =======================
             'index.title' => 'ثبت‌نام آنلاین – کلاس‌های زبان',
-            'index.lead'  => 'این خدمت برای افراد تازه‌وارد به اولدن‌بورگ است. این فرم به ما کمک می‌کند با شما تماس بگیریم و گزینه‌های مناسب را بیابیم.',
+            'index.lead'  => 'این خدمت برای افرادی است که تازه به اولدن‌بورگ آمده‌اند. این فرم به ما کمک می‌کند با شما تماس بگیریم و گزینه‌های مناسب را پیدا کنیم.',
             'index.bullets' => [
-                'لطفاً اطلاعات تماس و در صورت امکان مدرک هویتی را آماده داشته باشید.',
+                'لطفاً اطلاعات تماس و مدارک شناسایی را (در صورت وجود) آماده داشته باشید.',
                 'می‌توانید فرم را به چند زبان تکمیل کنید.',
-                'داده‌های شما مطابق مقررات GDPR محرمانه نگه‌داری می‌شود.',
+                'داده‌های شما مطابق GDPR محرمانه پردازش می‌شود.',
             ],
             'index.info_p' => [
-                'دانش‌آموز گرامی،',
-                'با این درخواست برای یک جایگاه در کلاس یادگیری زبان «BES زبان و ادغام» در یکی از مدارس فنی‌وحرفه‌ای (BBS) اولدن‌بورگ اقدام می‌کنید. شما برای یک مدرسه مشخص اقدام نمی‌کنید. پس از ۲۰ فوریه به شما اطلاع داده می‌شود که کدام مدرسه شما را در کلاس می‌پذیرد.',
-                'پذیرش تنها در صورت برآورده شدن همه شرایط زیر ممکن است:',
+                'دانش‌آموز عزیز،',
+                'با این درخواست برای یک جایگاه در کلاس یادگیری زبان «BES زبان و ادغام» در یکی از مدارس فنی‌وحرفه‌ای (BBS) در اولدن‌بورگ اقدام می‌کنید. شما برای یک BBS مشخص درخواست نمی‌دهید. بعد از ۲۰ فوریه به شما اطلاع داده می‌شود که کدام مدرسه شما را در این کلاس می‌پذیرد.',
+                'پذیرش فقط در صورت داشتن شرایط زیر ممکن است:',
             ],
             'index.info_bullets' => [
-                'به پشتیبانی فشرده زبان آلمانی نیاز دارید (سطح زیر B1).',
+                'به تقویت فشرده زبان آلمانی نیاز دارید (سطح زبان آلمانی زیر B1).',
                 'در آغاز سال تحصیلی آینده حداکثر ۳ سال است که در آلمان هستید.',
                 'در تاریخ ۳۰ سپتامبر امسال سن شما حداقل ۱۶ و حداکثر ۱۸ سال است.',
                 'در سال تحصیلی آینده مشمول تحصیل اجباری هستید.',
             ],
             'index.access_title' => 'حریم خصوصی و دسترسی',
-            'index.access_intro' => 'می‌توانید با ایمیل یا بدون آن ادامه دهید. دسترسی به درخواست‌های ذخیره‌شده فقط با کُد دسترسی شخصی و تاریخ تولد امکان‌پذیر است.',
+            'index.access_intro' => 'می‌توانید با ایمیل یا بدون ایمیل ادامه دهید. دسترسی به درخواست‌های ذخیره‌شده فقط با کُد دسترسی شخصی (Token) و تاریخ تولد امکان‌پذیر است.',
             'index.access_points' => [
-                '<strong>با ایمیل:</strong> یک کُد تأیید دریافت می‌کنید و می‌توانید بعداً ادامه دهید.',
-                '<strong>بدون ایمیل:</strong> یک کُد دسترسی شخصی دریافت می‌کنید. لطفاً آن را یادداشت/تصویر کنید — بدون ایمیل تأیید شده، بازیابی ممکن نیست.',
+                '<strong>با ایمیل:</strong> یک کُد تأیید دریافت می‌کنید و می‌توانید چند درخواست ایجاد کنید و بعداً دوباره آن‌ها را باز کنید.',
+                '<strong>بدون ایمیل:</strong> یک کُد دسترسی شخصی (Access-Token) دریافت می‌کنید. لطفاً آن را یادداشت/عکس کنید — بدون ایمیل تأییدشده، بازیابی ممکن نیست.',
             ],
+        
             'index.btn_noemail' => 'ادامه بدون ایمیل',
-            'index.btn_create'  => 'ایجاد دسترسی با ایمیل',
-            'index.btn_load'    => 'بارگذاری درخواست',
-            'index.lang_label'  => 'زبان:',
-			
-			'personal.page_title' => 'مرحله ۱/۴ – اطلاعات شخصی',
-			'personal.h1' => 'مرحله ۱/۴ – اطلاعات شخصی',
-			'personal.required_hint' => 'فیلدهای اجباری با کادر آبی مشخص شده‌اند.',
-			'personal.form_error_hint' => 'لطفاً فیلدهای علامت‌گذاری‌شده را بررسی کنید.',
-
-			'personal.alert_email_title' => 'ورود با ایمیل فعال است:',
-			'personal.alert_email_line1' => 'با آدرس ایمیل {email} وارد شده‌اید.',
-			'personal.alert_email_line2' => 'این ایمیل فقط برای کد دسترسی (Access-Token) و برای پیدا کردن دوباره درخواست شما استفاده می‌شود.',
-			'personal.alert_email_line3' => 'در پایین می‌توانید ایمیل دانش‌آموز را (در صورت وجود) وارد کنید.',
-
-			'personal.alert_noemail_title' => 'توجه (بدون ایمیل):',
-			'personal.alert_noemail_body' => 'لطفاً کد دسترسی (Access-Token) را که بعد از ذخیره این صفحه نمایش داده می‌شود یادداشت کنید یا از آن عکس بگیرید. بدون ایمیل تأییدشده، بازیابی فقط با توکن + تاریخ تولد ممکن است.',
-
-			'personal.label.name' => 'نام خانوادگی',
-			'personal.label.vorname' => 'نام',
-			'personal.label.geschlecht' => 'جنسیت',
-			'personal.gender.m' => 'مرد',
-			'personal.gender.w' => 'زن',
-			'personal.gender.d' => 'متنوع',
-
-			'personal.label.geburtsdatum' => 'تاریخ تولد',
-			'personal.label.geburtsdatum_hint' => '(روز.ماه.سال)',
-			'personal.placeholder.geburtsdatum' => 'روز.ماه.سال',
-
-			'personal.age_hint' => 'توجه: اگر در تاریخ 30.09.{year} کمتر از 16 سال یا بیشتر از 18 سال دارید، امکان پذیرش در کلاس زبان BBS وجود ندارد. لطفاً برای کلاس دیگری اینجا درخواست دهید:',
-			'personal.age_redirect_msg' => "توجه: اگر در تاریخ 30.09.{year} کمتر از 16 سال یا بیشتر از 18 سال دارید، امکان پذیرش در کلاس زبان BBS وجود ندارد.\nلطفاً برای کلاس دیگری در BBS اینجا درخواست دهید:\n{url}",
-
-			'personal.label.geburtsort_land' => 'محل / کشور تولد',
-			'personal.label.staatsang' => 'تابعیت',
-
-			'personal.label.strasse' => 'خیابان، شماره',
-			'personal.label.plz' => 'کد پستی',
-			'personal.plz_choose' => '– لطفاً انتخاب کنید –',
-			'personal.plz_hint' => 'فقط اولدنبورگ (Oldb).',
-			'personal.label.wohnort' => 'شهر',
-
-			'personal.label.telefon' => 'شماره تلفن',
-			'personal.label.telefon_vorwahl_help' => 'کد منطقه با/بدون 0',
-			'personal.label.telefon_nummer_help' => 'شماره',
-			'personal.placeholder.telefon_vorwahl' => '(0)441',
-			'personal.placeholder.telefon_nummer' => '123456',
-
-			'personal.label.email' => 'آدرس ایمیل دانش‌آموز (اختیاری، نه ایمیل IServ)',
-			'personal.email_help' => 'این ایمیل متعلق به دانش‌آموز است (در صورت وجود) و مستقل از ایمیل ورود است.',
-			'personal.placeholder.email' => 'name@example.org',
-
-			'personal.label.kontakte' => 'اطلاعات تماس بیشتر',
-			'personal.kontakte_hint' => '(مثلاً والدین، سرپرست، مؤسسه)',
-			'personal.kontakte_error' => 'لطفاً اطلاعات تماس‌های اضافی را بررسی کنید.',
-			'personal.kontakte_add' => '+ افزودن مخاطب',
-			'personal.kontakte_remove_title' => 'حذف مخاطب',
-
-			'personal.table.role' => 'نقش',
-			'personal.table.name' => 'نام / مؤسسه',
-			'personal.table.tel'  => 'تلفن',
-			'personal.table.mail' => 'ایمیل',
-			'personal.table.note_header' => 'یادداشت',
-			'personal.placeholder.kontakt_name' => 'نام یا عنوان',
-			'personal.placeholder.kontakt_tel'  => '+49 …',
-			'personal.placeholder.kontakt_note' => 'مثلاً زمان دسترسی، زبان، توضیحات',
-
-			'personal.contact_role.none' => '–',
-			'personal.contact_role.mutter' => 'مادر',
-			'personal.contact_role.vater' => 'پدر',
-			'personal.contact_role.elternteil' => 'والد',
-			'personal.contact_role.betreuer' => 'سرپرست',
-			'personal.contact_role.einrichtung' => 'مؤسسه',
-			'personal.contact_role.sonstiges' => 'سایر',
-
-			'personal.label.weitere_angaben' => 'اطلاعات دیگر (مثلاً نیاز به حمایت):',
-			'personal.placeholder.weitere_angaben' => 'اینجا می‌توانید نیازهای حمایتی ویژه، نیازهای پشتیبانی آموزشی یا توضیحات دیگر را وارد کنید.',
-			'personal.weitere_angaben_help' => 'اختیاری. حداکثر 1500 کاراکتر.',
-			'personal.btn.cancel' => 'لغو',
-			'personal.btn.next' => 'بعدی',
-
-			'personal.dsgvo_text_prefix' => 'من',
-			'personal.dsgvo_link_text' => 'اطلاعیه حریم خصوصی',
-			'personal.dsgvo_text_suffix' => 'را خوانده‌ام و موافقم.',
-
-			'val.required' => 'الزامی است.',
-			'val.only_letters' => 'لطفاً فقط از حروف استفاده کنید.',
-			'val.gender_choose' => 'لطفاً جنسیت را انتخاب کنید.',
-			'val.date_format' => 'روز.ماه.سال',
-			'val.date_invalid' => 'تاریخ نامعتبر است.',
-			'val.plz_whitelist' => 'فقط کدهای پستی اولدنبورگ (26121–26135).',
-			'val.phone_vorwahl' => 'کد منطقه: 2–6 رقم.',
-			'val.phone_nummer' => 'شماره: 3–12 رقم.',
-			'val.email_invalid' => 'ایمیل نامعتبر است.',
-			'val.email_no_iserv' => 'لطفاً ایمیل شخصی استفاده کنید (نه IServ).',
-			'val.max_1500' => 'حداکثر 1500 کاراکتر.',
-			'val.kontakt_row_name_missing' => 'نام/عنوان وارد نشده',
-			'val.kontakt_row_tel_or_mail'  => 'تلفن یا ایمیل وارد کنید',
-			'val.kontakt_row_mail_invalid' => 'ایمیل نامعتبر است',
-			'val.kontakt_row_tel_invalid'  => 'تلفن نامعتبر است',
+            'index.btn_create'  => 'ادامه با ایمیل',
+            'index.btn_load'    => 'دسترسی به درخواست(ها)',
+            'index.lang_label'  => 'زبان / Language:',
+        
+            // =======================
+            // STEP 1/4: PERSONAL (FA)
+            // =======================
+            'personal.page_title' => 'مرحله ۱/۴ – اطلاعات شخصی',
+            'personal.h1' => 'مرحله ۱/۴ – اطلاعات شخصی',
+            'personal.required_hint' => 'فیلدهای اجباری با کادر آبی مشخص شده‌اند.',
+            'personal.form_error_hint' => 'لطفاً فیلدهای علامت‌گذاری‌شده را بررسی کنید.',
+        
+            'personal.alert_email_title' => 'ورود با ایمیل فعال است:',
+            'personal.alert_email_line1' => 'با آدرس ایمیل {email} وارد شده‌اید.',
+            'personal.alert_email_line2' => 'این ایمیل فقط برای کُد دسترسی (Access-Token) و برای پیدا کردن دوباره درخواست شما استفاده می‌شود.',
+            'personal.alert_email_line3' => 'در پایین می‌توانید ایمیل دانش‌آموز را (در صورت وجود) وارد کنید.',
+        
+            'personal.alert_noemail_title' => 'توجه (بدون ایمیل):',
+            'personal.alert_noemail_body' => 'لطفاً کُد دسترسی (Access-Token) را که بعد از ذخیره این صفحه نمایش داده می‌شود یادداشت کنید یا از آن عکس بگیرید. بدون ایمیل تأییدشده، بازیابی فقط با توکن + تاریخ تولد ممکن است.',
+        
+            'personal.label.name' => 'نام خانوادگی',
+            'personal.label.vorname' => 'نام',
+            'personal.label.geschlecht' => 'جنسیت',
+            'personal.gender.m' => 'مرد',
+            'personal.gender.w' => 'زن',
+            'personal.gender.d' => 'متنوع',
+        
+            'personal.label.geburtsdatum' => 'تاریخ تولد',
+            'personal.label.geburtsdatum_hint' => '(روز.ماه.سال)',
+            'personal.placeholder.geburtsdatum' => 'روز.ماه.سال',
+        
+            'personal.age_hint' => 'توجه: اگر در تاریخ 30.09.{year} کمتر از 16 سال یا بیشتر از 18 سال دارید، امکان پذیرش در کلاس زبان BBS وجود ندارد. لطفاً برای کلاس دیگری اینجا درخواست دهید:',
+            'personal.age_redirect_msg' => "توجه: اگر در تاریخ 30.09.{year} کمتر از 16 سال یا بیشتر از 18 سال دارید، امکان پذیرش در کلاس زبان BBS وجود ندارد. لطفاً برای کلاس دیگری در BBS اینجا درخواست دهید:\n{url}",
+        
+            'personal.label.geburtsort_land' => 'محل / کشور تولد',
+            'personal.label.staatsang' => 'تابعیت',
+        
+            'personal.label.strasse' => 'خیابان، شماره',
+            'personal.label.plz' => 'کد پستی',
+            'personal.plz_choose' => '– لطفاً انتخاب کنید –',
+            'personal.plz_hint' => 'فقط اولدن‌بورگ (Oldb).',
+            'personal.label.wohnort' => 'شهر',
+        
+            'personal.label.telefon' => 'شماره تلفن',
+            'personal.label.telefon_vorwahl_help' => 'کد منطقه با/بدون 0',
+            'personal.label.telefon_nummer_help' => 'شماره',
+            'personal.placeholder.telefon_vorwahl' => '(0)441',
+            'personal.placeholder.telefon_nummer' => '123456',
+        
+            'personal.label.email' => 'آدرس ایمیل دانش‌آموز (اختیاری، نه ایمیل IServ)',
+            'personal.email_help' => 'این ایمیل متعلق به دانش‌آموز است (در صورت وجود) و مستقل از ایمیل ورود برای کُد دسترسی است.',
+            'personal.placeholder.email' => 'name@example.org',
+        
+            'personal.label.kontakte' => 'اطلاعات تماس بیشتر',
+            'personal.kontakte_hint' => '(مثلاً والدین، سرپرست، مؤسسه)',
+            'personal.kontakte_error' => 'لطفاً اطلاعات تماس‌های اضافی را بررسی کنید.',
+            'personal.kontakte_add' => '+ افزودن مخاطب',
+            'personal.kontakte_remove_title' => 'حذف مخاطب',
+        
+            'personal.table.role' => 'نقش',
+            'personal.table.name' => 'نام / مؤسسه',
+            'personal.table.tel'  => 'تلفن',
+            'personal.table.mail' => 'ایمیل',
+            'personal.table.note_header' => 'یادداشت',
+            'personal.placeholder.kontakt_name' => 'نام یا عنوان',
+            'personal.placeholder.kontakt_tel'  => '+49 …',
+            'personal.placeholder.kontakt_note' => 'مثلاً زمان دسترسی، زبان، توضیحات',
+        
+            'personal.contact_role.none' => '–',
+            'personal.contact_role.mutter' => 'مادر',
+            'personal.contact_role.vater' => 'پدر',
+            'personal.contact_role.elternteil' => 'والد',
+            'personal.contact_role.betreuer' => 'سرپرست',
+            'personal.contact_role.einrichtung' => 'مؤسسه',
+            'personal.contact_role.sonstiges' => 'سایر',
+        
+            'personal.label.weitere_angaben' => 'اطلاعات دیگر (مثلاً وضعیت حمایت):',
+            'personal.placeholder.weitere_angaben' => 'اینجا می‌توانید مثلاً نیازهای حمایتی ویژه، نیازهای پشتیبانی آموزشی یا توضیحات دیگر را وارد کنید.',
+            'personal.weitere_angaben_help' => 'اختیاری. حداکثر 1500 کاراکتر.',
+            'personal.btn.cancel' => 'لغو',
+            'personal.btn.next' => 'بعدی',
+        
+            'personal.dsgvo_text_prefix' => '',
+            'personal.dsgvo_link_text' => 'اطلاعیه حریم خصوصی',
+            'personal.dsgvo_text_suffix' => 'را خوانده‌ام و موافقم.',
+        
+            // =====================
+            // STEP 2/4: SCHOOL (FA)
+            // =====================
+            'school.page_title' => 'مرحله ۲/۴ – مدرسه و علایق',
+            'school.h1' => 'مرحله ۲/۴ – مدرسه و علایق',
+            'school.required_hint' => 'فیلدهای اجباری با کادر آبی مشخص شده‌اند.',
+            'school.form_error_hint' => 'لطفاً فیلدهای علامت‌گذاری‌شده را بررسی کنید.',
+        
+            'school.top_hint_title' => 'توجه:',
+            'school.top_hint_body'  => 'اگر <u>بیش از ۳ سال</u> در آلمان هستید یا سطح زبان آلمانی شما <u>B1</u> یا بالاتر است، امکان پذیرش در کلاس زبان BBS وجود ندارد. لطفاً برای کلاس دیگر در BBS از اینجا اقدام کنید:',
+            'school.bbs_link_label' => 'https://bbs-ol.de/',
+        
+            'school.autohints_title' => 'راهنماها',
+        
+            'school.label.schule_aktuell' => 'مدرسه فعلی',
+            'school.search_placeholder'   => 'جستجوی مدرسه… (نام، خیابان، کد پستی)',
+            'school.select_choose'        => 'لطفاً انتخاب کنید…',
+            'school.option_other'         => 'دیگر / در لیست نیست',
+            'school.other_placeholder'    => 'نام مدرسه، خیابان، شهر (متن آزاد)',
+        
+            'school.label.teacher'        => 'معلم مسئول',
+            'school.label.teacher_mail'   => 'ایمیل معلم مسئول',
+        
+            'school.label.herkunft'       => 'آیا در کشور مبدأ به مدرسه رفته‌اید؟',
+            'school.yes'                  => 'بله',
+            'school.no'                   => 'خیر',
+            'school.label.herkunft_years' => 'اگر بله: چند سال؟',
+        
+            'school.label.since'          => 'از چه زمانی در آلمان در مدرسه هستید؟',
+            'school.since_month'          => 'ماه (MM)',
+            'school.since_year_ph'        => 'سال (YYYY)',
+            'school.since_help'           => 'یا ماه+سال را وارد کنید <strong>یا</strong> از فیلد متن آزاد استفاده کنید.',
+            'school.label.since_text'     => 'جایگزین: متن آزاد (مثلاً «از پاییز 2023»)',
+        
+            'school.label.years_in_de'    => 'چند سال است که در آلمان هستید؟',
+            'school.years_in_de_help'     => 'توجه: بیشتر از ۳ سال → لطفاً از طریق {link} برای کلاس‌های عادی BBS اقدام کنید.',
+        
+            'school.label.family_lang'    => 'زبان خانواده / زبان اول',
+        
+            'school.label.level'          => 'سطح زبان آلمانی شما چیست؟',
+            'school.level_choose'         => 'لطفاً انتخاب کنید…',
+            'school.level_help'           => 'توجه: B1 یا بالاتر → لطفاً از طریق {link} برای کلاس‌های عادی BBS اقدام کنید.',
+        
+            'school.label.interests'      => 'علایق (حداقل ۱، حداکثر ۲)',
+        
+            'school.btn.back'             => 'بازگشت',
+            'school.btn.next'             => 'ادامه',
+        
+            // ---------------------
+            // Validierung / Errors
+            // ---------------------
+            'val.school_free_required' => 'لطفاً نام مدرسه را (متن آزاد) وارد کنید.',
+            'val.school_invalid'       => 'لطفاً یک مدرسه معتبر انتخاب کنید یا «دیگر / در لیست نیست» را انتخاب کنید.',
+        
+            'val.since_required'       => 'لطفاً ماه+سال یا متن آزاد را وارد کنید.',
+            'val.month_invalid'        => 'ماه باید بین 01 تا 12 باشد.',
+            'val.year_invalid'         => 'لطفاً یک سال معتبر وارد کنید.',
+            'val.number_required'      => 'لطفاً یک عدد وارد کنید.',
+            'val.choose'               => 'لطفاً انتخاب کنید.',
+            'val.herkunft_years'       => 'لطفاً تعداد سال‌ها را وارد کنید.',
+        
+            'val.level_invalid'        => 'انتخاب نامعتبر است.',
+        
+            'val.interests_min1'       => 'لطفاً حداقل ۱ مورد را انتخاب کنید.',
+            'val.interests_max2'       => 'لطفاً حداکثر ۲ مورد را انتخاب کنید.',
+        
+            // ---------------------
+            // JS Live-Hinweise
+            // ---------------------
+            'js.hint_years_gt3'  => 'توجه: شما بیش از ۳ سال در آلمان هستید. لطفاً از طریق {link} اقدام کنید.',
+            'js.hint_level_b1p'  => 'توجه: با سطح B1 یا بالاتر لطفاً از طریق {link} برای BBS معمولی اقدام کنید.',
+        
+            // =========================
+            // STEP 3/4: UPLOAD (FA)
+            // =========================
+            'upload.page_title' => 'مرحله ۳/۴ – مدارک (اختیاری)',
+            'upload.h1'         => 'مرحله ۳/۴ – مدارک (اختیاری)',
+        
+            'upload.intro'      => 'در اینجا می‌توانید مدارک را بارگذاری کنید. فرمت‌های مجاز <strong>PDF</strong>، <strong>JPG</strong> و <strong>PNG</strong> هستند. حداکثر حجم هر فایل <strong>{max_mb} MB</strong> است.',
+        
+            'upload.type.zeugnis'    => 'کارنامه آخر نیم‌سال',
+            'upload.type.lebenslauf' => 'رزومه (CV)',
+            'upload.type_hint'       => '(PDF/JPG/PNG، حداکثر {max_mb} MB)',
+        
+            'upload.btn.remove' => 'حذف',
+            'upload.btn.back'   => 'بازگشت',
+            'upload.btn.next'   => 'ادامه',
+        
+            'upload.saved_prefix' => 'قبلاً ذخیره شده:',
+            'upload.empty'        => 'هنوز فایلی بارگذاری نشده است.',
+            'upload.saved_html'   => 'قبلاً ذخیره شده: <strong>{filename}</strong>، {size_kb} KB، بارگذاری در {uploaded_at}',
+        
+            'upload.checkbox.zeugnis_spaeter' => 'کارنامه را بعد از پذیرش ارائه می‌دهم.',
+        
+            'upload.flash.no_access' => 'دسترسی معتبر یافت نشد. لطفاً فرایند را از ابتدا شروع کنید.',
+            'upload.flash.saved'     => 'اطلاعات بارگذاری ذخیره شد.',
+        
+            'upload.js.uploading'          => 'در حال بارگذاری…',
+            'upload.js.unexpected'         => 'پاسخ غیرمنتظره از سرور.',
+            'upload.js.upload_failed'      => 'بارگذاری ناموفق بود.',
+            'upload.js.delete_confirm'     => 'آیا واقعاً می‌خواهید فایل بارگذاری‌شده را حذف کنید؟',
+            'upload.js.delete_failed'      => 'حذف ناموفق بود.',
+            'upload.js.remove_confirm_btn' => 'حذف فایل؟',
+        
+            // AJAX / Fehlertexte
+            'upload.ajax.invalid_method'   => 'روش نامعتبر',
+            'upload.ajax.invalid_csrf'     => 'توکن CSRF نامعتبر',
+            'upload.ajax.no_access'        => 'دسترسی معتبر وجود ندارد.',
+            'upload.ajax.invalid_field'    => 'فیلد نامعتبر',
+            'upload.ajax.no_file_sent'     => 'فایلی ارسال نشد',
+            'upload.ajax.no_file_selected' => 'فایلی انتخاب نشده است',
+            'upload.ajax.upload_error'     => 'خطای بارگذاری (کد {code})',
+            'upload.ajax.too_large'        => 'فایل بزرگ‌تر از {max_mb} MB است',
+            'upload.ajax.mime_only'        => 'فقط PDF، JPG یا PNG مجاز است',
+            'upload.ajax.ext_only'         => 'پسوند فایل نامعتبر است (فقط pdf/jpg/jpeg/png)',
+            'upload.ajax.cannot_save'      => 'ذخیره فایل ممکن نیست',
+            'upload.ajax.unknown_action'   => 'عملیات ناشناخته',
+            'upload.ajax.server_error'     => 'خطای سرور هنگام بارگذاری',
+        
+            // =========================
+            // STEP 4/4: REVIEW (FA)
+            // =========================
+            'review.page_title' => 'مرحله ۴/۴ – خلاصه و ارسال درخواست',
+        
+            'review.h1'      => 'مرحله ۴/۴ – خلاصه و ارسال درخواست',
+            'review.subhead' => 'لطفاً اطلاعات خود را بررسی کنید. با کلیک روی «ارسال درخواست»، داده‌ها ارسال می‌شوند.',
+        
+            'review.readonly_alert' => 'این درخواست قبلاً ارسال شده است. اطلاعات فقط قابل مشاهده است و نمی‌توان آن را تغییر داد یا دوباره ارسال کرد.',
+        
+            'review.info.p1' => 'دانش‌آموز عزیز،',
+            'review.info.p2' => 'با کلیک روی <strong>«ارسال درخواست»</strong> شما برای <strong>BES زبان و ادغام</strong> در یکی از BBSهای اولدن‌بورگ درخواست داده‌اید.',
+            'review.info.p3' => 'این هنوز ثبت‌نام نهایی نیست، بلکه یک <strong>درخواست</strong> است. بعد از <strong>20.02.</strong> به شما اطلاع داده می‌شود که آیا / در کدام BBS پذیرفته می‌شوید. لطفاً صندوق پستی و ایمیل خود را مرتب بررسی کنید. مطمئن شوید نام شما روی صندوق پستی قابل مشاهده است.',
+            'review.info.p4' => 'با پذیرش مدرسه از شما خواسته می‌شود این مدارک را ارائه کنید (اگر امروز هنوز بارگذاری نکرده‌اید):',
+            'review.info.li1' => 'کارنامه آخر نیم‌سال',
+        
+            // Accordion Überschriften
+            'review.acc.personal' => 'اطلاعات شخصی',
+            'review.acc.school'   => 'مدرسه و علایق',
+            'review.acc.uploads'  => 'مدارک',
+        
+            // Labels: Personal
+            'review.lbl.name'            => 'نام خانوادگی',
+            'review.lbl.vorname'         => 'نام',
+            'review.lbl.geschlecht'      => 'جنسیت',
+            'review.lbl.geburtsdatum'    => 'تاریخ تولد',
+            'review.lbl.geburtsort'      => 'محل / کشور تولد',
+            'review.lbl.staatsang'       => 'تابعیت',
+            'review.lbl.strasse'         => 'خیابان، شماره',
+            'review.lbl.plz_ort'         => 'کد پستی / شهر',
+            'review.lbl.telefon'         => 'تلفن',
+            'review.lbl.email'           => 'ایمیل (دانش‌آموز، اختیاری)',
+            'review.lbl.weitere_angaben' => 'اطلاعات دیگر (مثلاً وضعیت حمایت)',
+        
+            'review.contacts.title'    => 'مخاطبین بیشتر',
+            'review.contacts.optional' => 'اختیاری',
+            'review.contacts.none'     => '–',
+        
+            'review.contacts.th.role' => 'نقش',
+            'review.contacts.th.name' => 'نام / مؤسسه',
+            'review.contacts.th.tel'  => 'تلفن',
+            'review.contacts.th.mail' => 'ایمیل',
+            'review.contacts.note'    => 'یادداشت:',
+        
+            // Labels: School
+            'review.lbl.school_current' => 'مدرسه فعلی',
+            'review.lbl.klassenlehrer'  => 'معلم مسئول',
+            'review.lbl.mail_lehrkraft' => 'ایمیل معلم',
+            'review.lbl.since'          => 'از چه زمانی در مدرسه',
+            'review.lbl.years_de'       => 'سال در آلمان',
+            'review.lbl.family_lang'    => 'زبان خانواده / زبان اول',
+            'review.lbl.de_level'       => 'سطح زبان آلمانی',
+            'review.lbl.school_origin'  => 'مدرسه در کشور مبدأ',
+            'review.lbl.years_origin'   => 'سال‌های مدرسه در کشور مبدأ',
+            'review.lbl.interests'      => 'علایق',
+        
+            // Uploads
+            'review.lbl.zeugnis'         => 'کارنامه نیم‌سال',
+            'review.lbl.lebenslauf'      => 'رزومه (CV)',
+            'review.lbl.later'           => 'بعداً ارائه می‌شود',
+            'review.badge.uploaded'      => 'بارگذاری شد',
+            'review.badge.not_uploaded'  => 'بارگذاری نشد',
+            'review.yes'                 => 'بله',
+            'review.no'                  => 'خیر',
+        
+            // Buttons / Actions
+            'review.btn.home'   => 'صفحه اصلی',
+            'review.btn.newapp' => 'ارسال درخواست جدید',
+            'review.btn.back'   => 'بازگشت',
+            'review.btn.submit' => 'ارسال درخواست',
+        
+            // Errors / Flash / Systemtexte
+            'review.err.invalid_request'       => 'درخواست نامعتبر است.',
+            'review.flash.already_submitted'   => 'این درخواست قبلاً ارسال شده و نمی‌تواند دوباره ارسال یا تغییر داده شود.',
+            'review.flash.no_token'            => 'کُد دسترسی معتبر وجود ندارد. لطفاً فرایند را از ابتدا شروع کنید.',
+            'review.err.not_found_token'       => 'درخواستی برای این توکن پیدا نشد.',
+            'review.flash.submit_error'        => 'هنگام ارسال خطایی رخ داد. لطفاً بعداً دوباره تلاش کنید.',
+        
+            // Gender fallback
+            'review.gender.m' => 'مرد',
+            'review.gender.w' => 'زن',
+            'review.gender.d' => 'متنوع',
+        
+            // Fallback Anzeige
+            'review.value.empty' => '–',
+        
+            // =========================
+            // STATUS (FA)
+            // =========================
+            'status.hdr_title'   => 'درخواست با موفقیت ذخیره شد',
+            'status.hdr_message' => 'درخواست شما ارسال شد.',
+        
+            'status.h1' => 'درخواست شما با موفقیت ذخیره شد.',
+        
+            'status.success.title' => 'سپاسگزاریم!',
+            'status.success.body'  => 'درخواست شما ارسال شد و اکنون در حال بررسی است.',
+        
+            'status.info.title' => 'نکته مهم',
+            'status.info.body'  => '<em>[جای‌نگهدار: متن از مشتری خواهد آمد]</em>',
+        
+            'status.btn.pdf'    => 'دانلود / چاپ PDF',
+            'status.btn.newapp' => 'شروع درخواست جدید',
+            'status.btn.home'   => 'صفحه اصلی',
+        
+            'status.ref' => 'مرجع: درخواست #{id}',
+        
+            'status.err.invalid_request' => 'درخواست نامعتبر است.',
+        
+            // =========================
+            // PDF (FA)
+            // =========================
+            'pdf.err.autoload_missing' => 'Composer Autoload پیدا نشد. لطفاً "composer install" را اجرا کنید.',
+            'pdf.err.no_token'         => 'کُد دسترسی معتبر وجود ندارد. لطفاً فرایند را از ابتدا شروع کنید.',
+            'pdf.err.not_found'        => 'درخواست پیدا نشد.',
+            'pdf.err.server'           => 'خطای سرور هنگام تولید PDF.',
+        
+            'pdf.header_title' => 'درخواست – خلاصه',
+            'pdf.footer_auto'  => 'سند تولیدشده به‌صورت خودکار',
+            'pdf.footer_page'  => 'صفحه {cur} / {max}',
+        
+            'pdf.meta.ref'        => 'درخواست #{id}',
+            'pdf.meta.created_at' => 'ایجاد شده در',
+            'pdf.meta.status'     => 'وضعیت',
+        
+            'pdf.top.title'        => 'نمای کلی',
+            'pdf.top.name'         => 'نام',
+            'pdf.top.reference'    => 'مرجع',
+            'pdf.top.generated'    => 'ایجاد شده در',
+            'pdf.top.hint'         => 'توجه',
+            'pdf.top.keep_note'    => 'لطفاً این سند را برای مدارک خود نگه دارید.',
+            'pdf.hint_placeholder' => '[جای‌نگهدار: متن از مشتری خواهد آمد]',
+        
+            'pdf.sec1.title' => '1) اطلاعات شخصی',
+            'pdf.sec2.title' => '2) اطلاعات تماس بیشتر',
+            'pdf.sec3.title' => '3) مدرسه و علایق',
+            'pdf.sec4.title' => '4) مدارک',
+        
+            'pdf.lbl.name'           => 'نام خانوادگی',
+            'pdf.lbl.vorname'        => 'نام',
+            'pdf.lbl.gender'         => 'جنسیت',
+            'pdf.lbl.dob'            => 'تاریخ تولد',
+            'pdf.lbl.birthplace'     => 'محل/کشور تولد',
+            'pdf.lbl.nationality'    => 'تابعیت',
+            'pdf.lbl.address'        => 'نشانی',
+            'pdf.lbl.phone'          => 'تلفن',
+            'pdf.lbl.email_optional' => 'ایمیل (اختیاری)',
+            'pdf.lbl.more'           => 'اطلاعات دیگر',
+        
+            'pdf.lbl.school_current' => 'مدرسه فعلی',
+            'pdf.lbl.teacher'        => 'معلم',
+            'pdf.lbl.teacher_email'  => 'ایمیل معلم',
+            'pdf.lbl.since_school'   => 'از چه زمانی در مدرسه',
+            'pdf.lbl.years_in_de'    => 'از چه زمانی در آلمان',
+            'pdf.lbl.family_lang'    => 'زبان خانواده',
+            'pdf.lbl.de_level'       => 'سطح زبان آلمانی',
+            'pdf.lbl.school_origin'  => 'مدرسه در کشور مبدأ',
+            'pdf.lbl.years_origin'   => 'سال‌های مدرسه در کشور مبدأ',
+            'pdf.lbl.interests'      => 'علایق',
+        
+            'pdf.lbl.report'       => 'کارنامه نیم‌سال',
+            'pdf.lbl.cv'           => 'رزومه (CV)',
+            'pdf.lbl.report_later' => 'کارنامه بعداً ارائه می‌شود',
+        
+            'pdf.uploaded'     => 'بارگذاری شد',
+            'pdf.not_uploaded' => 'بارگذاری نشد',
+        
+            'pdf.contacts.none'    => '–',
+            'pdf.contacts.th.role' => 'نقش',
+            'pdf.contacts.th.name' => 'نام/مؤسسه',
+            'pdf.contacts.th.tel'  => 'تلفن',
+            'pdf.contacts.th.mail' => 'ایمیل',
+            'pdf.contacts.th.note' => 'یادداشت',
+        
+            'pdf.gender.m' => 'مرد',
+            'pdf.gender.w' => 'زن',
+            'pdf.gender.d' => 'متنوع',
+        
+            'pdf.yes' => 'بله',
+            'pdf.no'  => 'خیر',
+        
+            'pdf.sec4.note' => 'این سند خلاصه‌ای است که به‌صورت خودکار از داده‌های واردشده تولید شده است.',
+            'pdf.filename_prefix' => 'درخواست',
+        
+            // =========================
+            // ACCESS_CREATE (FA)
+            // =========================
+            'access_create.title'         => 'ادامه با ایمیل',
+            'access_create.lead'          => 'می‌توانید با دسترسی موجود وارد شوید یا دسترسی جدید ایجاد کنید.',
+            'access_create.tabs_login'    => 'ورود',
+            'access_create.tabs_register' => 'ایجاد دسترسی جدید',
+        
+            'access_create.login_title' => 'ورود (دسترسی موجود)',
+            'access_create.login_text'  => 'لطفاً آدرس ایمیل و رمز عبور خود را وارد کنید.',
+            'access_create.email_label' => 'آدرس ایمیل',
+            'access_create.pass_label'  => 'رمز عبور',
+            'access_create.login_btn'   => 'ورود',
+            'access_create.login_err'   => 'ایمیل/رمز عبور نادرست است یا دسترسی تأیید نشده است.',
+        
+            'access_create.reg_title'     => 'ایجاد دسترسی جدید',
+            'access_create.reg_text'      => 'یک کُد تأیید ۶ رقمی برای شما ارسال می‌کنیم. پس از تأیید موفق، رمز عبور از طریق ایمیل ارسال می‌شود.',
+            'access_create.consent_label' => 'موافقت می‌کنم که ایمیل من برای فرایند ثبت‌نام استفاده شود.',
+            'access_create.send_btn'      => 'ارسال کُد',
+            'access_create.code_label'    => 'کُد تأیید',
+            'access_create.verify_btn'    => 'بررسی کُد',
+            'access_create.resend'        => 'ارسال دوباره کُد',
+        
+            'access_create.info_sent'    => 'یک کُد برای شما ارسال کردیم. لطفاً پوشه اسپم را هم بررسی کنید.',
+            'access_create.ok_verified'  => 'ایمیل تأیید شد. رمز عبور ارسال شد. اکنون می‌توانید وارد شوید.',
+            'access_create.email_in_use' => 'برای این ایمیل قبلاً دسترسی ایجاد شده است. لطفاً وارد شوید.',
+        
+            'access_create.error_email'     => 'لطفاً یک آدرس ایمیل معتبر وارد کنید.',
+            'access_create.error_consent'   => 'لطفاً با استفاده از ایمیل خود موافقت کنید.',
+            'access_create.error_rate'      => 'تعداد تلاش‌ها زیاد است. لطفاً کمی صبر کنید و دوباره تلاش کنید.',
+            'access_create.error_code'      => 'کُد نامعتبر است یا منقضی شده است.',
+            'access_create.error_resend'    => 'ارسال مجدد ممکن نیست. لطفاً دوباره از ابتدا شروع کنید.',
+            'access_create.error_mail_send' => 'ارسال ایمیل ناموفق بود. لطفاً بعداً دوباره تلاش کنید.',
+            'access_create.error_db'        => 'خطای سرور (DB).',
+        
+            'access_create.back'   => 'بازگشت',
+            'access_create.cancel' => 'لغو',
+        
+            'access_create.mail_subject' => 'رمز عبور شما برای ثبت‌نام آنلاین',
+            'access_create.mail_body'    => "دسترسی شما ایجاد شد.\n\nایمیل: {email}\nرمز عبور: {password}\n\nلطفاً رمز عبور را در جای امن نگه دارید.",
+        
+            // =========================
+            // ACCESS_PORTAL (FA)
+            // =========================
+            'access_portal.title'    => 'درخواست‌های من',
+            'access_portal.lead'     => 'در اینجا درخواست‌های خود را می‌بینید. می‌توانید یک درخواست را ادامه دهید یا درخواست جدید شروع کنید.',
+            'access_portal.max_hint' => '{email} · حداکثر {max} درخواست',
+        
+            'access_portal.btn_new'    => 'شروع درخواست جدید',
+            'access_portal.btn_open'   => 'باز کردن',
+            'access_portal.btn_logout' => 'خروج',
+        
+            'access_portal.th_ref'     => 'شناسه',
+            'access_portal.th_status'  => 'وضعیت',
+            'access_portal.th_created' => 'ایجاد شد',
+            'access_portal.th_updated' => 'به‌روزرسانی شد',
+            'access_portal.th_token'   => 'توکن',
+            'access_portal.th_action'  => 'عملیات',
+        
+            'access_portal.status_draft'     => 'پیش‌نویس',
+            'access_portal.status_submitted' => 'ارسال‌شده',
+            'access_portal.status_withdrawn' => 'پس‌گرفته‌شده',
+        
+            'access_portal.limit_reached' => 'به حداکثر تعداد درخواست برای این ایمیل رسیده‌اید.',
+            'access_portal.no_apps'       => 'هنوز درخواستی وجود ندارد.',
+            'access_portal.err_generic'   => 'خطایی رخ داد.',
+            'access_portal.csrf_invalid'  => 'درخواست نامعتبر است.',
+        
+            // =========================
+            // ACCESS_LOGIN (FA)
+            // =========================
+            'access_login.title'             => 'دسترسی به درخواست(ها)',
+            'access_login.lead'              => 'در اینجا می‌توانید درخواست شروع‌شده یا ارسال‌شده را دوباره باز کنید.',
+        
+            'access_login.login_box_title'   => 'ورود با Access-Token',
+            'access_login.login_box_text'    => 'لطفاً کُد دسترسی شخصی (Access-Token) و تاریخ تولد خود را وارد کنید.',
+        
+            'access_login.token_label'       => 'Access-Token',
+            'access_login.dob_label'         => 'تاریخ تولد (روز.ماه.سال)',
+        
+            'access_login.login_btn'         => 'دسترسی',
+            'access_login.back'              => 'بازگشت به صفحه اصلی',
+        
+            'access_login.login_ok'          => 'درخواست بارگذاری شد.',
+            'access_login.login_error'       => 'ترکیب Access-Token و تاریخ تولد پیدا نشد.',
+            'access_login.login_error_token' => 'لطفاً یک Access-Token معتبر وارد کنید.',
+            'access_login.login_error_dob'   => 'لطفاً تاریخ تولد را با فرمت روز.ماه.سال وارد کنید.',
+        
+            'access_login.csrf_invalid'      => 'درخواست نامعتبر است.',
+            'access_login.internal_error'    => 'خطای داخلی.',
+            'access_login.load_error'        => 'هنگام بارگذاری درخواست خطایی رخ داد.',
+        
+            // =========================
+            // PRIVACY (FA)
+            // =========================
+            'privacy.title' => 'حریم خصوصی',
+            'privacy.h1'    => 'اطلاعیه حریم خصوصی برای درخواست آنلاین «BES زبان و ادغام»',
+        
+            'privacy.s1_title'     => '1. نهاد مسئول',
+            'privacy.s1_body_html' => '<strong>شهر اولدن‌بورگ / مدارس فنی‌وحرفه‌ای</strong><br>(نام دقیق اداره/مدرسه، نشانی، تلفن، ایمیل وارد شود)',
+        
+            'privacy.s2_title'     => '2. مسئول حفاظت از داده‌ها',
+            'privacy.s2_body_html' => '(اطلاعات تماس مسئول حفاظت از داده‌ها وارد شود)',
+        
+            'privacy.s3_title' => '3. اهداف پردازش',
+            'privacy.s3_li1'   => 'دریافت و بررسی درخواست شما برای پذیرش در کلاس زبان («BES زبان و ادغام»)',
+            'privacy.s3_li2'   => 'ارتباط با شما (سؤالات، اطلاع‌رسانی درباره تصمیم پذیرش)',
+            'privacy.s3_li3'   => 'برنامه‌ریزی سازمانی مدرسه (تخصیص به یک BBS)',
+        
+            'privacy.s4_title' => '4. مبانی حقوقی',
+            'privacy.s4_li1'   => 'GDPR ماده 6 بند 1 (e) همراه با مقررات مدرسه‌ای ایالت نیدرزاکسن',
+            'privacy.s4_li2'   => 'GDPR ماده 6 بند 1 (c) (انجام تعهدات قانونی)',
+            'privacy.s4_li3'   => 'GDPR ماده 6 بند 1 (a) (رضایت) در صورت ارائه اطلاعات/آپلودهای داوطلبانه',
+        
+            'privacy.s5_title' => '5. دسته‌های داده‌های شخصی',
+            'privacy.s5_li1'   => 'اطلاعات پایه (نام خانوادگی، نام، تاریخ تولد، تابعیت، نشانی، اطلاعات تماس)',
+            'privacy.s5_li2'   => 'اطلاعات مدرسه‌ای (مدرسه فعلی، سطح زبان، علایق)',
+            'privacy.s5_li3'   => 'مدارک اختیاری (مثلاً کارنامه آخر نیم‌سال)',
+            'privacy.s5_li4'   => 'مخاطبین اضافی (والدین/سرپرست/مؤسسات)',
+        
+            'privacy.s6_title' => '6. گیرندگان',
+            'privacy.s6_body'  => 'در حوزه مسئولیت شهر اولدن‌بورگ و مدارس فنی‌وحرفه‌ای. انتقال به اشخاص ثالث فقط در صورت الزام قانونی (مثلاً مراجع آموزشی) یا با رضایت شما انجام می‌شود.',
+        
+            'privacy.s7_title' => '7. انتقال به کشورهای ثالث',
+            'privacy.s7_body'  => 'هیچ انتقالی به کشورهای ثالث انجام نمی‌شود.',
+        
+            'privacy.s8_title' => '8. مدت نگهداری',
+            'privacy.s8_body'  => 'داده‌های شما در طول فرایند درخواست/پذیرش و مطابق مهلت‌های قانونی نگهداری و سپس حذف می‌شود.',
+        
+            'privacy.s9_title' => '9. حقوق شما',
+            'privacy.s9_li1'   => 'دسترسی (ماده 15)، اصلاح (16)، حذف (17)، محدودسازی (18)',
+            'privacy.s9_li2'   => 'اعتراض (ماده 21) نسبت به پردازش در منافع عمومی',
+            'privacy.s9_li3'   => 'پس‌گرفتن رضایت (ماده 7 بند 3) با اثر برای آینده',
+            'privacy.s9_li4'   => 'حق شکایت نزد مرجع نظارتی: نماینده حفاظت از داده‌های ایالت نیدرزاکسن',
+        
+            'privacy.s10_title' => '10. میزبانی و لاگ‌ها',
+            'privacy.s10_body'  => 'این برنامه روی سرورهای شهر یا در مرکز داده شهرداری اجرا می‌شود. فقط داده‌های فنی لازم پردازش می‌شوند (مثلاً لاگ‌های سرور برای رفع خطا). هیچ CDN خارجی استفاده نمی‌شود. فقط یک کوکی مربوط به زبان تنظیم می‌شود.',
+        
+            'privacy.s11_title'    => '11. کوکی‌ها',
+            'privacy.s11_li1_html' => '<strong>lang</strong> – زبان انتخاب‌شده را ذخیره می‌کند (اعتبار ۱۲ ماه). هدف: سهولت استفاده.',
+            'privacy.s11_li2'      => 'نشست PHP – برای روند فرم از نظر فنی ضروری است و با پایان نشست حذف می‌شود.',
+        
+            'privacy.stand_label' => 'نسخه',
+            'privacy.stand_hint'  => 'لطفاً به‌طور منظم بررسی کنید که آیا تغییری ایجاد شده است یا خیر.',
+            'privacy.back_home'   => 'بازگشت به صفحه اصلی',
+        
+            // =========================
+            // IMPRINT (FA)
+            // =========================
+            'imprint.title' => 'اطلاعات ناشر',
+            'imprint.h1'    => 'اطلاعات ناشر',
+        
+            'imprint.s1_title'     => 'ارائه‌دهنده خدمات',
+            'imprint.s1_body_html' => '<strong>شهر ***</strong><br>مدارس فنی‌وحرفه‌ای<br>(نشانی دقیق وارد شود)<br>تلفن: (تکمیل شود)<br>ایمیل: (تکمیل شود)',
+        
+            'imprint.s2_title'     => 'نماینده قانونی',
+            'imprint.s2_body_html' => '(مثلاً شهردار شهر ****<br>یا مدیریت هر BBS)',
+        
+            'imprint.s3_title'     => 'مسئول محتوا طبق § 18 Abs. 2 MStV',
+            'imprint.s3_body_html' => '(نام، سمت، تماس؛ مثلاً مدیریت BBS یا روابط عمومی)',
+        
+            'imprint.s4_title'     => 'شماره شناسه مالیات بر ارزش افزوده',
+            'imprint.s4_body_html' => '(در صورت وجود؛ در غیر این صورت این بخش می‌تواند حذف شود)',
+        
+            'imprint.s5_title' => 'مرجع ناظر',
+            'imprint.s5_body'  => '(نهاد ناظر شهرداری / مرجع آموزشی ذی‌صلاح)',
+        
+            'imprint.s6_title' => 'مسئولیت محتوا',
+            'imprint.s6_body'  => 'محتوای صفحات با دقت بسیار تهیه شده است. با این حال نمی‌توانیم مسئولیت کامل درستی، کامل بودن و به‌روز بودن را بپذیریم. به‌عنوان نهاد عمومی، طبق قوانین عمومی مسئول محتوای خود هستیم.',
+        
+            'imprint.s7_title' => 'مسئولیت لینک‌ها',
+            'imprint.s7_body'  => 'این ارائه شامل محتوای خارجی که داده‌های شخصی را به اشخاص ثالث منتقل کند نیست. اگر به منابع اطلاعاتی دیگر نهادهای عمومی لینک داده شود، مسئولیتی در قبال محتوای آن‌ها نداریم.',
+        
+            'imprint.s8_title' => 'حقوق نشر',
+            'imprint.s8_body'  => 'محتوا و آثار ایجادشده توسط شهر اولدن‌بورگ تحت حقوق نشر آلمان است. مشارکت‌های اشخاص ثالث مشخص شده‌اند. هرگونه تکثیر/پردازش/توزیع خارج از حدود حقوق نشر نیازمند اجازه کتبی است.',
+        
+            'imprint.stand_label' => 'نسخه',
+            'imprint.stand_hint'  => 'این اطلاعات برای فرم آنلاین «BES زبان و ادغام» معتبر است.',
+            'imprint.back_home'   => 'بازگشت به صفحه اصلی',
+        
+            // =========================
+            // VERIFY_EMAIL (FA)
+            // =========================
+            'verify_email.title' => 'تأیید ایمیل',
+            'verify_email.h1'    => 'تأیید ایمیل',
+        
+            'verify_email.lead_sent'    => 'یک کُد تأیید به {email} ارسال کردیم.',
+            'verify_email.lead_generic' => 'لطفاً کُد تأییدی را که از طریق ایمیل دریافت کرده‌اید وارد کنید. اگر ایمیلی نمی‌بینید، می‌توانید کُد را دوباره ارسال کنید.',
+        
+            'verify_email.code_label'  => 'کُد تأیید (۶ رقمی)',
+            'verify_email.email_label' => 'آدرس ایمیل شما',
+        
+            'verify_email.btn_verify' => 'تأیید',
+            'verify_email.btn_resend' => 'ارسال دوباره کُد',
+            'verify_email.hint_spam'  => 'لطفاً پوشه اسپم را هم بررسی کنید.',
+        
+            'verify_email.back' => 'بازگشت',
+        
+            'verify_email.csrf_invalid' => 'درخواست نامعتبر است.',
+            'verify_email.ok_verified'  => 'ایمیل با موفقیت تأیید شد.',
+            'verify_email.ok_sent'      => 'کُد جدید به {email} ارسال شد.',
+        
+            'verify_email.warn_cooldown'     => 'لطفاً قبل از درخواست مجدد کُد کمی صبر کنید.',
+            'verify_email.error_send'        => 'ارسال ناموفق بود. لطفاً بعداً دوباره تلاش کنید.',
+            'verify_email.error_email'       => 'لطفاً یک ایمیل معتبر وارد کنید.',
+            'verify_email.error_no_session'  => 'فرایند تأیید فعالی یافت نشد. لطفاً کُد جدید درخواست کنید.',
+            'verify_email.error_expired'     => 'کُد نامعتبر است یا منقضی شده است.',
+            'verify_email.error_invalid'     => 'کُد نامعتبر است یا منقضی شده است.',
+            'verify_email.error_code_format' => 'لطفاً یک کُد ۶ رقمی معتبر وارد کنید.',
+            'verify_email.error_rate'        => 'تعداد تلاش‌ها زیاد است. لطفاً کُد جدید درخواست کنید.',
+        
+            // =========================
+            // VALIDATION (FA) – global
+            // =========================
+            'val.required' => 'الزامی است.',
+            'val.only_letters' => 'لطفاً فقط از حروف استفاده کنید.',
+            'val.gender_choose' => 'لطفاً جنسیت را انتخاب کنید.',
+            'val.date_format' => 'روز.ماه.سال',
+            'val.date_invalid' => 'تاریخ نامعتبر است.',
+            'val.plz_whitelist' => 'فقط کدهای پستی اولدن‌بورگ (26121–26135).',
+            'val.phone_vorwahl' => 'کد منطقه: 2–6 رقم.',
+            'val.phone_nummer' => 'شماره: 3–12 رقم.',
+            'val.email_invalid' => 'ایمیل نامعتبر است.',
+            'val.email_no_iserv' => 'لطفاً از ایمیل شخصی استفاده کنید (نه IServ).',
+            'val.max_1500' => 'حداکثر 1500 کاراکتر.',
+            'val.kontakt_row_name_missing' => 'نام/عنوان وارد نشده',
+            'val.kontakt_row_tel_or_mail'  => 'تلفن یا ایمیل وارد کنید',
+            'val.kontakt_row_mail_invalid' => 'ایمیل نامعتبر است',
+            'val.kontakt_row_tel_invalid'  => 'تلفن نامعتبر است',
         ],
     ];
 }
