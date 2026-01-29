@@ -1,28 +1,32 @@
 <?php
-// app/config.php
-// UTF-8, no BOM
 declare(strict_types=1);
+
+// Datei: app/config.php
+// UTF-8, no BOM
 
 // DB Admin-Konto NUR für init_db.php (kann danach entzogen werden)
 const DB_ADMIN_DSN  = 'mysql:host=127.0.0.1;port=3306;charset=utf8mb4';
 const DB_ADMIN_USER = 'root';
-const DB_ADMIN_PASS = 'xxx';
+const DB_ADMIN_PASS = 'geheim';
 
 // Ziel-Datenbank + App-User
-const APP_DB_NAME   = 'xxx_app';
-const APP_DB_USER   = 'xxx_user';
-const APP_DB_PASS   = 'xxx';
+const APP_DB_NAME   = 'userxyz_app';
+const APP_DB_USER   = 'userxyz_user';
+const APP_DB_PASS   = 'geheim';
+
+// Admin (für init_db Default-Admin + fallback Login, falls gewünscht)
+const ADMIN_USER = 'admin';
+const ADMIN_PASS_HASH = 'hash'; // php -r "echo password_hash('MEINPASSWORT', PASSWORD_DEFAULT), PHP_EOL;"
 
 // PDO Helper
-function pdo(string $dsn, string $user, string $pass): PDO {
-  $pdo = new PDO($dsn, $user, $pass, [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
-  ]);
-  return $pdo;
+function pdo(string $dsn, string $user, string $pass, array $options = []): PDO
+{
+    $defaults = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
+    ];
 
-// Admin
-define('ADMIN_USER', 'admin');
-define('ADMIN_PASS_HASH', '$2y$10$...'); // password_hash() Output
+    $pdo = new PDO($dsn, $user, $pass, $options + $defaults);
+    return $pdo;
 }
