@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 // Datei: public/api/bob/ping.php
 
-require_once __DIR__ . '/../../app/config.php';
+require_once __DIR__ . '/../../../app/config.php';
 
 // Mini-DB connect (wie im Admin)
 $dsn = 'mysql:host=127.0.0.1;dbname=' . APP_DB_NAME . ';port=3306;charset=utf8mb4';
