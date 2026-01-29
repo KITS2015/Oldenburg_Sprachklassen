@@ -1,6 +1,5 @@
 composer.phar
 composer.lock
-composer.json
 /vendor/
 logs/*.log
 !logs/.gitkeep
