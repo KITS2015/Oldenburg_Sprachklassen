@@ -338,7 +338,13 @@ function i18n_dict(): array {
             'status.success.title' => 'Vielen Dank!',
             'status.success.body'  => 'Ihre Bewerbung wurde übermittelt und wird nun bearbeitet.',
             'status.info.title' => 'Wichtiger Hinweis',
-            'status.info.body'  => '<em>[PLATZHALTER: Textbaustein vom Kunden folgt]</em>',
+            'status.info.body'  => '„Geschafft, Sie haben sich für die "BES Sprache und Integration" an einer Oldenburger BBS beworben.
+
+Es handelt sich noch nicht um eine finale Anmeldung, sondern um eine Bewerbung. Nach dem 20.02. erhalten Sie die Information, ob / an welcher BBS Sie aufgenommen werden. Bitte prüfen Sie regelmäßig Ihren Briefkasten und Ihr E-Mail Postfach. Bitte achten Sie darauf, dass am Briefkasten Ihr Name sichtbar ist, damit Sie Briefe bekommen können.
+
+Sie erhalten mit der Zusage der Schule die Aufforderung, diese Dateien nachzureichen (falls Sie es heute noch nicht hochgeladen haben):
+- letztes Halbjahreszeugnis“
+',
             'status.btn.pdf'     => 'PDF herunterladen / drucken',
             'status.btn.newapp'  => 'Weitere Bewerbung starten',
             'status.btn.home'    => 'Zur Startseite',
