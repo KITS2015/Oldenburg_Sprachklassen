@@ -10,7 +10,7 @@ Dieses Repository dokumentiert die vollständige Installation, Einrichtung und d
 | Komponente | Version / Technologie |
 |-------------|-----------------------|
 | **Betriebssystem** | Debian 12.x (Bookworm) |
-| **Webserver** | Apache 2.4.65 |
+| **Webserver** | Apache 2.4.x |
 | **Scripting** | PHP 8.2 |
 | **Datenbank** | MariaDB 10.11.x |
 | **Reverse Proxy** | Nginx Proxy Manager (NPM) |
@@ -22,19 +22,33 @@ Dieses Repository dokumentiert die vollständige Installation, Einrichtung und d
 
 ---
 
+## ✅ Ziel
+
+Nach einer Neuinstallation soll der Server mit wenigen Schritten wieder lauffähig sein:
+
+- Apache + PHP + Extensions
+- MariaDB
+- Repo deployen (Read-only)
+- **Composer install (vendor ist NICHT im Repo!)**
+- `php bin/init_db.php` (legt DB, Tabellen, User/Grants an)
+- Rechte für `uploads/` & `logs/`
+
+---
+
 ## 🧩 1️⃣ Grundinstallation
 
 ```bash
 su -
 apt update && apt upgrade -y
-apt install sudo vim curl wget unzip ufw net-tools -y
+apt install sudo vim curl wget unzip ufw net-tools ca-certificates -y
 usermod -aG sudo user
 timedatectl set-timezone Europe/Berlin
 hostnamectl set-hostname xxx.xxx.schule
 ```
 
 `/etc/hosts` anpassen:
-```
+
+```text
 127.0.0.1    xxx.xxx.schule oldenburg localhost
 ```
 
@@ -43,14 +57,17 @@ hostnamectl set-hostname xxx.xxx.schule
 ## 🌐 2️⃣ Apache + PHP
 
 ```bash
-sudo apt install apache2 libapache2-mod-php php php-cli php-common php-mysql \
-php-xml php-curl php-zip php-mbstring php-intl php-gd -y
+sudo apt install apache2 libapache2-mod-php \
+php php-cli php-common \
+php-mysql php-xml php-curl php-zip php-mbstring php-intl php-gd php-fileinfo -y
+
 sudo a2enmod php8.2 rewrite headers env dir mime
 sudo systemctl enable apache2
 sudo systemctl restart apache2
 ```
 
-Testseite:
+Testseite (optional):
+
 ```bash
 echo "<?php phpinfo(); ?>" | sudo tee /var/www/html/info.php
 ```
@@ -64,13 +81,27 @@ sudo apt install mariadb-server -y
 sudo mysql_secure_installation
 ```
 
-SQL:
-```sql
-CREATE DATABASE anmeldung CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'anmeldung'@'localhost' IDENTIFIED BY 'GeheimesPasswort';
-GRANT ALL PRIVILEGES ON anmeldung.* TO 'anmeldung'@'localhost';
-FLUSH PRIVILEGES;
+### ✅ Empfohlen: dedizierter DB-Admin-User für Setup (statt root)
+
+**Warum?** Auf Debian ist `root` häufig über `unix_socket` konfiguriert und nicht zuverlässig per Passwort/TCP nutzbar.  
+Damit `bin/init_db.php` beim Neuaufsetzen immer funktioniert, ist ein Setup-Admin-User die stabilste Lösung.
+
+Einmalig lokal auf dem Server ausführen:
+
+```bash
+sudo mariadb
 ```
+
+SQL:
+
+```sql
+CREATE USER 'db_admin'@'localhost' IDENTIFIED BY 'STRONGPASS';
+GRANT ALL PRIVILEGES ON *.* TO 'db_admin'@'localhost' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+> Hinweis: `bin/init_db.php` hat zusätzlich einen Fallback auf `host=localhost` (Socket), falls `DB_ADMIN_DSN` über TCP nicht funktioniert. Trotzdem ist `db_admin` für Neuinstallationen am robustesten.
 
 ---
 
@@ -82,9 +113,9 @@ FLUSH PRIVILEGES;
 <VirtualHost *:80>
     ServerName xxx.xxx.schule
     ServerAlias www.xxx.xxx.schule
-    DocumentRoot /var/www/xxx.xxx.schule
+    DocumentRoot /var/www/xxx.xxx.schule/public
 
-    <Directory /var/www/xxx.xxx.schule>
+    <Directory /var/www/xxx.xxx.schule/public>
         Options -Indexes +FollowSymLinks
         AllowOverride All
         Require all granted
@@ -106,16 +137,20 @@ FLUSH PRIVILEGES;
 ```
 
 Aktivieren:
+
 ```bash
 sudo a2ensite 000-xxx.xxx.schule.conf
 sudo systemctl reload apache2
 ```
+
+> Falls euer Projekt nicht `public/` als DocumentRoot nutzt, bitte oben wieder auf `/var/www/xxx.xxx.schule` ändern.
 
 ---
 
 ## 🔁 5️⃣ Reverse Proxy (Nginx Proxy Manager)
 
 **Proxy Host:**
+
 | Feld | Wert |
 |------|------|
 | Domain Names | `xxx.xxx.schule` |
@@ -126,10 +161,12 @@ sudo systemctl reload apache2
 | SSL | Let’s Encrypt aktiv, „Force SSL“ aktiviert |
 
 **Custom location `/`:**
+
 ```nginx
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 proxy_set_header X-Forwarded-Proto https;
 ```
+
 **Advanced:** leer lassen (kein `proxy_set_header Host`!)
 
 ---
@@ -141,21 +178,23 @@ sudo ufw default deny incoming
 sudo ufw allow OpenSSH
 sudo ufw allow from 192.168.xxx.253 to any port 80 proto tcp
 sudo ufw enable
+
 sudo apt install fail2ban unattended-upgrades -y
 sudo dpkg-reconfigure --priority=low unattended-upgrades
 ```
 
 ---
 
-## 🧰 7️⃣ PHP-Optimierung
+## 🧰 7️⃣ PHP-Optimierung (Uploads)
 
 ```bash
 sudo sed -i 's/^upload_max_filesize.*/upload_max_filesize = 16M/' /etc/php/*/apache2/php.ini
 sudo sed -i 's/^post_max_size.*/post_max_size = 32M/' /etc/php/*/apache2/php.ini
 sudo systemctl reload apache2
-
-Sollte es beim hochladen Probleme geben, z.B. wegen der Größe der Datei, bitte das Verzeichnis /etc/php/x.x/fpm prüfen und die php.ini in diesem Verzeichnis anpassen, wie oben!
 ```
+
+Hinweis (falls PHP-FPM genutzt wird):  
+Bitte zusätzlich `/etc/php/x.x/fpm/php.ini` prüfen und dort analog anpassen.
 
 ---
 
@@ -164,13 +203,14 @@ Sollte es beim hochladen Probleme geben, z.B. wegen der Größe der Datei, bitte
 ### 📦 Vorbereitung
 
 ```bash
-sudo apt install git ca-certificates -y
+sudo apt install git -y
 sudo install -d -o user -g www-data -m 2775 /var/www/xxx.xxx.schule
 ```
 
-### 🔐 Deploy Key (empfohlen)
+### 🔐 Deploy Key
 
 Auf dem Server:
+
 ```bash
 ssh-keygen -t ed25519 -C "deploy@xxx.xxx.schule"
 cat ~/.ssh/id_ed25519.pub
@@ -181,12 +221,14 @@ cat ~/.ssh/id_ed25519.pub
 **Allow write access deaktivieren!** ✅
 
 Test:
+
 ```bash
 sudo -u user ssh -T git@github.com
 ```
 
 Erwartete Ausgabe:
-```
+
+```text
 Hi KITS2015! You've successfully authenticated, but GitHub does not provide shell access.
 ```
 
@@ -196,99 +238,192 @@ Hi KITS2015! You've successfully authenticated, but GitHub does not provide shel
 sudo -u user git clone git@github.com:KITS2015/Oldenburg_Sprachklassen.git /var/www/xxx.xxx.schule
 ```
 
-### 🧱 Dateirechte (Server)
+---
+
+## 📦 9️⃣ Composer (Pflicht: vendor ist NICHT im Repo!)
+
+### Composer installieren
 
 ```bash
-### Standardrechte (Code schreibgeschützt für Webserver)
-sudo chown -R user:www-data /var/www/xxx.xxx.schule
-sudo find /var/www/xxx.xxx.schule -type d -exec chmod 2755 {} \;
-sudo find /var/www/xxx.xxx.schule -type f -exec chmod 0644 {} \;
-
-### Schreibbare Verzeichnisse (Uploads)
-Das Verzeichnis `uploads` muss für den Webserver (Gruppe `www-data`) schreibbar sein, damit Uploads angelegt,
-umbenannt und später auch gelöscht werden können.
-
-# 2775 = rwxrwxr-x + setgid (Gruppe wird bei neuen Dateien/Ordnern vererbt)
-sudo chmod 2775 /var/www/xxx.xxx.schule/uploads
-sudo find /var/www/xxx.xxx.schule/uploads -type d -exec chmod 2775 {} \;
-
-# Empfohlen: hochgeladene Dateien gruppen-schreibbar (für spätere Verwaltung/Löschen/Ersetzen durch die App)
-sudo find /var/www/xxx.xxx.schule/uploads -type f -exec chmod 0664 {} \;
-
-### Option: ACLs (empfohlen, wenn Upload-Dateien trotz 2775/0664 später nicht verwaltbar sind)
-Je nach PHP-FPM/Apache und umask können neu hochgeladene Dateien ohne Gruppen-Schreibrecht entstehen.
-ACLs erzwingen konsistente Rechte für bestehende und zukünftige Dateien/Ordner im `uploads`-Pfad.
-
-Installation (Debian/Ubuntu):
-sudo apt-get update
-sudo apt-get install -y acl
-
-ACLs setzen (bestehende Inhalte + Default-ACLs für neue Uploads):
-sudo setfacl -R -m u:user:rwx,g:www-data:rwx /var/www/xxx.xxx.schule/uploads
-sudo setfacl -d -m u:user:rwx,g:www-data:rwx /var/www/xxx.xxx.schule/uploads
-
-Prüfen:
-getfacl /var/www/xxx.xxx.schule/uploads
-
+sudo apt install composer -y
+composer --version
 ```
 
-### 🧭 Update-Skript (Read-only Pull)
-
-`/usr/local/bin/update-sprachklassen.sh`:
+### Dependencies installieren
 
 ```bash
-#!/bin/bash
-set -e
 cd /var/www/xxx.xxx.schule
-sudo -u user git fetch --all
-sudo -u user git reset --hard origin/main
-sudo systemctl reload apache2
+sudo -u user composer install --no-dev --optimize-autoloader
 ```
 
-```bash
-sudo chmod +x /usr/local/bin/update-sprachklassen.sh
-```
+### ⚠️ Wichtiger Hinweis zu composer.json / composer.lock (Fix für euren aktuellen Zustand)
 
-### 🕓 Cronjob (täglich um 03:00 Uhr)
+Im Code wird Composer-Autoload zwingend benötigt:
 
-```bash
-sudo crontab -e
-# Einfügen:
-0 3 * * * /usr/local/bin/update-sprachklassen.sh >/dev/null 2>&1
-```
+- `app/email.php` lädt `vendor/autoload.php` (PHPMailer)
+- `public/application_pdf.php` lädt `vendor/autoload.php` und nutzt `TCPDF` (**tecnickcom/tcpdf**)
 
-Test:
-```bash
-sudo /usr/local/bin/update-sprachklassen.sh
-```
+➡️ Daher muss `composer.json` im Repo alle tatsächlich genutzten Pakete enthalten und `composer.lock` muss dazu passen.
 
-Erwartung: Repository wird aktualisiert, Apache neu geladen.
+**Aktueller Fix (im Repo durchführen, NICHT auf dem Server “händisch”):**
+1. Auf einem Dev-System im Repo:
+   ```bash
+   composer require tecnickcom/tcpdf
+   ```
+2. Prüfen, dass danach `composer.json` und `composer.lock` aktualisiert sind.
+3. Beides committen & pushen.
+4. Auf dem Server deployen → `composer install` läuft und installiert korrekt.
+
+> Optional (wenn Bootstrap NICHT via Composer gewollt ist): `composer remove twbs/bootstrap`  
+> (Frage dazu siehe unten.)
 
 ---
 
-## 🧪 9️⃣ Testseite
+## 🗄️ 1️⃣0️⃣ Datenbank initialisieren (Schema + User/Grants)
 
-`/var/www/xxx.xxx.schule/index.php`:
+### 🔧 Konfiguration
 
-```php
-<?php
-echo "Host: " . $_SERVER['HTTP_HOST'] . "<br>";
-echo "Client-IP (REMOTE_ADDR): " . $_SERVER['REMOTE_ADDR'] . "<br>";
-echo "X-Forwarded-For: " . ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? '-') . "<br>";
-echo "X-Forwarded-Proto: " . ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '-') . "<br>";
-echo "HTTPS erkannt? " . (($_SERVER['HTTPS'] ?? getenv('HTTPS')) === 'on' ? 'ja' : 'nein') . "<br>";
-echo "Zeit: " . date('Y-m-d H:i:s');
-?>
+DB-Zugangsdaten liegen in `app/config.php`.
+
+Wichtige Konstanten:
+- `APP_DB_NAME` (z.B. `oldenburg_app`)
+- `APP_DB_USER` (z.B. `oldenburg_user`)
+- `APP_DB_PASS`
+- `DB_ADMIN_*` nur für `bin/init_db.php`
+
+### ✅ Init ausführen
+
+```bash
+cd /var/www/xxx.xxx.schule
+php bin/init_db.php
 ```
 
 Erwartete Ausgabe:
+
+```text
+[OK] Datenbank ist aktuell (Tabellen/Spalten/Indizes ergänzt, nichts gelöscht).
 ```
-Host: xxx.xxx.schule
-Client-IP (REMOTE_ADDR): <deine-IP>
-X-Forwarded-For: <deine-IP>
-X-Forwarded-Proto: https
-HTTPS erkannt? ja
-Zeit: <Datum/Uhrzeit>
+
+### Was macht `init_db.php` genau?
+- legt die Datenbank `APP_DB_NAME` an (falls nicht vorhanden)
+- legt DB-User `APP_DB_USER` an
+- setzt/aktualisiert Rechte (GRANTs) für:
+  - `localhost`, `127.0.0.1`, `::1`
+- erstellt/erweitert Tabellen, Spalten, Indizes, Foreign Keys (idempotent)
+- legt Default-Setting `max_tokens_per_email` an
+
+---
+
+## 🧱 1️⃣1️⃣ Dateirechte (Server)
+
+```bash
+sudo chown -R user:www-data /var/www/xxx.xxx.schule
+sudo find /var/www/xxx.xxx.schule -type d -exec chmod 2755 {} \;
+sudo find /var/www/xxx.xxx.schule -type f -exec chmod 0644 {} \;
+```
+
+### Schreibbare Verzeichnisse
+
+#### uploads/
+
+```bash
+sudo install -d -o user -g www-data -m 2775 /var/www/xxx.xxx.schule/uploads
+sudo find /var/www/xxx.xxx.schule/uploads -type d -exec chmod 2775 {} \;
+sudo find /var/www/xxx.xxx.schule/uploads -type f -exec chmod 0664 {} \;
+```
+
+#### logs/ (falls genutzt)
+
+```bash
+sudo install -d -o user -g www-data -m 2775 /var/www/xxx.xxx.schule/logs
+sudo find /var/www/xxx.xxx.schule/logs -type d -exec chmod 2775 {} \;
+sudo find /var/www/xxx.xxx.schule/logs -type f -exec chmod 0664 {} \;
+```
+
+### Option: ACLs (empfohlen, wenn Rechte später “driften”)
+
+```bash
+sudo apt-get update
+sudo apt-get install -y acl
+
+sudo setfacl -R -m u:user:rwx,g:www-data:rwx /var/www/xxx.xxx.schule/uploads
+sudo setfacl -d -m u:user:rwx,g:www-data:rwx /var/www/xxx.xxx.schule/uploads
+
+getfacl /var/www/xxx.xxx.schule/uploads
+```
+
+---
+
+## 🧪 1️⃣2️⃣ Smoke Tests (nach Neuinstallation)
+
+### PHP + Extensions
+
+```bash
+php -v
+php -m | egrep -i "pdo_mysql|mbstring|intl|curl|openssl|json|fileinfo"
+```
+
+### Composer Autoload vorhanden?
+
+```bash
+test -f /var/www/xxx.xxx.schule/vendor/autoload.php && echo "autoload OK" || echo "autoload MISSING"
+```
+
+### DB-Connect (App-User) + Tabellen-Check
+
+```bash
+cd /var/www/xxx.xxx.schule
+php -r "require 'app/config.php'; \$dsn='mysql:host=127.0.0.1;dbname='.APP_DB_NAME.';port=3306;charset=utf8mb4'; \$pdo=new PDO(\$dsn, APP_DB_USER, APP_DB_PASS, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]); echo 'DB OK: '.\$pdo->query('SELECT DATABASE()')->fetchColumn().PHP_EOL; echo 'Tables: '.count(\$pdo->query('SHOW TABLES')->fetchAll()).PHP_EOL;"
+```
+
+### Web-Erreichbarkeit lokal prüfen
+
+```bash
+curl -I http://127.0.0.1/ | head
+```
+
+---
+
+## 🚀 1️⃣3️⃣ Deployment: GitHub → Server (deploy.sh)
+
+Im Repo liegt ein **One-way** `deploy.sh` (GitHub → Server).  
+Es verwirft lokale Änderungen auf dem Server (tracked + untracked), behält aber definierte Runtime-Pfade.
+
+### Runtime-Pfade, die NICHT gelöscht/überschrieben werden sollen
+- `uploads/`
+- `logs/`
+- `.env`
+- `app/config.php`
+- (weitere siehe `deploy.sh` EXCLUDES)
+
+### ⚠️ Wichtig: vendor wird beim Deploy gelöscht, danach MUSS Composer laufen
+Da `vendor/` nicht im Repo ist, muss `deploy.sh` nach dem Git-Reset ein `composer install` ausführen.
+
+**Empfohlener Ablauf:**
+```bash
+cd /var/www/xxx.xxx.schule
+sudo -u user ./deploy.sh deploy
+sudo -u user composer install --no-dev --optimize-autoloader
+sudo systemctl reload apache2
+```
+
+> Optional: Wenn ihr Composer direkt in `deploy.sh` integrieren wollt:  
+> Ich empfehle, `deploy.sh` um einen Composer-Schritt zu erweitern (dann ist ein Deploy “vollständig” in einem Lauf).
+
+---
+
+## 🕓 1️⃣4️⃣ Automatische Updates (Cron)
+
+Wenn ihr nightly Pulls wollt, ist das sauberste:
+
+```bash
+sudo crontab -e
+```
+
+Einfügen (03:00 Uhr):
+
+```text
+0 3 * * * cd /var/www/xxx.xxx.schule && sudo -u user ./deploy.sh deploy && sudo -u user composer install --no-dev --optimize-autoloader && systemctl reload apache2 >/dev/null 2>&1
 ```
 
 ---
@@ -298,56 +433,21 @@ Zeit: <Datum/Uhrzeit>
 | Komponente | Pfad / Funktion |
 |-------------|-----------------|
 | Apache vHost | `/etc/apache2/sites-available/000-xxx.xxx.schule.conf` |
-| Webroot | `/var/www/xxx.xxx.schule` |
+| Webroot | `/var/www/xxx.xxx.schule` (DocumentRoot meist `/public`) |
 | PHP-Version | 8.2 |
-| Datenbank | `anmeldung` (MariaDB) |
+| MariaDB | 10.11.x |
+| DB Init | `php bin/init_db.php` |
+| Composer | `composer install --no-dev --optimize-autoloader` (**Pflicht**) |
 | Reverse Proxy | Nginx Proxy Manager |
 | SSL | Let’s Encrypt |
 | Firewall | UFW + Fail2Ban |
-| HTTPS-Erkennung | `X-Forwarded-Proto` |
-| Zugriff | Nur über Proxy (192.168.xx.253) |
-| Repo Update | Automatisch per `git fetch --all` (read-only) |
-
----
-
-## 🚀 Deployment-Skript (`deploy.sh`)
-
-Das Skript automatisiert die Synchronisation zwischen **Server und GitHub**  
-und liegt unter `/var/www/xxx.xxx.schule/deploy.sh`.
-
-### 🔧 Funktionsweise
-
-- Erkennung lokaler Änderungen → automatischer Commit (`git add -A && git commit`)
-- Prüfung auf Änderungen in GitHub → automatischer Pull (`git pull --ff-only` oder `--rebase`)
-- Push lokaler Änderungen zu GitHub (`git push origin main`)
-- Vollständiges Logging unter  
-  `/var/www/xxx.xxx.schule/logs/git_deploy_oldenburg.log`
-
----
-
-### 🧭 Befehlsübersicht
-
-| Befehl                                  | Richtung               | Beschreibung                                                                                                                                                                                                                                                                                                    |
-| :-------------------------------------- | :--------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `./deploy.sh` oder `./deploy.sh deploy` | ⬇️ **GitHub → Server** | Führt ein Deployment aus: `fetch` vom Remote, Checkout des Ziel-Branches und **harte Synchronisation** auf `origin/main`. **Lokale Änderungen auf dem Server werden verworfen** (tracked via `reset --hard`, untracked via `clean -fd`, mit definierten Ausnahmen wie `uploads/`, `logs/`, `.env`, `config.*`). |
-| `./deploy.sh status`                    | 📋 **Statusabfrage**   | Zeigt Remote-URLs, aktuellen Git-Status und die letzten Commits (inkl. Branch/HEAD). Dient zur Diagnose, ob der Server auf dem erwarteten Stand ist.                                                                                                                                                            |
-| `./deploy.sh help`                      | ❔ **Hilfe**            | Zeigt Kurzbeschreibung der verfügbaren Befehle und den Hinweis, dass das Script absichtlich **nur** GitHub → Server unterstützt.                                                                                                                                                                                |
-
-
----
-
-### 🪶 Beispielabläufe
-
-**Neue Datei auf dem Server anlegen**
-```bash
-cd /var/www/xxx.xxx.schule/public
-nano kontakt.php
-/var/www/xxx.xxx.schule/deploy.sh
+| HTTPS-Erkennung | `X-Forwarded-Proto` → Apache Rewrite setzt `HTTPS=on` |
+| Deploy | `./deploy.sh deploy` (GitHub → Server, one-way) |
 
 ---
 
 ## 🪶 Autoren & Credits
+
 **Projekt:** Oldenburg Sprachklassen  
 **Betreuung & Infrastruktur:** Kuhlmann IT Solutions (KITS)  
-**Version:** 1.1 – Stand November 2025
-
+**Version:** 1.3 – Stand Januar 2026
