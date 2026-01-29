@@ -40,7 +40,7 @@ $adminName = 'Admin';
                     <div class="card-body">
                         <h2 class="h6">Bewerbungen</h2>
                         <p class="text-muted mb-3">Datensätze ansehen, filtern und später exportieren.</p>
-                        <a class="btn btn-primary btn-sm disabled" href="#" aria-disabled="true">Öffnen (kommt als nächstes)</a>
+                        <a class="btn btn-primary btn-sm" href="/admin/applications.php">Öffnen</a>
                     </div>
                 </div>
             </div>
