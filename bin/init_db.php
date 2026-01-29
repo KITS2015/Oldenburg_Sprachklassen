@@ -463,6 +463,85 @@ try {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
 
+    // ============================
+    // admin_users / roles (Admin-Bereich Auth)
+    // ============================
+    
+    // Tabelle: admin_users
+    $app->exec("
+      CREATE TABLE IF NOT EXISTS admin_users (
+        id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        username       VARCHAR(100) NOT NULL,
+        password_hash  VARCHAR(255) NOT NULL,
+        display_name   VARCHAR(200) NULL,
+        is_active      TINYINT(1) NOT NULL DEFAULT 1,
+        last_login_at  DATETIME NULL,
+        created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_admin_username (username)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ");
+    
+    // Tabelle: roles
+    $app->exec("
+      CREATE TABLE IF NOT EXISTS roles (
+        id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        role_key   VARCHAR(100) NOT NULL,
+        role_name  VARCHAR(200) NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY uq_role_key (role_key)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ");
+    
+    // Mapping: admin_user_roles
+    $app->exec("
+      CREATE TABLE IF NOT EXISTS admin_user_roles (
+        user_id BIGINT UNSIGNED NOT NULL,
+        role_id BIGINT UNSIGNED NOT NULL,
+        PRIMARY KEY (user_id, role_id),
+        KEY idx_role_id (role_id),
+        CONSTRAINT fk_aur_user FOREIGN KEY (user_id) REFERENCES admin_users(id) ON DELETE CASCADE,
+        CONSTRAINT fk_aur_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ");
+    
+    // Standardrolle "admin" sicherstellen
+    $app->exec("
+      INSERT INTO roles (role_key, role_name)
+      VALUES ('admin', 'Administrator')
+      ON DUPLICATE KEY UPDATE role_name = VALUES(role_name)
+    ");
+
+    // Default-Admin anlegen, wenn Config-Konstanten vorhanden sind
+    if (defined('ADMIN_USER') && defined('ADMIN_PASS_HASH')) {
+    
+        // User anlegen/aktualisieren
+        $st = $app->prepare("
+            INSERT INTO admin_users (username, password_hash, display_name, is_active)
+            VALUES (?, ?, 'Admin', 1)
+            ON DUPLICATE KEY UPDATE
+              password_hash = VALUES(password_hash),
+              is_active = 1
+        ");
+        $st->execute([ADMIN_USER, ADMIN_PASS_HASH]);
+    
+        // Rolle admin zuweisen
+        $userId = (int)$app->query("SELECT id FROM admin_users WHERE username=" . $app->quote(ADMIN_USER))->fetchColumn();
+        $roleId = (int)$app->query("SELECT id FROM roles WHERE role_key='admin'")->fetchColumn();
+    
+        if ($userId > 0 && $roleId > 0) {
+            $st2 = $app->prepare("
+                INSERT IGNORE INTO admin_user_roles (user_id, role_id)
+                VALUES (?, ?)
+            ");
+            $st2->execute([$userId, $roleId]);
+        }
+    }
+
+
+    
     echo "[OK] Datenbank ist aktuell (Tabellen/Spalten/Indizes ergänzt, nichts gelöscht).\n";
 
 } catch (Throwable $e) {
