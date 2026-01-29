@@ -851,7 +851,13 @@ Sie erhalten mit der Zusage der Schule die Aufforderung, diese Dateien nachzurei
             'status.success.title' => 'Thank you!',
             'status.success.body'  => 'Your application has been submitted and will now be processed.',
             'status.info.title' => 'Important note',
-            'status.info.body'  => '<em>[PLACEHOLDER: customer text to follow]</em>',
+            'status.info.body'  => 'Done — you have applied for “BES Language and Integration” at a vocational school (BBS) in Oldenburg.
+
+This is not yet a final enrollment, but an application. After 20 February, you will be informed whether you have been accepted and at which BBS. Please check your mailbox and your email inbox regularly. Please make sure your name is visible on the mailbox so that you can receive letters.
+
+When the school confirms your acceptance, you will be asked to submit the following documents (if you have not uploaded them today):
+
+most recent half-year report card',
             'status.btn.pdf'     => 'Download / print PDF',
             'status.btn.newapp'  => 'Start another application',
             'status.btn.home'    => 'Home',
@@ -1437,7 +1443,13 @@ Sie erhalten mit der Zusage der Schule die Aufforderung, diese Dateien nachzurei
             'status.success.body'  => 'Votre candidature a été transmise et va maintenant être traitée.',
         
             'status.info.title' => 'Information importante',
-            'status.info.body'  => '<em>[PLACEHOLDER : texte fourni par le client]</em>',
+            'status.info.body'  => 'C’est fait : vous avez déposé votre candidature pour « BES Langue et Intégration » dans une BBS à Oldenburg.
+
+Il ne s’agit pas encore d’une inscription définitive, mais d’une candidature. Après le 20/02, vous recevrez l’information indiquant si vous êtes admis·e et dans quelle BBS. Veuillez vérifier régulièrement votre boîte aux lettres et votre messagerie e-mail. Veillez à ce que votre nom soit visible sur la boîte aux lettres afin de pouvoir recevoir du courrier.
+
+Avec la confirmation d’admission de l’école, il vous sera demandé de fournir les documents suivants (si vous ne les avez pas encore téléversés aujourd’hui) :
+
+le bulletin du dernier semestre',
         
             'status.btn.pdf'    => 'Télécharger / imprimer le PDF',
             'status.btn.newapp' => 'Démarrer une autre candidature',
@@ -2092,7 +2104,13 @@ Sie erhalten mit der Zusage der Schule die Aufforderung, diese Dateien nachzurei
             'status.success.body'  => 'Вашу заявку надіслано, її буде опрацьовано найближчим часом.',
         
             'status.info.title' => 'Важлива примітка',
-            'status.info.body'  => '<em>[ЗАГЛУШКА: текст від замовника буде пізніше]</em>',
+            'status.info.body'  => 'Готово — ви подали заявку на «BES Мова та інтеграція» в одній із професійних шкіл (BBS) м. Ольденбург.
+
+Це ще не остаточна реєстрація, а лише заявка. Після 20.02 ви отримаєте інформацію, чи вас зараховано та до якої саме BBS. Будь ласка, регулярно перевіряйте поштову скриньку та електронну пошту. Переконайтеся, що на поштовій скриньці видно ваше ім’я, щоб ви могли отримувати листи.
+
+Після підтвердження зарахування школа попросить вас подати ці документи (якщо ви ще не завантажили їх сьогодні):
+
+табель/свідоцтво за останнє півріччя',
         
             'status.btn.pdf'    => 'Завантажити / роздрукувати PDF',
             'status.btn.newapp' => 'Почати ще одну заявку',
@@ -2746,7 +2764,13 @@ Sie erhalten mit der Zusage der Schule die Aufforderung, diese Dateien nachzurei
             'status.success.body'  => 'تم إرسال طلبك وسيتم معالجته الآن.',
         
             'status.info.title' => 'ملاحظة مهمة',
-            'status.info.body'  => '<em>[عنصر نائب: سيتم توفير النص من العميل لاحقًا]</em>',
+            'status.info.body'  => 'تمّ بنجاح — لقد تقدّمت/تقدّمتِ بطلب للالتحاق ببرنامج «BES اللغة والاندماج» في إحدى المدارس المهنية (BBS) في أولدنبورغ.
+
+هذا ليس تسجيلًا نهائيًا بعد، بل هو طلب/تقديم. بعد تاريخ 20.02 ستتلقى/ستتلقين معلومات عمّا إذا تم قبولك/قبولكِ وفي أي مدرسة BBS سيتم تسجيلك/تسجيلكِ. يُرجى متابعة صندوق البريد وبريدك الإلكتروني بانتظام. يُرجى التأكد من أن اسمك/اسمكِ ظاهر على صندوق البريد لكي تتمكن/تتمكني من استلام الرسائل.
+
+عند صدور الموافقة من المدرسة، سيُطلب منك/منكِ تقديم هذه الملفات (إذا لم تقم/تقومي برفعها اليوم):
+
+شهادة/كشف درجات الفصل الدراسي الأخير',
         
             'status.btn.pdf'    => 'تحميل / طباعة PDF',
             'status.btn.newapp' => 'بدء طلب جديد',
@@ -3399,7 +3423,13 @@ Sie erhalten mit der Zusage der Schule die Aufforderung, diese Dateien nachzurei
             'status.success.body'  => 'Ваше заявление отправлено и сейчас обрабатывается.',
         
             'status.info.title' => 'Важная информация',
-            'status.info.body'  => '<em>[ЗАГЛУШКА: текст от заказчика будет позже]</em>',
+            'status.info.body'  => 'Готово — вы подали заявку на «BES Язык и интеграция» в одной из профессиональных школ (BBS) Ольденбурга.
+
+Это ещё не окончательная запись, а только заявка. После 20.02 вы получите информацию, приняли ли вас и в какую именно BBS. Пожалуйста, регулярно проверяйте почтовый ящик и электронную почту. Убедитесь, что ваше имя видно на почтовом ящике, чтобы вы могли получать письма.
+
+После подтверждения зачисления школа попросит вас предоставить следующие документы (если вы ещё не загрузили их сегодня):
+
+табель/свидетельство за последнее полугодие',
         
             'status.btn.pdf'    => 'Скачать / распечатать PDF',
             'status.btn.newapp' => 'Начать новое заявление',
@@ -4051,7 +4081,13 @@ Sie erhalten mit der Zusage der Schule die Aufforderung, diese Dateien nachzurei
             'status.success.body'  => 'Başvurunuz iletildi ve şimdi işleniyor.',
         
             'status.info.title' => 'Önemli bilgi',
-            'status.info.body'  => '<em>[YER TUTUCU: müşteriden metin gelecek]</em>',
+            'status.info.body'  => 'Tamamlandı — Oldenburg’daki bir meslek okulunda (BBS) “BES Dil ve Uyum” programına başvurdunuz.
+
+Bu henüz kesin bir kayıt değildir, sadece bir başvurudur. 20.02’den sonra kabul edilip edilmediğiniz ve hangi BBS’ye yerleştirileceğiniz size bildirilecektir. Lütfen posta kutunuzu ve e-posta gelen kutunuzu düzenli olarak kontrol edin. Mektup alabilmeniz için posta kutunuzda adınızın görünür olduğundan emin olun.
+
+Okuldan kabul onayı geldiğinde, aşağıdaki belgeleri (bugün henüz yüklemediyseniz) sonradan sunmanız istenecektir:
+
+son yarıyıl karnesi',
         
             'status.btn.pdf'    => 'PDF indir / yazdır',
             'status.btn.newapp' => 'Yeni başvuru başlat',
@@ -4704,7 +4740,13 @@ Sie erhalten mit der Zusage der Schule die Aufforderung, diese Dateien nachzurei
             'status.success.body'  => 'درخواست شما ارسال شد و اکنون در حال بررسی است.',
         
             'status.info.title' => 'نکته مهم',
-            'status.info.body'  => '<em>[جای‌نگهدار: متن از مشتری خواهد آمد]</em>',
+            'status.info.body'  => 'انجام شد — شما برای «BES زبان و ادغام» در یکی از مدارس فنی‌وحرفه‌ای (BBS) اولدن‌بورگ درخواست داده‌اید.
+
+این هنوز ثبت‌نام نهایی نیست، بلکه یک درخواست/تقاضا است. پس از تاریخ 20.02 به شما اطلاع داده می‌شود که آیا پذیرفته شده‌اید و در کدام BBS. لطفاً صندوق پستی و صندوق ورودی ایمیل خود را به‌طور منظم بررسی کنید. لطفاً مطمئن شوید نام شما روی صندوق پستی قابل مشاهده است تا بتوانید نامه دریافت کنید.
+
+با تأیید پذیرش از سوی مدرسه، از شما خواسته می‌شود این مدارک را ارائه کنید (اگر امروز هنوز بارگذاری نکرده‌اید):
+
+کارنامه نیم‌سال آخر',
         
             'status.btn.pdf'    => 'دانلود / چاپ PDF',
             'status.btn.newapp' => 'شروع درخواست جدید',
@@ -5347,7 +5389,13 @@ Sie erhalten mit der Zusage der Schule die Aufforderung, diese Dateien nachzurei
             'status.success.body'  => 'Đơn của bạn đã được gửi và đang được xử lý.',
         
             'status.info.title' => 'Lưu ý quan trọng',
-            'status.info.body'  => '<em>[CHỖ TRỐNG: Văn bản từ khách hàng sẽ được bổ sung]</em>',
+            'status.info.body'  => 'Xong rồi — bạn đã nộp đơn đăng ký vào “BES Ngôn ngữ và Hội nhập” tại một trường dạy nghề (BBS) ở Oldenburg.
+
+Đây chưa phải là đăng ký cuối cùng mà chỉ là đơn dự tuyển. Sau ngày 20.02, bạn sẽ nhận được thông tin liệu bạn có được nhận hay không và bạn sẽ được tiếp nhận tại BBS nào. Vui lòng thường xuyên kiểm tra hộp thư và email của bạn. Hãy đảm bảo tên của bạn hiển thị trên hòm thư để bạn có thể nhận thư.
+
+Khi được trường chấp nhận, bạn sẽ được yêu cầu nộp bổ sung các tài liệu sau (nếu hôm nay bạn chưa tải lên):
+
+bảng điểm học kỳ gần nhất',
         
             'status.btn.pdf'    => 'Tải / In PDF',
             'status.btn.newapp' => 'Bắt đầu đơn mới',
