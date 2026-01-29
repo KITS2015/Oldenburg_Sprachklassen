@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+// Datei: public/admin/index.php
+
 require_once __DIR__ . '/inc/bootstrap.php';
 require_once __DIR__ . '/inc/auth.php';
 
