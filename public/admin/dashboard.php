@@ -50,7 +50,7 @@ $adminName = 'Admin';
                     <div class="card-body">
                         <h2 class="h6">BBS / API-Clients</h2>
                         <p class="text-muted mb-3">Berufsschulen anlegen, Token/Keys verwalten.</p>
-                        <a class="btn btn-primary btn-sm disabled" href="#" aria-disabled="true">Öffnen (kommt als nächstes)</a>
+                        <a class="btn btn-primary btn-sm" href="/admin/bbs.php">Öffnen</a>
                     </div>
                 </div>
             </div>
