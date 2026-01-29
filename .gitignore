@@ -1,7 +1,12 @@
+public/assets/bootstrap/
 composer.phar
 /vendor/
-logs/*.log
+
+logs/
 !logs/.gitkeep
-uploads/*.*
+
+uploads/
+!uploads/.gitkeep
+
 /app/config.php
 /app/mail.php
