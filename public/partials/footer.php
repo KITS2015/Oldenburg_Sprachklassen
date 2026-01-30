@@ -4,6 +4,6 @@
   <a href="/datenschutz.php" class="text-decoration-none">Datenschutz</a>
 </footer>
 
-<script src="/assets/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="/assets/bootstrap/css/bootstrap.bundle.min.js"></script>
 </body>
 </html>
