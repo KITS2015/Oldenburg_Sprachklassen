@@ -135,5 +135,5 @@ function tr_status(string $key, array $vars = []): string {
   </div>
 </div>
 
-<script src="/assets/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="/assets/bootstrap/css/bootstrap.bundle.min.js"></script>
 <?php require __DIR__ . '/partials/footer.php'; ?>
