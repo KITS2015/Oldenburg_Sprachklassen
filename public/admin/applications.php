@@ -153,7 +153,7 @@ function sort_indicator(string $col): string
     <title>Admin – Bewerbungen</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="/assets/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="/admin/admin.css">
 </head>
 <body class="admin-body admin-body--app">
@@ -292,7 +292,7 @@ function sort_indicator(string $col): string
 
 </div>
 
-<script src="/assets/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script>
     // Check all
     const checkAll = document.getElementById('checkAll');
