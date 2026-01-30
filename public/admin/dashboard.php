@@ -73,6 +73,6 @@ $adminName = 'Admin';
         </div>
     </div>
 
-    <script src="/assets/bootstrap/css/bootstrap.bundle.min.js"></script>
+    <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
