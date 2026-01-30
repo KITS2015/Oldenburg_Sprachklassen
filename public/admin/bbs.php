@@ -128,7 +128,7 @@ $rows = $pdo->query("
     <title>Admin – BBS / BoB-Backends</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="/assets/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="/admin/admin.css">
 </head>
 <body class="admin-body admin-body--app">
@@ -268,6 +268,6 @@ $rows = $pdo->query("
 
 </div>
 
-<script src="/assets/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
