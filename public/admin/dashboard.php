@@ -18,7 +18,7 @@ $adminName = 'Admin';
     <title>Sprach-Portal – Admin Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="/assets/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="/admin/admin.css">
 </head>
 <body class="admin-body admin-body--app">
@@ -73,6 +73,6 @@ $adminName = 'Admin';
         </div>
     </div>
 
-    <script src="/assets/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="/assets/bootstrap/css/bootstrap.bundle.min.js"></script>
 </body>
 </html>
