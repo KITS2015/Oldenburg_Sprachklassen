@@ -20,7 +20,7 @@ $extra_css = $extra_css ?? [];
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></title>
 
-  <link rel="stylesheet" href="/assets/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="/assets/form.css">
   <link rel="icon" href="/favicon.ico" sizes="any">
 <?php foreach ($extra_css as $href): ?>
