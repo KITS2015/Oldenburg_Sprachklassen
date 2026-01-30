@@ -51,8 +51,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Sprach-Portal – Admin Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap (liegt bei euch unter /public/assets/bootstrap/) -->
-    <link rel="stylesheet" href="/assets/bootstrap/bootstrap.min.css">
+    <!-- Bootstrap (liegt bei euch unter /public/assets/bootstrap/css) -->
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
 
     <!-- Admin CSS -->
     <link rel="stylesheet" href="/admin/admin.css">
@@ -89,6 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </main>
 
-    <script src="/assets/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
