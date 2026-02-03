@@ -1,113 +1,69 @@
 /* Datei: public/admin/admin.css */
 
-/* Basis */
-.admin-body {
+/* Grundlayout */
+.admin-shell {
     min-height: 100vh;
     background: #f6f7fb;
 }
 
-/* Login-Ansicht (zentriert, schmal) */
-.admin-body--login {
+.admin-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+
+/* Sidebar + Content */
+.admin-layout {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    min-height: calc(100vh - 56px); /* Topbar-Höhe (Bootstrap) */
 }
 
-.admin-login-wrapper {
-    width: 100%;
-    max-width: 420px;
-    padding: 16px;
-}
-
-.admin-card {
-    border-radius: 14px;
-}
-
-.admin-card .form-control {
-    border-radius: 10px;
-}
-
-.admin-card .btn {
-    border-radius: 10px;
-    padding: 10px 12px;
-}
-
-/* App-Layout (Dashboard/Applications/BBS) */
-.admin-body--app {
-    display: block;
-}
-
-/* Shell: Sidebar + Main */
-.admin-shell {
-    display: flex;
-    min-height: 100vh;
-    width: 100%;
-}
-
-/* Sidebar */
 .admin-sidebar {
     width: 260px;
-    background: #ffffff;
-    border-right: 1px solid rgba(0,0,0,.08);
+    flex: 0 0 260px;
 }
 
-.admin-sidebar .brand {
-    font-weight: 700;
-    letter-spacing: .2px;
-}
-
-.admin-sidebar .nav-link {
-    color: #2b2f36;
-    border-radius: 10px;
-    padding: .55rem .75rem;
-}
-
-.admin-sidebar .nav-link:hover {
-    background: rgba(13,110,253,.08);
-}
-
-.admin-sidebar .nav-link.active {
-    background: rgba(13,110,253,.12);
-    color: #0d6efd;
-    font-weight: 600;
-}
-
-/* Main */
-.admin-main {
-    flex: 1;
-    min-width: 0;              /* wichtig für overflow */
-    display: flex;
-    flex-direction: column;
-}
-
-.admin-topbar {
-    background: #ffffff;
-    border-bottom: 1px solid rgba(0,0,0,.08);
-}
-
-/* Content darf BREIT sein */
 .admin-content {
-    flex: 1;
-    padding: 1rem;
+    flex: 1 1 auto;
+    min-width: 0; /* wichtig für responsive Tabellen */
 }
 
-@media (min-width: 992px) {
-    .admin-content {
-        padding: 1.25rem 1.5rem;
-    }
+/* Footer */
+.admin-footer {
+    position: sticky;
+    bottom: 0;
 }
 
-/* Tabellen: horizontal scroll wenn nötig */
+/* Tabellen */
 .admin-table-wrap {
     overflow-x: auto;
 }
 
-.admin-table-wrap table {
+.admin-table {
     width: max-content;
     min-width: 100%;
 }
 
-.admin-nowrap th,
-.admin-nowrap td {
+.admin-table th,
+.admin-table td {
     white-space: nowrap;
+}
+
+/* BBS-Spalten */
+.admin-table th.bbs-col,
+.admin-table td.bbs-col {
+    text-align: center;
+    vertical-align: middle;
+    width: 88px;
+}
+
+/* Mobile: Sidebar untereinander */
+@media (max-width: 992px) {
+    .admin-layout {
+        flex-direction: column;
+    }
+    .admin-sidebar {
+        width: 100%;
+        flex: 0 0 auto;
+    }
 }
