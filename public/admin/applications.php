@@ -18,11 +18,8 @@ function build_query(array $overrides = []): string
 {
     $base = $_GET;
     foreach ($overrides as $k => $v) {
-        if ($v === null) {
-            unset($base[$k]);
-        } else {
-            $base[$k] = (string)$v;
-        }
+        if ($v === null) unset($base[$k]);
+        else $base[$k] = (string)$v;
     }
     return http_build_query($base);
 }
@@ -32,9 +29,7 @@ function sort_link(string $col): string
     $currentSort = (string)($_GET['sort'] ?? 'updated_at');
     $currentDir  = strtolower((string)($_GET['dir'] ?? 'desc'));
     $newDir = 'asc';
-    if ($currentSort === $col && $currentDir === 'asc') {
-        $newDir = 'desc';
-    }
+    if ($currentSort === $col && $currentDir === 'asc') $newDir = 'desc';
     return '/admin/applications.php?' . build_query(['sort' => $col, 'dir' => $newDir, 'page' => 1]);
 }
 
@@ -48,7 +43,6 @@ function sort_indicator(string $col): string
 
 function get_current_admin_user_id(): int
 {
-    // Falls euer Session-Key anders heißt: hier anpassen.
     return (int)($_SESSION['admin_user_id'] ?? 0);
 }
 
@@ -74,15 +68,11 @@ function admin_has_role(PDO $pdo, int $userId, string $roleKey): bool
 // ---- Admin-Override (role admin darf alles) ----
 $adminUserId = get_current_admin_user_id();
 $isAdminRole = admin_has_role($pdo, $adminUserId, 'admin');
-
-// Wenn Session-Key / Rollen (noch) nicht sauber gesetzt sind, lieber nicht blockieren:
-if ($adminUserId <= 0) {
-    $isAdminRole = true;
-}
+if ($adminUserId <= 0) $isAdminRole = true;
 
 // ---- BBS-Liste + Map ----
 $bbsRows = $pdo->query("
-    SELECT bbs_id, bbs_schulnummer, bbs_bezeichnung
+    SELECT bbs_id, bbs_kurz, bbs_schulnummer, bbs_bezeichnung
     FROM bbs
     WHERE is_active = 1
     ORDER BY bbs_bezeichnung
@@ -105,19 +95,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = (string)($_POST['action'] ?? '');
     $appId  = (int)($_POST['app_id'] ?? 0);
 
-    // Redirect: Filter/Sort/Page beibehalten
     $redirectUrl = '/admin/applications.php';
     $qs = build_query([]);
-    if ($qs !== '') {
-        $redirectUrl .= '?' . $qs;
-    }
+    if ($qs !== '') $redirectUrl .= '?' . $qs;
 
     if ($appId <= 0 || !in_array($action, ['assign', 'lock', 'unlock'], true)) {
         header('Location: ' . $redirectUrl);
         exit;
     }
 
-    // aktuellen Zustand laden
     $st = $pdo->prepare("
         SELECT id, assigned_bbs_id, is_locked, locked_by_bbs_id, locked_at
         FROM applications
@@ -136,17 +122,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $isLocked      = (int)($cur['is_locked'] ?? 0);
 
     if ($action === 'assign') {
-        // Hidden-Feld liefert 0 (= keine) oder bbs_id
         $posted = (int)($_POST['assigned_bbs_id'] ?? 0);
         $newBbsId = $posted > 0 ? $posted : null; // 0 => NULL
 
-        // gelockt => nur Admin darf ändern
         if ($isLocked && !$isAdminRole) {
             header('Location: ' . $redirectUrl);
             exit;
         }
 
-        // nur aktive BBS zulassen (wenn gesetzt)
         if ($newBbsId !== null && !isset($bbsMap[(int)$newBbsId])) {
             header('Location: ' . $redirectUrl);
             exit;
@@ -159,7 +142,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ");
         $stUp->execute([$newBbsId, $appId]);
 
-        // optional audit
         try {
             $meta = json_encode(['assigned_bbs_id' => $newBbsId], JSON_UNESCAPED_UNICODE);
             $stA = $pdo->prepare("INSERT INTO audit_log (application_id, event, meta_json) VALUES (?, 'assigned_bbs_changed', ?)");
@@ -171,18 +153,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($action === 'lock') {
-        if ($isLocked) {
-            header('Location: ' . $redirectUrl);
-            exit;
-        }
+        if ($isLocked) { header('Location: ' . $redirectUrl); exit; }
+        if ($assignedBbsId <= 0) { header('Location: ' . $redirectUrl); exit; }
 
-        // nur locken, wenn eine Ziel-BBS gesetzt ist
-        if ($assignedBbsId <= 0) {
-            header('Location: ' . $redirectUrl);
-            exit;
-        }
-
-        // Admin-Lock: locked_by_bbs_id = NULL (Anzeige: Admin)
         $stUp = $pdo->prepare("
             UPDATE applications
             SET is_locked = 1,
@@ -203,12 +176,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($action === 'unlock') {
-        if (!$isLocked) {
-            header('Location: ' . $redirectUrl);
-            exit;
-        }
+        if (!$isLocked) { header('Location: ' . $redirectUrl); exit; }
 
-        // Admin darf immer unlocken
         $stUp = $pdo->prepare("
             UPDATE applications
             SET is_locked = 0,
@@ -236,14 +205,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $limit = 25;
 
 $page = (int)($_GET['page'] ?? 1);
-if ($page < 1) { $page = 1; }
+if ($page < 1) $page = 1;
 $offset = ($page - 1) * $limit;
 
 $status = trim((string)($_GET['status'] ?? ''));
 $allowedStatus = ['', 'draft', 'submitted', 'withdrawn'];
-if (!in_array($status, $allowedStatus, true)) {
-    $status = '';
-}
+if (!in_array($status, $allowedStatus, true)) $status = '';
 
 $q = trim((string)($_GET['q'] ?? ''));
 $q = mb_substr($q, 0, 200);
@@ -261,12 +228,10 @@ $sortMap = [
     'locked'     => 'a.is_locked',
 ];
 
-if (!isset($sortMap[$sort])) {
-    $sort = 'updated_at';
-}
+if (!isset($sortMap[$sort])) $sort = 'updated_at';
 $orderBy = $sortMap[$sort] . ' ' . strtoupper($dir);
 
-// ---- WHERE bauen ----
+// ---- WHERE ----
 $where = [];
 $params = [];
 
@@ -290,7 +255,7 @@ if ($q !== '') {
 
 $whereSql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
 
-// ---- Count für Pagination ----
+// ---- Count ----
 $stCount = $pdo->prepare("
     SELECT COUNT(*)
     FROM applications a
@@ -301,10 +266,10 @@ $stCount->execute($params);
 $total = (int)$stCount->fetchColumn();
 $totalPages = (int)max(1, (int)ceil($total / $limit));
 
-if ($page > $totalPages) { $page = $totalPages; }
+if ($page > $totalPages) $page = $totalPages;
 $offset = ($page - 1) * $limit;
 
-// ---- Daten laden ----
+// ---- Data ----
 $st = $pdo->prepare("
     SELECT
         a.id,
@@ -324,7 +289,6 @@ $st = $pdo->prepare("
         p.vorname,
         p.geburtsdatum,
         p.email AS personal_email
-
     FROM applications a
     LEFT JOIN personal p ON p.application_id = a.id
     $whereSql
@@ -334,7 +298,7 @@ $st = $pdo->prepare("
 $st->execute($params);
 $rows = $st->fetchAll();
 
-// colspan dynamisch: 11 Basis-Spalten + BBS-Spalten (Keine + N BBS)
+// colspan: 11 Basis + N BBS
 $colspan = 11 + count($bbsRows);
 ?>
 <!doctype html>
@@ -349,10 +313,10 @@ $colspan = 11 + count($bbsRows);
 
     <style>
         .table-responsive { overflow-x: auto; }
-        table.table { width: max-content; min-width: 1200px; }
+        table.table { width: max-content; min-width: 1600px; } /* breiter */
         th, td { white-space: nowrap; }
-        th.bbs-col, td.bbs-col { text-align: center; vertical-align: middle; }
-        th.bbs-col { font-size: 0.85rem; }
+        th.bbs-col, td.bbs-col { text-align: center; vertical-align: middle; width: 92px; } /* BBS-Spalten etwas breiter */
+        th.bbs-col { font-size: 0.9rem; }
     </style>
 </head>
 <body class="admin-body admin-body--app">
@@ -426,11 +390,12 @@ $colspan = 11 + count($bbsRows);
                     <th class="bbs-col">Keine</th>
                     <?php foreach ($bbsRows as $b): ?>
                         <?php
-                        $short = trim((string)($b['bbs_schulnummer'] ?? ''));
-                        if ($short === '') $short = (string)$b['bbs_bezeichnung'];
+                        $label = trim((string)($b['bbs_kurz'] ?? ''));
+                        if ($label === '') $label = trim((string)($b['bbs_schulnummer'] ?? ''));
+                        if ($label === '') $label = (string)($b['bbs_bezeichnung'] ?? '');
                         ?>
                         <th class="bbs-col" title="<?php echo h((string)$b['bbs_bezeichnung']); ?>">
-                            <?php echo h($short); ?>
+                            <?php echo h($label); ?>
                         </th>
                     <?php endforeach; ?>
 
@@ -469,7 +434,6 @@ $colspan = 11 + count($bbsRows);
 
                         $disableAssign = ($isLocked && !$isAdminRole) ? 'disabled' : '';
 
-                        // pro Zeile ein eigenes Assign-Form + Hidden assigned_bbs_id
                         $formId = 'assignForm' . $appId;
                         $radioName = 'pick_bbs_' . $appId;
                         ?>
