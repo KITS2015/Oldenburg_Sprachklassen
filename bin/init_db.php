@@ -579,7 +579,7 @@ try {
         }
     }
 
-   // ============================
+    // ============================
     // bbs (BoB-Backends / API-Clients)
     // ============================
     $app->exec("
@@ -597,6 +597,11 @@ try {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
 
+    // Migration: bbs_kurz nachziehen (für bestehende Installationen)
+    if (table_exists($admin, $dbName, 'bbs') && !col_exists($admin, $dbName, 'bbs', 'bbs_kurz')) {
+        $app->exec("ALTER TABLE bbs ADD COLUMN bbs_kurz VARCHAR(10) NULL AFTER bbs_schulnummer");
+    }
+    
     // ============================
     // FK applications -> bbs (Zuweisung / Lock)
     // ============================
