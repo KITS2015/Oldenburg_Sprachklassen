@@ -579,13 +579,14 @@ try {
         }
     }
 
-    // ============================
+   // ============================
     // bbs (BoB-Backends / API-Clients)
     // ============================
     $app->exec("
       CREATE TABLE IF NOT EXISTS bbs (
         bbs_id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
         bbs_schulnummer   VARCHAR(50)  NOT NULL,
+        bbs_kurz          VARCHAR(10)  NULL,
         bbs_bezeichnung   VARCHAR(255) NOT NULL,
         rest_token_hash   CHAR(64)     NULL,
         is_active         TINYINT(1)   NOT NULL DEFAULT 1,
