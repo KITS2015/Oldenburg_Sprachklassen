@@ -621,7 +621,7 @@ try {
         // ignore
     }
 
-    // Optional: Konsistenz (wenn nicht gelockt, dann Lock-Felder zurücksetzen)
+    // Optional: Konsistenz
     try {
         $app->exec("
           UPDATE applications
