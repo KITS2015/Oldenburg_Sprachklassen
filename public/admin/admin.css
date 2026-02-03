@@ -1,88 +1,37 @@
 /* Datei: public/admin/admin.css */
 
-/* Basis */
-.admin-body {
+/* Grundlayout */
+.admin-shell {
     min-height: 100vh;
     background: #f6f7fb;
-    margin: 0;
-}
-
-/* Login-Seite weiterhin zentriert */
-.admin-body--login {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* App-Seiten: normales Layout, NICHT zentriert */
-.admin-body--app {
-    display: block;
-}
-
-/* Login Card */
-.admin-login-wrapper {
-    width: 100%;
-    max-width: 420px;
-    padding: 16px;
-}
-
-.admin-card { border-radius: 14px; }
-.admin-card .form-control { border-radius: 10px; }
-.admin-card .btn { border-radius: 10px; padding: 10px 12px; }
-
-/* Dashboard-Layout */
-.admin-layout {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
 }
 
 .admin-topbar {
-    border-bottom: 1px solid rgba(255,255,255,0.15);
+    position: sticky;
+    top: 0;
+    z-index: 1030;
 }
 
-.admin-main {
-    flex: 1;
+/* Sidebar + Content */
+.admin-layout {
     display: flex;
-    min-height: 0;
+    min-height: calc(100vh - 56px); /* Topbar-Höhe (Bootstrap) */
 }
 
-/* Sidebar */
 .admin-sidebar {
     width: 260px;
-    flex: 0 0 auto;
-    background: #ffffff;
-    border-right: 1px solid #dee2e6;
+    flex: 0 0 260px;
 }
 
-.admin-sidebar .nav-link {
-    color: #212529;
-    border-radius: .5rem;
-    padding: .5rem .75rem;
-}
-
-.admin-sidebar .nav-link:hover {
-    background: #f1f3f5;
-}
-
-.admin-sidebar .nav-link.active {
-    background: #e9ecef;
-    font-weight: 600;
-}
-
-/* Content */
 .admin-content {
     flex: 1 1 auto;
-    padding: 1.25rem;
-    min-width: 0;
+    min-width: 0; /* wichtig für responsive Tabellen */
 }
 
-.admin-page-title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: .75rem;
-    margin-bottom: 1rem;
+/* Footer */
+.admin-footer {
+    position: sticky;
+    bottom: 0;
 }
 
 /* Tabellen */
@@ -91,15 +40,30 @@
 }
 
 .admin-table {
+    width: max-content;
+    min-width: 100%;
+}
+
+.admin-table th,
+.admin-table td {
     white-space: nowrap;
 }
 
-/* Mobile: Sidebar nach oben klappen */
+/* BBS-Spalten */
+.admin-table th.bbs-col,
+.admin-table td.bbs-col {
+    text-align: center;
+    vertical-align: middle;
+    width: 88px;
+}
+
+/* Mobile: Sidebar untereinander */
 @media (max-width: 992px) {
-    .admin-main {
+    .admin-layout {
         flex-direction: column;
     }
     .admin-sidebar {
         width: 100%;
-        border-right: 0;
-        border-bottom: 1px solid #dee2e6;
+        flex: 0 0 auto;
+    }
+}
