@@ -82,7 +82,7 @@ if ($adminUserId <= 0) {
 
 // ---- BBS-Liste + Map ----
 $bbsRows = $pdo->query("
-    SELECT bbs_id, bbs_bezeichnung
+    SELECT bbs_id, bbs_schulnummer, bbs_bezeichnung
     FROM bbs
     WHERE is_active = 1
     ORDER BY bbs_bezeichnung
@@ -136,8 +136,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $isLocked      = (int)($cur['is_locked'] ?? 0);
 
     if ($action === 'assign') {
-        $newBbsId = (int)($_POST['assigned_bbs_id'] ?? 0);
-        $newBbsId = $newBbsId > 0 ? $newBbsId : null;
+        // Hidden-Feld liefert 0 (= keine) oder bbs_id
+        $posted = (int)($_POST['assigned_bbs_id'] ?? 0);
+        $newBbsId = $posted > 0 ? $posted : null; // 0 => NULL
 
         // gelockt => nur Admin darf ändern
         if ($isLocked && !$isAdminRole) {
@@ -145,7 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        // nur aktive BBS zulassen (optional aber sinnvoll)
+        // nur aktive BBS zulassen (wenn gesetzt)
         if ($newBbsId !== null && !isset($bbsMap[(int)$newBbsId])) {
             header('Location: ' . $redirectUrl);
             exit;
@@ -257,7 +258,6 @@ $sortMap = [
     'updated_at' => 'a.updated_at',
     'email'      => 'COALESCE(p.email, a.email)',
     'name'       => 'p.name',
-    'assigned'   => 'a.assigned_bbs_id',
     'locked'     => 'a.is_locked',
 ];
 
@@ -334,6 +334,8 @@ $st = $pdo->prepare("
 $st->execute($params);
 $rows = $st->fetchAll();
 
+// colspan dynamisch: 11 Basis-Spalten + BBS-Spalten (Keine + N BBS)
+$colspan = 11 + count($bbsRows);
 ?>
 <!doctype html>
 <html lang="de">
@@ -344,9 +346,17 @@ $rows = $st->fetchAll();
 
     <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="/admin/admin.css">
+
+    <style>
+        .table-responsive { overflow-x: auto; }
+        table.table { width: max-content; min-width: 1200px; }
+        th, td { white-space: nowrap; }
+        th.bbs-col, td.bbs-col { text-align: center; vertical-align: middle; }
+        th.bbs-col { font-size: 0.85rem; }
+    </style>
 </head>
 <body class="admin-body admin-body--app">
-<div class="container py-4 admin-container">
+<div class="container-fluid py-4 admin-container">
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
@@ -413,26 +423,35 @@ $rows = $st->fetchAll();
                     <th>Vorname</th>
                     <th>Geburtsdatum</th>
 
-                    <th><a href="<?php echo h(sort_link('assigned')); ?>">Zugewiesen (BBS)<?php echo h(sort_indicator('assigned')); ?></a></th>
-                    <th><a href="<?php echo h(sort_link('locked')); ?>">Lock<?php echo h(sort_indicator('locked')); ?></a></th>
+                    <th class="bbs-col">Keine</th>
+                    <?php foreach ($bbsRows as $b): ?>
+                        <?php
+                        $short = trim((string)($b['bbs_schulnummer'] ?? ''));
+                        if ($short === '') $short = (string)$b['bbs_bezeichnung'];
+                        ?>
+                        <th class="bbs-col" title="<?php echo h((string)$b['bbs_bezeichnung']); ?>">
+                            <?php echo h($short); ?>
+                        </th>
+                    <?php endforeach; ?>
 
+                    <th><a href="<?php echo h(sort_link('locked')); ?>">Lock<?php echo h(sort_indicator('locked')); ?></a></th>
                     <th><a href="<?php echo h(sort_link('updated_at')); ?>">Aktualisiert<?php echo h(sort_indicator('updated_at')); ?></a></th>
                     <th><a href="<?php echo h(sort_link('created_at')); ?>">Erstellt<?php echo h(sort_indicator('created_at')); ?></a></th>
                 </tr>
                 </thead>
                 <tbody>
                 <?php if (!$rows): ?>
-                    <tr><td colspan="11" class="text-muted p-3">Keine Datensätze gefunden.</td></tr>
+                    <tr><td colspan="<?php echo (int)$colspan; ?>" class="text-muted p-3">Keine Datensätze gefunden.</td></tr>
                 <?php else: ?>
                     <?php foreach ($rows as $r): ?>
                         <?php
                         $appId = (int)$r['id'];
 
                         $email = (string)($r['personal_email'] ?? '');
-                        if ($email === '') { $email = (string)($r['app_email'] ?? ''); }
+                        if ($email === '') $email = (string)($r['app_email'] ?? '');
 
                         $dob = (string)($r['geburtsdatum'] ?? '');
-                        if ($dob === '') { $dob = (string)($r['app_dob'] ?? ''); }
+                        if ($dob === '') $dob = (string)($r['app_dob'] ?? '');
 
                         $assignedBbsId = $r['assigned_bbs_id'] !== null ? (int)$r['assigned_bbs_id'] : 0;
                         $isLocked = (int)($r['is_locked'] ?? 0);
@@ -446,10 +465,13 @@ $rows = $st->fetchAll();
                                 $lockedByLabel = $bbsMap[$bid] ?? ('BBS #' . $bid);
                             }
                         }
-
                         $lockedAt = $r['locked_at'] ? (string)$r['locked_at'] : '';
 
                         $disableAssign = ($isLocked && !$isAdminRole) ? 'disabled' : '';
+
+                        // pro Zeile ein eigenes Assign-Form + Hidden assigned_bbs_id
+                        $formId = 'assignForm' . $appId;
+                        $radioName = 'pick_bbs_' . $appId;
                         ?>
                         <tr>
                             <td>
@@ -467,28 +489,34 @@ $rows = $st->fetchAll();
                             <td><?php echo h((string)($r['vorname'] ?? '')); ?></td>
                             <td><?php echo h($dob); ?></td>
 
-                            <!-- Zugewiesen (BBS) -->
-                            <td style="min-width:260px;">
-                                <form method="post" action="/admin/applications.php" class="d-flex gap-2 align-items-center">
+                            <!-- Assign Form (hidden) -->
+                            <td class="bbs-col">
+                                <form id="<?php echo h($formId); ?>" method="post" action="/admin/applications.php" class="m-0">
                                     <input type="hidden" name="csrf_token" value="<?php echo h(csrf_token()); ?>">
                                     <input type="hidden" name="action" value="assign">
                                     <input type="hidden" name="app_id" value="<?php echo $appId; ?>">
-
-                                    <select name="assigned_bbs_id" class="form-select form-select-sm" <?php echo $disableAssign; ?>>
-                                        <option value="">— nicht zugewiesen —</option>
-                                        <?php foreach ($bbsRows as $b): ?>
-                                            <?php $bid = (int)$b['bbs_id']; ?>
-                                            <option value="<?php echo $bid; ?>" <?php echo $bid === $assignedBbsId ? 'selected' : ''; ?>>
-                                                <?php echo h((string)$b['bbs_bezeichnung']); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-
-                                    <button type="submit" class="btn btn-sm btn-outline-primary" <?php echo $disableAssign; ?>>
-                                        Speichern
-                                    </button>
+                                    <input type="hidden" name="assigned_bbs_id" value="<?php echo (int)$assignedBbsId; ?>">
                                 </form>
+
+                                <input type="radio"
+                                       name="<?php echo h($radioName); ?>"
+                                       value="0"
+                                       data-assign-form="<?php echo h($formId); ?>"
+                                       <?php echo $assignedBbsId === 0 ? 'checked' : ''; ?>
+                                       <?php echo $disableAssign; ?>>
                             </td>
+
+                            <?php foreach ($bbsRows as $b): ?>
+                                <?php $bid = (int)$b['bbs_id']; ?>
+                                <td class="bbs-col">
+                                    <input type="radio"
+                                           name="<?php echo h($radioName); ?>"
+                                           value="<?php echo $bid; ?>"
+                                           data-assign-form="<?php echo h($formId); ?>"
+                                           <?php echo $assignedBbsId === $bid ? 'checked' : ''; ?>
+                                           <?php echo $disableAssign; ?>>
+                                </td>
+                            <?php endforeach; ?>
 
                             <!-- Lock -->
                             <td class="text-nowrap" style="min-width:190px;">
@@ -515,7 +543,7 @@ $rows = $st->fetchAll();
                                             Lock
                                         </button>
                                         <?php if ($assignedBbsId <= 0): ?>
-                                            <small class="text-muted">erst BBS wählen</small>
+                                            <small class="text-muted">erst zuweisen</small>
                                         <?php endif; ?>
                                     </form>
                                 <?php endif; ?>
@@ -575,6 +603,21 @@ $rows = $st->fetchAll();
             rowChecks.forEach(cb => cb.checked = checkAll.checked);
         });
     }
+
+    // Auto-Save: Radio -> Hidden im Form setzen -> submit
+    document.querySelectorAll('input[data-assign-form]').forEach(el => {
+        el.addEventListener('change', () => {
+            const formId = el.getAttribute('data-assign-form');
+            const form = document.getElementById(formId);
+            if (!form) return;
+
+            const hidden = form.querySelector('input[name="assigned_bbs_id"]');
+            if (!hidden) return;
+
+            hidden.value = el.value;
+            form.submit();
+        });
+    });
 </script>
 </body>
 </html>
