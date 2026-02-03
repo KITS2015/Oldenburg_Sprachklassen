@@ -109,15 +109,27 @@ try {
             email_account_id BIGINT UNSIGNED NULL,
             data_json        JSON NULL,
             status           ENUM('draft','submitted','withdrawn') NOT NULL DEFAULT 'draft',
+
+            -- Zuweisung / Lock für BBS-Verteilung
+            assigned_bbs_id  BIGINT UNSIGNED NULL,
+            is_locked        TINYINT(1) NOT NULL DEFAULT 0,
+            locked_by_bbs_id BIGINT UNSIGNED NULL,
+            locked_at        DATETIME NULL,
+
             created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             submit_ip        VARBINARY(16) NULL,
+
             PRIMARY KEY (id),
             UNIQUE KEY uq_token (token),
             KEY idx_email (email),
             KEY idx_birth (dob),
             KEY idx_email_dob (email, dob),
-            KEY idx_email_account_id (email_account_id)
+            KEY idx_email_account_id (email_account_id),
+
+            KEY idx_assigned_bbs_id (assigned_bbs_id),
+            KEY idx_is_locked (is_locked),
+            KEY idx_locked_by_bbs_id (locked_by_bbs_id)
           ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ");
     } else {
@@ -149,7 +161,7 @@ try {
             $st = $app->query("
                 SELECT IS_NULLABLE
                 FROM INFORMATION_SCHEMA.COLUMNS
-                WHERE TABLE_SCHEMA=".$app->quote($dbName)."
+                WHERE TABLE_SCHEMA=" . $app->quote($dbName) . "
                   AND TABLE_NAME='applications'
                   AND COLUMN_NAME='email'
             ");
@@ -205,6 +217,33 @@ try {
         }
         if (!idx_exists($admin, $dbName, 'applications', 'idx_email_dob')) {
             $app->exec("ALTER TABLE applications ADD KEY idx_email_dob (email, dob)");
+        }
+
+        // ============================
+        // Zuweisung / Lock für BBS-Verteilung
+        // ============================
+
+        if (!col_exists($admin, $dbName, 'applications', 'assigned_bbs_id')) {
+            $app->exec("ALTER TABLE applications ADD COLUMN assigned_bbs_id BIGINT UNSIGNED NULL AFTER status");
+        }
+        if (!col_exists($admin, $dbName, 'applications', 'is_locked')) {
+            $app->exec("ALTER TABLE applications ADD COLUMN is_locked TINYINT(1) NOT NULL DEFAULT 0 AFTER assigned_bbs_id");
+        }
+        if (!col_exists($admin, $dbName, 'applications', 'locked_by_bbs_id')) {
+            $app->exec("ALTER TABLE applications ADD COLUMN locked_by_bbs_id BIGINT UNSIGNED NULL AFTER is_locked");
+        }
+        if (!col_exists($admin, $dbName, 'applications', 'locked_at')) {
+            $app->exec("ALTER TABLE applications ADD COLUMN locked_at DATETIME NULL AFTER locked_by_bbs_id");
+        }
+
+        if (!idx_exists($admin, $dbName, 'applications', 'idx_assigned_bbs_id')) {
+            $app->exec("ALTER TABLE applications ADD KEY idx_assigned_bbs_id (assigned_bbs_id)");
+        }
+        if (!idx_exists($admin, $dbName, 'applications', 'idx_is_locked')) {
+            $app->exec("ALTER TABLE applications ADD KEY idx_is_locked (is_locked)");
+        }
+        if (!idx_exists($admin, $dbName, 'applications', 'idx_locked_by_bbs_id')) {
+            $app->exec("ALTER TABLE applications ADD KEY idx_locked_by_bbs_id (locked_by_bbs_id)");
         }
     }
 
@@ -466,7 +505,7 @@ try {
     // ============================
     // admin_users / roles (Admin-Bereich Auth)
     // ============================
-    
+
     // Tabelle: admin_users
     $app->exec("
       CREATE TABLE IF NOT EXISTS admin_users (
@@ -482,7 +521,7 @@ try {
         UNIQUE KEY uq_admin_username (username)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
-    
+
     // Tabelle: roles
     $app->exec("
       CREATE TABLE IF NOT EXISTS roles (
@@ -494,7 +533,7 @@ try {
         UNIQUE KEY uq_role_key (role_key)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
-    
+
     // Mapping: admin_user_roles
     $app->exec("
       CREATE TABLE IF NOT EXISTS admin_user_roles (
@@ -506,7 +545,7 @@ try {
         CONSTRAINT fk_aur_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
-    
+
     // Standardrolle "admin" sicherstellen
     $app->exec("
       INSERT INTO roles (role_key, role_name)
@@ -516,7 +555,7 @@ try {
 
     // Default-Admin anlegen, wenn Config-Konstanten vorhanden sind
     if (defined('ADMIN_USER') && defined('ADMIN_PASS_HASH')) {
-    
+
         // User anlegen/aktualisieren
         $st = $app->prepare("
             INSERT INTO admin_users (username, password_hash, display_name, is_active)
@@ -526,11 +565,11 @@ try {
               is_active = 1
         ");
         $st->execute([ADMIN_USER, ADMIN_PASS_HASH]);
-    
+
         // Rolle admin zuweisen
         $userId = (int)$app->query("SELECT id FROM admin_users WHERE username=" . $app->quote(ADMIN_USER))->fetchColumn();
         $roleId = (int)$app->query("SELECT id FROM roles WHERE role_key='admin'")->fetchColumn();
-    
+
         if ($userId > 0 && $roleId > 0) {
             $st2 = $app->prepare("
                 INSERT IGNORE INTO admin_user_roles (user_id, role_id)
@@ -539,9 +578,7 @@ try {
             $st2->execute([$userId, $roleId]);
         }
     }
-   
-    // Datei: bin/init_db.php (Ergänzung: Tabelle bbs)
-    
+
     // ============================
     // bbs (BoB-Backends / API-Clients)
     // ============================
@@ -559,10 +596,45 @@ try {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ");
 
-    
+    // ============================
+    // FK applications -> bbs (Zuweisung / Lock)
+    // ============================
+    try {
+        $app->exec("
+          ALTER TABLE applications
+          ADD CONSTRAINT fk_app_assigned_bbs
+          FOREIGN KEY (assigned_bbs_id) REFERENCES bbs(bbs_id)
+          ON DELETE SET NULL
+        ");
+    } catch (Throwable $e) {
+        // ignore
+    }
+
+    try {
+        $app->exec("
+          ALTER TABLE applications
+          ADD CONSTRAINT fk_app_locked_by_bbs
+          FOREIGN KEY (locked_by_bbs_id) REFERENCES bbs(bbs_id)
+          ON DELETE SET NULL
+        ");
+    } catch (Throwable $e) {
+        // ignore
+    }
+
+    // Optional: Konsistenz (wenn nicht gelockt, dann Lock-Felder zurücksetzen)
+    try {
+        $app->exec("
+          UPDATE applications
+          SET locked_by_bbs_id = NULL, locked_at = NULL
+          WHERE is_locked = 0
+        ");
+    } catch (Throwable $e) {
+        // ignore
+    }
+
     echo "[OK] Datenbank ist aktuell (Tabellen/Spalten/Indizes ergänzt, nichts gelöscht).\n";
 
 } catch (Throwable $e) {
-    fwrite(STDERR, "[ERROR] ".$e->getMessage()."\n");
+    fwrite(STDERR, "[ERROR] " . $e->getMessage() . "\n");
     exit(1);
 }
