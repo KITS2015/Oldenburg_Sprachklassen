@@ -218,16 +218,14 @@ $q = mb_substr($q, 0, 200);
 $sort = (string)($_GET['sort'] ?? 'updated_at');
 $dir  = strtolower((string)($_GET['dir'] ?? 'desc')) === 'asc' ? 'asc' : 'desc';
 
+// (Auch wenn wir updated_at/status/etc. nicht anzeigen, dürfen sie fürs Sortieren/Filtern bleiben.)
 $sortMap = [
     'id'         => 'a.id',
-    'status'     => 'a.status',
-    'created_at' => 'a.created_at',
     'updated_at' => 'a.updated_at',
     'email'      => 'COALESCE(p.email, a.email)',
     'name'       => 'p.name',
     'locked'     => 'a.is_locked',
 ];
-
 if (!isset($sortMap[$sort])) $sort = 'updated_at';
 $orderBy = $sortMap[$sort] . ' ' . strtoupper($dir);
 
@@ -273,21 +271,13 @@ $offset = ($page - 1) * $limit;
 $st = $pdo->prepare("
     SELECT
         a.id,
-        a.token,
-        a.status,
-        a.created_at,
-        a.updated_at,
         a.email AS app_email,
-        a.dob AS app_dob,
-
         a.assigned_bbs_id,
         a.is_locked,
         a.locked_by_bbs_id,
         a.locked_at,
-
         p.name,
         p.vorname,
-        p.geburtsdatum,
         p.email AS personal_email
     FROM applications a
     LEFT JOIN personal p ON p.application_id = a.id
@@ -303,8 +293,8 @@ $csrf = csrf_token();
 $qs = build_query([]);
 $postAction = '/admin/applications.php' . ($qs !== '' ? ('?' . $qs) : '');
 
-// colspan: 11 Basis + N BBS
-$colspan = 11 + count($bbsRows);
+// Spalten: Check + ID + Email + Name + Vorname + (Keine + N*BBS) + Lock  => 7 + N
+$colspan = 7 + count($bbsRows);
 ?>
 <!doctype html>
 <html lang="de">
@@ -318,9 +308,14 @@ $colspan = 11 + count($bbsRows);
 
     <style>
         .table-responsive { overflow-x: auto; }
-        table.table { width: max-content; min-width: 1600px; }
+        table.table { width: max-content; min-width: 1200px; } /* kleiner als vorher */
         th, td { white-space: nowrap; }
-        th.bbs-col, td.bbs-col { text-align: center; vertical-align: middle; width: 92px; }
+
+        th.bbs-col, td.bbs-col {
+            text-align: center;
+            vertical-align: middle;
+            width: 78px; /* schmaler */
+        }
         th.bbs-col { font-size: 0.9rem; }
     </style>
 </head>
@@ -386,11 +381,9 @@ $colspan = 11 + count($bbsRows);
                         <input type="checkbox" id="checkAll">
                     </th>
                     <th><a href="<?php echo h(sort_link('id')); ?>">ID<?php echo h(sort_indicator('id')); ?></a></th>
-                    <th><a href="<?php echo h(sort_link('status')); ?>">Status<?php echo h(sort_indicator('status')); ?></a></th>
                     <th><a href="<?php echo h(sort_link('email')); ?>">E-Mail<?php echo h(sort_indicator('email')); ?></a></th>
                     <th><a href="<?php echo h(sort_link('name')); ?>">Name<?php echo h(sort_indicator('name')); ?></a></th>
                     <th>Vorname</th>
-                    <th>Geburtsdatum</th>
 
                     <th class="bbs-col">Keine</th>
                     <?php foreach ($bbsRows as $b): ?>
@@ -405,8 +398,6 @@ $colspan = 11 + count($bbsRows);
                     <?php endforeach; ?>
 
                     <th><a href="<?php echo h(sort_link('locked')); ?>">Lock<?php echo h(sort_indicator('locked')); ?></a></th>
-                    <th><a href="<?php echo h(sort_link('updated_at')); ?>">Aktualisiert<?php echo h(sort_indicator('updated_at')); ?></a></th>
-                    <th><a href="<?php echo h(sort_link('created_at')); ?>">Erstellt<?php echo h(sort_indicator('created_at')); ?></a></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -419,9 +410,6 @@ $colspan = 11 + count($bbsRows);
 
                         $email = (string)($r['personal_email'] ?? '');
                         if ($email === '') $email = (string)($r['app_email'] ?? '');
-
-                        $dob = (string)($r['geburtsdatum'] ?? '');
-                        if ($dob === '') $dob = (string)($r['app_dob'] ?? '');
 
                         $assignedBbsId = $r['assigned_bbs_id'] !== null ? (int)$r['assigned_bbs_id'] : 0;
                         $isLocked = (int)($r['is_locked'] ?? 0);
@@ -452,13 +440,11 @@ $colspan = 11 + count($bbsRows);
                             </td>
 
                             <td><?php echo $appId; ?></td>
-                            <td><span class="badge bg-secondary"><?php echo h((string)$r['status']); ?></span></td>
                             <td><?php echo h($email); ?></td>
                             <td><?php echo h((string)($r['name'] ?? '')); ?></td>
                             <td><?php echo h((string)($r['vorname'] ?? '')); ?></td>
-                            <td><?php echo h($dob); ?></td>
 
-                            <!-- Assign Form (hidden) -->
+                            <!-- Assign Form (hidden) + Radio "Keine" -->
                             <td class="bbs-col">
                                 <form id="<?php echo h($formId); ?>" method="post" action="<?php echo h($postAction); ?>" class="m-0">
                                     <input type="hidden" name="csrf_token" value="<?php echo h($csrf); ?>">
@@ -488,7 +474,7 @@ $colspan = 11 + count($bbsRows);
                             <?php endforeach; ?>
 
                             <!-- Lock -->
-                            <td class="text-nowrap" style="min-width:190px;">
+                            <td class="text-nowrap" style="min-width:170px;">
                                 <?php if ($isLocked): ?>
                                     <div class="d-flex gap-2 align-items-center">
                                         <span class="badge bg-success">LOCK</span>
@@ -517,9 +503,6 @@ $colspan = 11 + count($bbsRows);
                                     </form>
                                 <?php endif; ?>
                             </td>
-
-                            <td><?php echo h((string)$r['updated_at']); ?></td>
-                            <td><?php echo h((string)$r['created_at']); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -572,6 +555,7 @@ $colspan = 11 + count($bbsRows);
         });
     }
 
+    // Auto-Save: Radio -> Hidden im Form setzen -> submit
     document.querySelectorAll('input[data-assign-form]').forEach(el => {
         el.addEventListener('change', () => {
             const formId = el.getAttribute('data-assign-form');
