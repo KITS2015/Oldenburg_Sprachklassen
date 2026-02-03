@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 // Datei: public/admin/inc/bootstrap.php
 
+require_once __DIR__ . '/helpers.php';   // <-- WICHTIG: zentrale Helper laden
+
 session_start();
 
 // Zentrale Konfiguration laden
