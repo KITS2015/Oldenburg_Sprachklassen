@@ -48,8 +48,7 @@ function sort_indicator(string $col): string
 
 function get_current_admin_user_id(): int
 {
-    // Best effort: je nach Implementierung kann der Session-Key anders heißen.
-    // Falls bei euch ein anderer Key genutzt wird, hier bitte anpassen.
+    // Falls euer Session-Key anders heißt: hier anpassen.
     return (int)($_SESSION['admin_user_id'] ?? 0);
 }
 
@@ -72,17 +71,16 @@ function admin_has_role(PDO $pdo, int $userId, string $roleKey): bool
     }
 }
 
-// Admin-Override: role_key=admin darf alles
+// ---- Admin-Override (role admin darf alles) ----
 $adminUserId = get_current_admin_user_id();
 $isAdminRole = admin_has_role($pdo, $adminUserId, 'admin');
 
-// Falls euer Login (noch) keine Rollen sauber setzt, wäre es sonst “zu restriktiv”.
-// In dem Fall lieber nicht blockieren:
+// Wenn Session-Key / Rollen (noch) nicht sauber gesetzt sind, lieber nicht blockieren:
 if ($adminUserId <= 0) {
     $isAdminRole = true;
 }
 
-// BBS-Liste + Map
+// ---- BBS-Liste + Map ----
 $bbsRows = $pdo->query("
     SELECT bbs_id, bbs_bezeichnung
     FROM bbs
@@ -98,7 +96,6 @@ foreach ($bbsRows as $b) {
 // ---- POST: assign / lock / unlock ----
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // CSRF prüfen
     if (!csrf_verify($_POST['csrf_token'] ?? '')) {
         http_response_code(400);
         echo "Ungültiger CSRF-Token.";
@@ -108,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = (string)($_POST['action'] ?? '');
     $appId  = (int)($_POST['app_id'] ?? 0);
 
-    // Redirect-Ziel: aktuelle Filter/Sort/Page beibehalten
+    // Redirect: Filter/Sort/Page beibehalten
     $redirectUrl = '/admin/applications.php';
     $qs = build_query([]);
     if ($qs !== '') {
@@ -120,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Zustand laden
+    // aktuellen Zustand laden
     $st = $pdo->prepare("
         SELECT id, assigned_bbs_id, is_locked, locked_by_bbs_id, locked_at
         FROM applications
@@ -142,18 +139,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $newBbsId = (int)($_POST['assigned_bbs_id'] ?? 0);
         $newBbsId = $newBbsId > 0 ? $newBbsId : null;
 
-        // Wenn gelockt: nur Admin darf ändern (Admin-Override)
+        // gelockt => nur Admin darf ändern
         if ($isLocked && !$isAdminRole) {
             header('Location: ' . $redirectUrl);
             exit;
         }
 
-        // Optional: nur aktive BBS zulassen
-        if ($newBbsId !== null) {
-            if (!isset($bbsMap[(int)$newBbsId])) {
-                header('Location: ' . $redirectUrl);
-                exit;
-            }
+        // nur aktive BBS zulassen (optional aber sinnvoll)
+        if ($newBbsId !== null && !isset($bbsMap[(int)$newBbsId])) {
+            header('Location: ' . $redirectUrl);
+            exit;
         }
 
         $stUp = $pdo->prepare("
@@ -175,19 +170,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($action === 'lock') {
-        // Wenn schon gelockt: nichts tun
         if ($isLocked) {
             header('Location: ' . $redirectUrl);
             exit;
         }
 
-        // Sinnvoll: nur locken wenn eine Ziel-BBS gesetzt ist (kannst du bei Bedarf lockern)
+        // nur locken, wenn eine Ziel-BBS gesetzt ist
         if ($assignedBbsId <= 0) {
             header('Location: ' . $redirectUrl);
             exit;
         }
 
-        // Admin-Lock: locked_by_bbs_id = NULL (Anzeige "Admin")
+        // Admin-Lock: locked_by_bbs_id = NULL (Anzeige: Admin)
         $stUp = $pdo->prepare("
             UPDATE applications
             SET is_locked = 1,
@@ -208,7 +202,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($action === 'unlock') {
-        // Wenn nicht gelockt: nichts tun
         if (!$isLocked) {
             header('Location: ' . $redirectUrl);
             exit;
@@ -252,12 +245,11 @@ if (!in_array($status, $allowedStatus, true)) {
 }
 
 $q = trim((string)($_GET['q'] ?? ''));
-$q = mb_substr($q, 0, 200); // Hard limit for safety
+$q = mb_substr($q, 0, 200);
 
 $sort = (string)($_GET['sort'] ?? 'updated_at');
 $dir  = strtolower((string)($_GET['dir'] ?? 'desc')) === 'asc' ? 'asc' : 'desc';
 
-// Sort Whitelist (Mapping -> SQL)
 $sortMap = [
     'id'         => 'a.id',
     'status'     => 'a.status',
@@ -284,7 +276,6 @@ if ($status !== '') {
 }
 
 if ($q !== '') {
-    // Suche: email, name, vorname, token, id
     $where[] = '('
         . 'a.email LIKE ? OR '
         . 'COALESCE(p.email, "") LIKE ? OR '
@@ -310,7 +301,6 @@ $stCount->execute($params);
 $total = (int)$stCount->fetchColumn();
 $totalPages = (int)max(1, (int)ceil($total / $limit));
 
-// page clamp
 if ($page > $totalPages) { $page = $totalPages; }
 $offset = ($page - 1) * $limit;
 
@@ -479,7 +469,7 @@ $rows = $st->fetchAll();
 
                             <!-- Zugewiesen (BBS) -->
                             <td style="min-width:260px;">
-                                <form method="post" action="/admin/applications.php<?php echo $qs !== '' ? '?' . h($qs) : ''; ?>" class="d-flex gap-2 align-items-center">
+                                <form method="post" action="/admin/applications.php" class="d-flex gap-2 align-items-center">
                                     <input type="hidden" name="csrf_token" value="<?php echo h(csrf_token()); ?>">
                                     <input type="hidden" name="action" value="assign">
                                     <input type="hidden" name="app_id" value="<?php echo $appId; ?>">
@@ -509,7 +499,7 @@ $rows = $st->fetchAll();
                                             <?php echo h($lockedByLabel); ?>
                                             <?php echo $lockedAt ? ' · ' . h($lockedAt) : ''; ?>
                                         </small>
-                                        <form method="post" action="/admin/applications.php<?php echo $qs !== '' ? '?' . h($qs) : ''; ?>" class="m-0">
+                                        <form method="post" action="/admin/applications.php" class="m-0">
                                             <input type="hidden" name="csrf_token" value="<?php echo h(csrf_token()); ?>">
                                             <input type="hidden" name="action" value="unlock">
                                             <input type="hidden" name="app_id" value="<?php echo $appId; ?>">
@@ -517,7 +507,7 @@ $rows = $st->fetchAll();
                                         </form>
                                     </div>
                                 <?php else: ?>
-                                    <form method="post" action="/admin/applications.php<?php echo $qs !== '' ? '?' . h($qs) : ''; ?>" class="d-flex gap-2 align-items-center m-0">
+                                    <form method="post" action="/admin/applications.php" class="d-flex gap-2 align-items-center m-0">
                                         <input type="hidden" name="csrf_token" value="<?php echo h(csrf_token()); ?>">
                                         <input type="hidden" name="action" value="lock">
                                         <input type="hidden" name="app_id" value="<?php echo $appId; ?>">
