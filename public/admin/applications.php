@@ -11,6 +11,233 @@ require_admin();
 
 $pdo = admin_db();
 
+// ---- Helpers ----
+function h(string $s): string { return htmlspecialchars($s, ENT_QUOTES, 'UTF-8'); }
+
+function build_query(array $overrides = []): string
+{
+    $base = $_GET;
+    foreach ($overrides as $k => $v) {
+        if ($v === null) {
+            unset($base[$k]);
+        } else {
+            $base[$k] = (string)$v;
+        }
+    }
+    return http_build_query($base);
+}
+
+function sort_link(string $col): string
+{
+    $currentSort = (string)($_GET['sort'] ?? 'updated_at');
+    $currentDir  = strtolower((string)($_GET['dir'] ?? 'desc'));
+    $newDir = 'asc';
+    if ($currentSort === $col && $currentDir === 'asc') {
+        $newDir = 'desc';
+    }
+    return '/admin/applications.php?' . build_query(['sort' => $col, 'dir' => $newDir, 'page' => 1]);
+}
+
+function sort_indicator(string $col): string
+{
+    $currentSort = (string)($_GET['sort'] ?? 'updated_at');
+    $currentDir  = strtolower((string)($_GET['dir'] ?? 'desc'));
+    if ($currentSort !== $col) return '';
+    return $currentDir === 'asc' ? ' ▲' : ' ▼';
+}
+
+function get_current_admin_user_id(): int
+{
+    // Best effort: je nach Implementierung kann der Session-Key anders heißen.
+    // Falls bei euch ein anderer Key genutzt wird, hier bitte anpassen.
+    return (int)($_SESSION['admin_user_id'] ?? 0);
+}
+
+function admin_has_role(PDO $pdo, int $userId, string $roleKey): bool
+{
+    if ($userId <= 0) return false;
+
+    try {
+        $st = $pdo->prepare("
+            SELECT 1
+            FROM admin_user_roles aur
+            JOIN roles r ON r.id = aur.role_id
+            WHERE aur.user_id = ? AND r.role_key = ?
+            LIMIT 1
+        ");
+        $st->execute([$userId, $roleKey]);
+        return (bool)$st->fetchColumn();
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
+// Admin-Override: role_key=admin darf alles
+$adminUserId = get_current_admin_user_id();
+$isAdminRole = admin_has_role($pdo, $adminUserId, 'admin');
+
+// Falls euer Login (noch) keine Rollen sauber setzt, wäre es sonst “zu restriktiv”.
+// In dem Fall lieber nicht blockieren:
+if ($adminUserId <= 0) {
+    $isAdminRole = true;
+}
+
+// BBS-Liste + Map
+$bbsRows = $pdo->query("
+    SELECT bbs_id, bbs_bezeichnung
+    FROM bbs
+    WHERE is_active = 1
+    ORDER BY bbs_bezeichnung
+")->fetchAll(PDO::FETCH_ASSOC);
+
+$bbsMap = [];
+foreach ($bbsRows as $b) {
+    $bbsMap[(int)$b['bbs_id']] = (string)$b['bbs_bezeichnung'];
+}
+
+// ---- POST: assign / lock / unlock ----
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    // CSRF prüfen
+    if (!csrf_verify($_POST['csrf_token'] ?? '')) {
+        http_response_code(400);
+        echo "Ungültiger CSRF-Token.";
+        exit;
+    }
+
+    $action = (string)($_POST['action'] ?? '');
+    $appId  = (int)($_POST['app_id'] ?? 0);
+
+    // Redirect-Ziel: aktuelle Filter/Sort/Page beibehalten
+    $redirectUrl = '/admin/applications.php';
+    $qs = build_query([]);
+    if ($qs !== '') {
+        $redirectUrl .= '?' . $qs;
+    }
+
+    if ($appId <= 0 || !in_array($action, ['assign', 'lock', 'unlock'], true)) {
+        header('Location: ' . $redirectUrl);
+        exit;
+    }
+
+    // Zustand laden
+    $st = $pdo->prepare("
+        SELECT id, assigned_bbs_id, is_locked, locked_by_bbs_id, locked_at
+        FROM applications
+        WHERE id = ?
+        LIMIT 1
+    ");
+    $st->execute([$appId]);
+    $cur = $st->fetch(PDO::FETCH_ASSOC);
+
+    if (!$cur) {
+        header('Location: ' . $redirectUrl);
+        exit;
+    }
+
+    $assignedBbsId = $cur['assigned_bbs_id'] !== null ? (int)$cur['assigned_bbs_id'] : 0;
+    $isLocked      = (int)($cur['is_locked'] ?? 0);
+
+    if ($action === 'assign') {
+        $newBbsId = (int)($_POST['assigned_bbs_id'] ?? 0);
+        $newBbsId = $newBbsId > 0 ? $newBbsId : null;
+
+        // Wenn gelockt: nur Admin darf ändern (Admin-Override)
+        if ($isLocked && !$isAdminRole) {
+            header('Location: ' . $redirectUrl);
+            exit;
+        }
+
+        // Optional: nur aktive BBS zulassen
+        if ($newBbsId !== null) {
+            if (!isset($bbsMap[(int)$newBbsId])) {
+                header('Location: ' . $redirectUrl);
+                exit;
+            }
+        }
+
+        $stUp = $pdo->prepare("
+            UPDATE applications
+            SET assigned_bbs_id = ?, updated_at = NOW()
+            WHERE id = ?
+        ");
+        $stUp->execute([$newBbsId, $appId]);
+
+        // optional audit
+        try {
+            $meta = json_encode(['assigned_bbs_id' => $newBbsId], JSON_UNESCAPED_UNICODE);
+            $stA = $pdo->prepare("INSERT INTO audit_log (application_id, event, meta_json) VALUES (?, 'assigned_bbs_changed', ?)");
+            $stA->execute([$appId, $meta]);
+        } catch (Throwable $e) {}
+
+        header('Location: ' . $redirectUrl);
+        exit;
+    }
+
+    if ($action === 'lock') {
+        // Wenn schon gelockt: nichts tun
+        if ($isLocked) {
+            header('Location: ' . $redirectUrl);
+            exit;
+        }
+
+        // Sinnvoll: nur locken wenn eine Ziel-BBS gesetzt ist (kannst du bei Bedarf lockern)
+        if ($assignedBbsId <= 0) {
+            header('Location: ' . $redirectUrl);
+            exit;
+        }
+
+        // Admin-Lock: locked_by_bbs_id = NULL (Anzeige "Admin")
+        $stUp = $pdo->prepare("
+            UPDATE applications
+            SET is_locked = 1,
+                locked_at = NOW(),
+                locked_by_bbs_id = NULL,
+                updated_at = NOW()
+            WHERE id = ?
+        ");
+        $stUp->execute([$appId]);
+
+        try {
+            $stA = $pdo->prepare("INSERT INTO audit_log (application_id, event, meta_json) VALUES (?, 'locked', NULL)");
+            $stA->execute([$appId]);
+        } catch (Throwable $e) {}
+
+        header('Location: ' . $redirectUrl);
+        exit;
+    }
+
+    if ($action === 'unlock') {
+        // Wenn nicht gelockt: nichts tun
+        if (!$isLocked) {
+            header('Location: ' . $redirectUrl);
+            exit;
+        }
+
+        // Admin darf immer unlocken
+        $stUp = $pdo->prepare("
+            UPDATE applications
+            SET is_locked = 0,
+                locked_at = NULL,
+                locked_by_bbs_id = NULL,
+                updated_at = NOW()
+            WHERE id = ?
+        ");
+        $stUp->execute([$appId]);
+
+        try {
+            $stA = $pdo->prepare("INSERT INTO audit_log (application_id, event, meta_json) VALUES (?, 'unlocked', NULL)");
+            $stA->execute([$appId]);
+        } catch (Throwable $e) {}
+
+        header('Location: ' . $redirectUrl);
+        exit;
+    }
+
+    header('Location: ' . $redirectUrl);
+    exit;
+}
+
 // ---- Input (Filter / Suche / Paging / Sort) ----
 $limit = 25;
 
@@ -38,6 +265,8 @@ $sortMap = [
     'updated_at' => 'a.updated_at',
     'email'      => 'COALESCE(p.email, a.email)',
     'name'       => 'p.name',
+    'assigned'   => 'a.assigned_bbs_id',
+    'locked'     => 'a.is_locked',
 ];
 
 if (!isset($sortMap[$sort])) {
@@ -96,6 +325,11 @@ $st = $pdo->prepare("
         a.email AS app_email,
         a.dob AS app_dob,
 
+        a.assigned_bbs_id,
+        a.is_locked,
+        a.locked_by_bbs_id,
+        a.locked_at,
+
         p.name,
         p.vorname,
         p.geburtsdatum,
@@ -109,41 +343,6 @@ $st = $pdo->prepare("
 ");
 $st->execute($params);
 $rows = $st->fetchAll();
-
-// ---- Helpers ----
-function h(string $s): string { return htmlspecialchars($s, ENT_QUOTES, 'UTF-8'); }
-
-function build_query(array $overrides = []): string
-{
-    $base = $_GET;
-    foreach ($overrides as $k => $v) {
-        if ($v === null) {
-            unset($base[$k]);
-        } else {
-            $base[$k] = (string)$v;
-        }
-    }
-    return http_build_query($base);
-}
-
-function sort_link(string $col): string
-{
-    $currentSort = (string)($_GET['sort'] ?? 'updated_at');
-    $currentDir  = strtolower((string)($_GET['dir'] ?? 'desc'));
-    $newDir = 'asc';
-    if ($currentSort === $col && $currentDir === 'asc') {
-        $newDir = 'desc';
-    }
-    return '/admin/applications.php?' . build_query(['sort' => $col, 'dir' => $newDir, 'page' => 1]);
-}
-
-function sort_indicator(string $col): string
-{
-    $currentSort = (string)($_GET['sort'] ?? 'updated_at');
-    $currentDir  = strtolower((string)($_GET['dir'] ?? 'desc'));
-    if ($currentSort !== $col) return '';
-    return $currentDir === 'asc' ? ' ▲' : ' ▼';
-}
 
 ?>
 <!doctype html>
@@ -203,60 +402,144 @@ function sort_indicator(string $col): string
         </button>
     </div>
 
+    <!-- Form für CSV-Auswahl -->
     <form id="selectionForm" method="post" action="/admin/export_csv.php">
         <input type="hidden" name="csrf_token" value="<?php echo h(csrf_token()); ?>">
         <input type="hidden" name="mode" value="selected">
-
-        <div class="card shadow-sm">
-            <div class="table-responsive">
-                <table class="table table-sm table-hover align-middle mb-0">
-                    <thead class="table-light">
-                    <tr>
-                        <th style="width:36px;">
-                            <input type="checkbox" id="checkAll">
-                        </th>
-                        <th><a href="<?php echo h(sort_link('id')); ?>">ID<?php echo h(sort_indicator('id')); ?></a></th>
-                        <th><a href="<?php echo h(sort_link('status')); ?>">Status<?php echo h(sort_indicator('status')); ?></a></th>
-                        <th><a href="<?php echo h(sort_link('email')); ?>">E-Mail<?php echo h(sort_indicator('email')); ?></a></th>
-                        <th><a href="<?php echo h(sort_link('name')); ?>">Name<?php echo h(sort_indicator('name')); ?></a></th>
-                        <th>Vorname</th>
-                        <th>Geburtsdatum</th>
-                        <th><a href="<?php echo h(sort_link('updated_at')); ?>">Aktualisiert<?php echo h(sort_indicator('updated_at')); ?></a></th>
-                        <th><a href="<?php echo h(sort_link('created_at')); ?>">Erstellt<?php echo h(sort_indicator('created_at')); ?></a></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php if (!$rows): ?>
-                        <tr><td colspan="9" class="text-muted p-3">Keine Datensätze gefunden.</td></tr>
-                    <?php else: ?>
-                        <?php foreach ($rows as $r): ?>
-                            <?php
-                            $email = (string)($r['personal_email'] ?? '');
-                            if ($email === '') { $email = (string)($r['app_email'] ?? ''); }
-
-                            $dob = (string)($r['geburtsdatum'] ?? '');
-                            if ($dob === '') { $dob = (string)($r['app_dob'] ?? ''); }
-                            ?>
-                            <tr>
-                                <td>
-                                    <input class="form-check-input rowCheck" type="checkbox" name="ids[]" value="<?php echo (int)$r['id']; ?>">
-                                </td>
-                                <td><?php echo (int)$r['id']; ?></td>
-                                <td><span class="badge bg-secondary"><?php echo h((string)$r['status']); ?></span></td>
-                                <td><?php echo h($email); ?></td>
-                                <td><?php echo h((string)($r['name'] ?? '')); ?></td>
-                                <td><?php echo h((string)($r['vorname'] ?? '')); ?></td>
-                                <td><?php echo h($dob); ?></td>
-                                <td><?php echo h((string)$r['updated_at']); ?></td>
-                                <td><?php echo h((string)$r['created_at']); ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </form>
+
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th style="width:36px;">
+                        <input type="checkbox" id="checkAll">
+                    </th>
+                    <th><a href="<?php echo h(sort_link('id')); ?>">ID<?php echo h(sort_indicator('id')); ?></a></th>
+                    <th><a href="<?php echo h(sort_link('status')); ?>">Status<?php echo h(sort_indicator('status')); ?></a></th>
+                    <th><a href="<?php echo h(sort_link('email')); ?>">E-Mail<?php echo h(sort_indicator('email')); ?></a></th>
+                    <th><a href="<?php echo h(sort_link('name')); ?>">Name<?php echo h(sort_indicator('name')); ?></a></th>
+                    <th>Vorname</th>
+                    <th>Geburtsdatum</th>
+
+                    <th><a href="<?php echo h(sort_link('assigned')); ?>">Zugewiesen (BBS)<?php echo h(sort_indicator('assigned')); ?></a></th>
+                    <th><a href="<?php echo h(sort_link('locked')); ?>">Lock<?php echo h(sort_indicator('locked')); ?></a></th>
+
+                    <th><a href="<?php echo h(sort_link('updated_at')); ?>">Aktualisiert<?php echo h(sort_indicator('updated_at')); ?></a></th>
+                    <th><a href="<?php echo h(sort_link('created_at')); ?>">Erstellt<?php echo h(sort_indicator('created_at')); ?></a></th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php if (!$rows): ?>
+                    <tr><td colspan="11" class="text-muted p-3">Keine Datensätze gefunden.</td></tr>
+                <?php else: ?>
+                    <?php foreach ($rows as $r): ?>
+                        <?php
+                        $appId = (int)$r['id'];
+
+                        $email = (string)($r['personal_email'] ?? '');
+                        if ($email === '') { $email = (string)($r['app_email'] ?? ''); }
+
+                        $dob = (string)($r['geburtsdatum'] ?? '');
+                        if ($dob === '') { $dob = (string)($r['app_dob'] ?? ''); }
+
+                        $assignedBbsId = $r['assigned_bbs_id'] !== null ? (int)$r['assigned_bbs_id'] : 0;
+                        $isLocked = (int)($r['is_locked'] ?? 0);
+
+                        $lockedByLabel = '';
+                        if ($isLocked) {
+                            if ($r['locked_by_bbs_id'] === null) {
+                                $lockedByLabel = 'Admin';
+                            } else {
+                                $bid = (int)$r['locked_by_bbs_id'];
+                                $lockedByLabel = $bbsMap[$bid] ?? ('BBS #' . $bid);
+                            }
+                        }
+
+                        $lockedAt = $r['locked_at'] ? (string)$r['locked_at'] : '';
+
+                        $disableAssign = ($isLocked && !$isAdminRole) ? 'disabled' : '';
+                        ?>
+                        <tr>
+                            <td>
+                                <input class="form-check-input rowCheck"
+                                       type="checkbox"
+                                       name="ids[]"
+                                       value="<?php echo $appId; ?>"
+                                       form="selectionForm">
+                            </td>
+
+                            <td><?php echo $appId; ?></td>
+                            <td><span class="badge bg-secondary"><?php echo h((string)$r['status']); ?></span></td>
+                            <td><?php echo h($email); ?></td>
+                            <td><?php echo h((string)($r['name'] ?? '')); ?></td>
+                            <td><?php echo h((string)($r['vorname'] ?? '')); ?></td>
+                            <td><?php echo h($dob); ?></td>
+
+                            <!-- Zugewiesen (BBS) -->
+                            <td style="min-width:260px;">
+                                <form method="post" action="/admin/applications.php<?php echo $qs !== '' ? '?' . h($qs) : ''; ?>" class="d-flex gap-2 align-items-center">
+                                    <input type="hidden" name="csrf_token" value="<?php echo h(csrf_token()); ?>">
+                                    <input type="hidden" name="action" value="assign">
+                                    <input type="hidden" name="app_id" value="<?php echo $appId; ?>">
+
+                                    <select name="assigned_bbs_id" class="form-select form-select-sm" <?php echo $disableAssign; ?>>
+                                        <option value="">— nicht zugewiesen —</option>
+                                        <?php foreach ($bbsRows as $b): ?>
+                                            <?php $bid = (int)$b['bbs_id']; ?>
+                                            <option value="<?php echo $bid; ?>" <?php echo $bid === $assignedBbsId ? 'selected' : ''; ?>>
+                                                <?php echo h((string)$b['bbs_bezeichnung']); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+
+                                    <button type="submit" class="btn btn-sm btn-outline-primary" <?php echo $disableAssign; ?>>
+                                        Speichern
+                                    </button>
+                                </form>
+                            </td>
+
+                            <!-- Lock -->
+                            <td class="text-nowrap" style="min-width:190px;">
+                                <?php if ($isLocked): ?>
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <span class="badge bg-success">LOCK</span>
+                                        <small class="text-muted">
+                                            <?php echo h($lockedByLabel); ?>
+                                            <?php echo $lockedAt ? ' · ' . h($lockedAt) : ''; ?>
+                                        </small>
+                                        <form method="post" action="/admin/applications.php<?php echo $qs !== '' ? '?' . h($qs) : ''; ?>" class="m-0">
+                                            <input type="hidden" name="csrf_token" value="<?php echo h(csrf_token()); ?>">
+                                            <input type="hidden" name="action" value="unlock">
+                                            <input type="hidden" name="app_id" value="<?php echo $appId; ?>">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Unlock</button>
+                                        </form>
+                                    </div>
+                                <?php else: ?>
+                                    <form method="post" action="/admin/applications.php<?php echo $qs !== '' ? '?' . h($qs) : ''; ?>" class="d-flex gap-2 align-items-center m-0">
+                                        <input type="hidden" name="csrf_token" value="<?php echo h(csrf_token()); ?>">
+                                        <input type="hidden" name="action" value="lock">
+                                        <input type="hidden" name="app_id" value="<?php echo $appId; ?>">
+                                        <button type="submit" class="btn btn-sm btn-outline-success" <?php echo $assignedBbsId > 0 ? '' : 'disabled'; ?>>
+                                            Lock
+                                        </button>
+                                        <?php if ($assignedBbsId <= 0): ?>
+                                            <small class="text-muted">erst BBS wählen</small>
+                                        <?php endif; ?>
+                                    </form>
+                                <?php endif; ?>
+                            </td>
+
+                            <td><?php echo h((string)$r['updated_at']); ?></td>
+                            <td><?php echo h((string)$r['created_at']); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <!-- Pagination -->
     <nav class="mt-3">
@@ -273,7 +556,6 @@ function sort_indicator(string $col): string
             </li>
 
             <?php
-            // Simple window
             $start = max(1, $page - 3);
             $end   = min($totalPages, $page + 3);
             for ($p = $start; $p <= $end; $p++):
