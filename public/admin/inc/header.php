@@ -3,75 +3,63 @@ declare(strict_types=1);
 
 /**
  * Datei: public/admin/inc/header.php
- * Erwartete Variablen (optional):
- * - $title  (string) Seitentitel
- * - $active (string) 'dashboard' | 'applications' | 'bbs'
+ * Erwartet (optional):
+ *  - $pageTitle (string)
+ *  - $activeNav (string)  // dashboard | applications | bbs
  */
 
-if (!function_exists('h')) {
-    function h(string $s): string {
-        return htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
-    }
-}
-
-$title  = isset($title)  ? (string)$title  : 'Admin';
-$active = isset($active) ? (string)$active : '';
-
-$adminLabel = (string)($_SESSION['admin_username'] ?? $_SESSION['admin_name'] ?? 'Admin');
+$pageTitle = $pageTitle ?? 'Admin';
+$activeNav = $activeNav ?? '';
 ?>
 <!doctype html>
 <html lang="de">
 <head>
     <meta charset="utf-8">
-    <title><?php echo h($title); ?></title>
+    <title><?php echo h($pageTitle); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="/admin/admin.css">
 </head>
-<body class="admin-body admin-body--app">
+<body class="admin-shell">
 
-<div class="admin-shell">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark admin-topbar">
+    <a class="navbar-brand fw-bold" href="/admin/dashboard.php">Sprach-Portal Admin</a>
 
-    <!-- Sidebar -->
-    <aside class="admin-sidebar p-3">
-        <div class="d-flex align-items-center gap-2 mb-3">
-            <div class="brand">Sprach-Portal</div>
-            <span class="badge bg-secondary">Admin</span>
-        </div>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminTopNav" aria-controls="adminTopNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
 
-        <nav class="nav flex-column gap-1">
-            <a class="nav-link <?php echo $active==='dashboard'?'active':''; ?>" href="/admin/dashboard.php">
-                Dashboard
-            </a>
-            <a class="nav-link <?php echo $active==='applications'?'active':''; ?>" href="/admin/applications.php">
-                Bewerbungen
-            </a>
-            <a class="nav-link <?php echo $active==='bbs'?'active':''; ?>" href="/admin/bbs.php">
-                BBS / API-Clients
-            </a>
-        </nav>
+    <div class="collapse navbar-collapse" id="adminTopNav">
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/logout.php">Abmelden</a>
+            </li>
+        </ul>
+    </div>
+</nav>
 
-        <hr>
+<div class="admin-layout">
+    <aside class="admin-sidebar bg-white border-end">
+        <div class="p-3">
+            <div class="text-uppercase small text-muted mb-2">Navigation</div>
 
-        <div class="small text-muted">
-            Intern/VPN · Aktionen später via audit_log
+            <div class="list-group list-group-flush">
+                <a class="list-group-item list-group-item-action <?php echo $activeNav==='dashboard'?'active':''; ?>"
+                   href="/admin/dashboard.php">
+                    Dashboard
+                </a>
+                <a class="list-group-item list-group-item-action <?php echo $activeNav==='applications'?'active':''; ?>"
+                   href="/admin/applications.php">
+                    Bewerbungen
+                </a>
+                <a class="list-group-item list-group-item-action <?php echo $activeNav==='bbs'?'active':''; ?>"
+                   href="/admin/bbs.php">
+                    BBS / API-Clients
+                </a>
+            </div>
         </div>
     </aside>
 
-    <!-- Main -->
-    <main class="admin-main">
-
-        <!-- Topbar -->
-        <div class="admin-topbar py-2 px-3">
-            <div class="d-flex align-items-center justify-content-between">
-                <div class="fw-semibold"><?php echo h($title); ?></div>
-
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-secondary">eingeloggt: <?php echo h($adminLabel); ?></span>
-                    <a class="btn btn-outline-danger btn-sm" href="/admin/logout.php">Abmelden</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="admin-content">
+    <main class="admin-content">
+        <div class="container-fluid py-4">
