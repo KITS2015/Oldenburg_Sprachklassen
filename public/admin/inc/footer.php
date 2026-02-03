@@ -1,17 +1,18 @@
 <?php
 declare(strict_types=1);
 
-// optional: $extraJs (string) für seiten-spezifisches JS
+// Datei: public/admin/inc/footer.php
 ?>
-        </div> <!-- /.admin-content -->
+        </div><!-- /.container-fluid -->
     </main>
-</div> <!-- /.admin-shell -->
+</div><!-- /.admin-layout -->
+
+<footer class="admin-footer border-top bg-white">
+    <div class="container-fluid py-2 small text-muted">
+        Sprach-Portal – Admin · intern/VPN
+    </div>
+</footer>
 
 <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-<?php if (!empty($extraJs)): ?>
-    <?php echo $extraJs; ?>
-<?php endif; ?>
-
 </body>
 </html>
