@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'assign') {
         $posted = (int)($_POST['assigned_bbs_id'] ?? 0);
-        $newBbsId = $posted > 0 ? $posted : null;
+        $newBbsId = $posted > 0 ? $posted : null; // 0 => NULL
 
         if ($isLocked && !$isAdminRole) {
             header('Location: ' . $redirectUrl);
@@ -218,14 +218,14 @@ $q = mb_substr($q, 0, 200);
 $sort = (string)($_GET['sort'] ?? 'updated_at');
 $dir  = strtolower((string)($_GET['dir'] ?? 'desc')) === 'asc' ? 'asc' : 'desc';
 
-// (Auch wenn wir updated_at/status/etc. nicht anzeigen, dürfen sie fürs Sortieren/Filtern bleiben.)
+// Sort Whitelist
 $sortMap = [
     'id'         => 'a.id',
-    'updated_at' => 'a.updated_at',
-    'email'      => 'COALESCE(p.email, a.email)',
     'name'       => 'p.name',
     'locked'     => 'a.is_locked',
+    'updated_at' => 'a.updated_at', // bleibt als Default-Sort (auch wenn Spalte nicht angezeigt wird)
 ];
+
 if (!isset($sortMap[$sort])) $sort = 'updated_at';
 $orderBy = $sortMap[$sort] . ' ' . strtoupper($dir);
 
@@ -239,6 +239,7 @@ if ($status !== '') {
 }
 
 if ($q !== '') {
+    // Suche bleibt breit (auch wenn wir E-Mail nicht anzeigen)
     $where[] = '('
         . 'a.email LIKE ? OR '
         . 'COALESCE(p.email, "") LIKE ? OR '
@@ -271,14 +272,13 @@ $offset = ($page - 1) * $limit;
 $st = $pdo->prepare("
     SELECT
         a.id,
-        a.email AS app_email,
         a.assigned_bbs_id,
         a.is_locked,
         a.locked_by_bbs_id,
         a.locked_at,
+
         p.name,
-        p.vorname,
-        p.email AS personal_email
+        p.vorname
     FROM applications a
     LEFT JOIN personal p ON p.application_id = a.id
     $whereSql
@@ -293,8 +293,9 @@ $csrf = csrf_token();
 $qs = build_query([]);
 $postAction = '/admin/applications.php' . ($qs !== '' ? ('?' . $qs) : '');
 
-// Spalten: Check + ID + Email + Name + Vorname + (Keine + N*BBS) + Lock  => 7 + N
-$colspan = 7 + count($bbsRows);
+// colspan: Basis(6) + N BBS
+// Basis: [Checkbox, ID, Name, Vorname, Keine, Lock] => 6 + N (BBS)
+$colspan = 6 + count($bbsRows);
 ?>
 <!doctype html>
 <html lang="de">
@@ -308,14 +309,9 @@ $colspan = 7 + count($bbsRows);
 
     <style>
         .table-responsive { overflow-x: auto; }
-        table.table { width: max-content; min-width: 1200px; } /* kleiner als vorher */
+        table.table { width: max-content; min-width: 1200px; } /* deutlich schmaler */
         th, td { white-space: nowrap; }
-
-        th.bbs-col, td.bbs-col {
-            text-align: center;
-            vertical-align: middle;
-            width: 78px; /* schmaler */
-        }
+        th.bbs-col, td.bbs-col { text-align: center; vertical-align: middle; width: 86px; }
         th.bbs-col { font-size: 0.9rem; }
     </style>
 </head>
@@ -380,8 +376,8 @@ $colspan = 7 + count($bbsRows);
                     <th style="width:36px;">
                         <input type="checkbox" id="checkAll">
                     </th>
+
                     <th><a href="<?php echo h(sort_link('id')); ?>">ID<?php echo h(sort_indicator('id')); ?></a></th>
-                    <th><a href="<?php echo h(sort_link('email')); ?>">E-Mail<?php echo h(sort_indicator('email')); ?></a></th>
                     <th><a href="<?php echo h(sort_link('name')); ?>">Name<?php echo h(sort_indicator('name')); ?></a></th>
                     <th>Vorname</th>
 
@@ -407,9 +403,6 @@ $colspan = 7 + count($bbsRows);
                     <?php foreach ($rows as $r): ?>
                         <?php
                         $appId = (int)$r['id'];
-
-                        $email = (string)($r['personal_email'] ?? '');
-                        if ($email === '') $email = (string)($r['app_email'] ?? '');
 
                         $assignedBbsId = $r['assigned_bbs_id'] !== null ? (int)$r['assigned_bbs_id'] : 0;
                         $isLocked = (int)($r['is_locked'] ?? 0);
@@ -440,11 +433,10 @@ $colspan = 7 + count($bbsRows);
                             </td>
 
                             <td><?php echo $appId; ?></td>
-                            <td><?php echo h($email); ?></td>
                             <td><?php echo h((string)($r['name'] ?? '')); ?></td>
                             <td><?php echo h((string)($r['vorname'] ?? '')); ?></td>
 
-                            <!-- Assign Form (hidden) + Radio "Keine" -->
+                            <!-- Assign Form (hidden) -->
                             <td class="bbs-col">
                                 <form id="<?php echo h($formId); ?>" method="post" action="<?php echo h($postAction); ?>" class="m-0">
                                     <input type="hidden" name="csrf_token" value="<?php echo h($csrf); ?>">
@@ -474,7 +466,7 @@ $colspan = 7 + count($bbsRows);
                             <?php endforeach; ?>
 
                             <!-- Lock -->
-                            <td class="text-nowrap" style="min-width:170px;">
+                            <td class="text-nowrap" style="min-width:190px;">
                                 <?php if ($isLocked): ?>
                                     <div class="d-flex gap-2 align-items-center">
                                         <span class="badge bg-success">LOCK</span>
