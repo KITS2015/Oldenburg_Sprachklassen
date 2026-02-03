@@ -1,7 +1,5 @@
 <?php
 declare(strict_types=1);
-
-// Datei: public/admin/inc/footer.php
 ?>
         </div><!-- /.container-fluid -->
     </main>
