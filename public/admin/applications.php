@@ -6,43 +6,13 @@ declare(strict_types=1);
 require_once __DIR__ . '/inc/bootstrap.php';
 require_once __DIR__ . '/inc/auth.php';
 require_once __DIR__ . '/inc/csrf.php';
+require_once __DIR__ . '/inc/helpers.php';
 
 require_admin();
+
 $pdo = admin_db();
 
-$pageTitle = 'Admin – Bewerbungen';
-$activeNav = 'applications';
-
-// ---- Helpers ----
-function h(string $s): string { return htmlspecialchars($s, ENT_QUOTES, 'UTF-8'); }
-
-function build_query(array $overrides = []): string
-{
-    $base = $_GET;
-    foreach ($overrides as $k => $v) {
-        if ($v === null) unset($base[$k]);
-        else $base[$k] = (string)$v;
-    }
-    return http_build_query($base);
-}
-
-function sort_link(string $col): string
-{
-    $currentSort = (string)($_GET['sort'] ?? 'updated_at');
-    $currentDir  = strtolower((string)($_GET['dir'] ?? 'desc'));
-    $newDir = 'asc';
-    if ($currentSort === $col && $currentDir === 'asc') $newDir = 'desc';
-    return '/admin/applications.php?' . build_query(['sort' => $col, 'dir' => $newDir, 'page' => 1]);
-}
-
-function sort_indicator(string $col): string
-{
-    $currentSort = (string)($_GET['sort'] ?? 'updated_at');
-    $currentDir  = strtolower((string)($_GET['dir'] ?? 'desc'));
-    if ($currentSort !== $col) return '';
-    return $currentDir === 'asc' ? ' ▲' : ' ▼';
-}
-
+/** Rollen */
 function get_current_admin_user_id(): int
 {
     return (int)($_SESSION['admin_user_id'] ?? 0);
@@ -67,25 +37,34 @@ function admin_has_role(PDO $pdo, int $userId, string $roleKey): bool
     }
 }
 
-// ---- Admin-Override (role admin darf alles) ----
 $adminUserId = get_current_admin_user_id();
 $isAdminRole = admin_has_role($pdo, $adminUserId, 'admin');
 if ($adminUserId <= 0) $isAdminRole = true;
 
-// ---- BBS-Liste + Map ----
-$bbsRows = $pdo->query("
-    SELECT bbs_id, bbs_kurz, bbs_schulnummer, bbs_bezeichnung
-    FROM bbs
-    WHERE is_active = 1
-    ORDER BY bbs_bezeichnung
-")->fetchAll(PDO::FETCH_ASSOC);
+/** BBS laden (robust gegen fehlende Spalte bbs_kurz in Alt-DBs) */
+try {
+    $bbsRows = $pdo->query("
+        SELECT bbs_id, bbs_kurz, bbs_schulnummer, bbs_bezeichnung
+        FROM bbs
+        WHERE is_active = 1
+        ORDER BY bbs_bezeichnung
+    ")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Throwable $e) {
+    $bbsRows = $pdo->query("
+        SELECT bbs_id, bbs_schulnummer, bbs_bezeichnung
+        FROM bbs
+        WHERE is_active = 1
+        ORDER BY bbs_bezeichnung
+    ")->fetchAll(PDO::FETCH_ASSOC);
+    // bbs_kurz fehlt -> später fallback auf schulnummer/bezeichnung
+}
 
 $bbsMap = [];
 foreach ($bbsRows as $b) {
-    $bbsMap[(int)$b['bbs_id']] = (string)$b['bbs_bezeichnung'];
+    $bbsMap[(int)$b['bbs_id']] = (string)($b['bbs_bezeichnung'] ?? '');
 }
 
-// ---- POST: assign / lock / unlock ----
+/** POST: assign / lock / unlock */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!csrf_verify($_POST['csrf_token'] ?? '')) {
@@ -203,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// ---- Input (Filter / Suche / Paging / Sort) ----
+/** Filter / Suche / Paging */
 $limit = 25;
 
 $page = (int)($_GET['page'] ?? 1);
@@ -217,11 +196,9 @@ if (!in_array($status, $allowedStatus, true)) $status = '';
 $q = trim((string)($_GET['q'] ?? ''));
 $q = mb_substr($q, 0, 200);
 
-$sort = (string)($_GET['sort'] ?? 'updated_at');
-$dir  = strtolower((string)($_GET['dir'] ?? 'desc')) === 'asc' ? 'asc' : 'desc';
+$sort = (string)($_GET['sort'] ?? 'id');
+$dir  = strtolower((string)($_GET['dir'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
 
-// Wir zeigen Status/Email nicht mehr an, aber Sortierung kann bleiben.
-// Ich lasse hier nur sinnvolle Sorts für die neue Tabellenansicht:
 $sortMap = [
     'id'     => 'a.id',
     'name'   => 'p.name',
@@ -231,7 +208,6 @@ $sortMap = [
 if (!isset($sortMap[$sort])) $sort = 'id';
 $orderBy = $sortMap[$sort] . ' ' . strtoupper($dir);
 
-// ---- WHERE ----
 $where = [];
 $params = [];
 
@@ -255,7 +231,6 @@ if ($q !== '') {
 
 $whereSql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
 
-// ---- Count ----
 $stCount = $pdo->prepare("
     SELECT COUNT(*)
     FROM applications a
@@ -269,21 +244,16 @@ $totalPages = (int)max(1, (int)ceil($total / $limit));
 if ($page > $totalPages) $page = $totalPages;
 $offset = ($page - 1) * $limit;
 
-// ---- Data ----
 $st = $pdo->prepare("
     SELECT
         a.id,
         a.status,
-        a.email AS app_email,
-        a.dob AS app_dob,
         a.assigned_bbs_id,
         a.is_locked,
         a.locked_by_bbs_id,
         a.locked_at,
         p.name,
-        p.vorname,
-        p.geburtsdatum,
-        p.email AS personal_email
+        p.vorname
     FROM applications a
     LEFT JOIN personal p ON p.application_id = a.id
     $whereSql
@@ -291,30 +261,27 @@ $st = $pdo->prepare("
     LIMIT $limit OFFSET $offset
 ");
 $st->execute($params);
-$rows = $st->fetchAll();
+$rows = $st->fetchAll(PDO::FETCH_ASSOC);
 
-// ---- Token + QS nur einmal ----
 $csrf = csrf_token();
 $qs = build_query([]);
 $postAction = '/admin/applications.php' . ($qs !== '' ? ('?' . $qs) : '');
 
-// colspan: Checkbox + ID + Name + Vorname + (Keine + N BBS) + Lock
-$colspan = 4 + 1 + count($bbsRows) + 1;
+$pageTitle = 'Admin – Bewerbungen';
+$activeNav = 'applications';
+require_once __DIR__ . '/inc/header.php';
 
-require __DIR__ . '/inc/header.php';
+/** colspan: Checkbox + ID + Name + Vorname + (Keine + N BBS) + Lock = 4 + (1+N) + 1 */
+$colspan = 6 + count($bbsRows);
 ?>
 
-<div class="admin-page-title">
+<div class="d-flex justify-content-between align-items-center mb-3">
     <div>
-        <h1 class="h4 mb-0">Bewerbungen</h1>
+        <h1 class="h4 mb-1">Bewerbungen</h1>
         <div class="text-muted">Gesamt: <?php echo (int)$total; ?> · Seite <?php echo (int)$page; ?> / <?php echo (int)$totalPages; ?></div>
-    </div>
-    <div class="d-flex gap-2">
-        <a class="btn btn-outline-secondary btn-sm" href="/admin/dashboard.php">← Dashboard</a>
     </div>
 </div>
 
-<!-- Filter / Suche -->
 <form class="row g-2 align-items-end mb-3" method="get" action="/admin/applications.php">
     <div class="col-12 col-md-3">
         <label class="form-label">Status</label>
@@ -327,7 +294,7 @@ require __DIR__ . '/inc/header.php';
     </div>
     <div class="col-12 col-md-6">
         <label class="form-label">Suche</label>
-        <input class="form-control" type="text" name="q" value="<?php echo h($q); ?>" placeholder="E-Mail, Name, Vorname, Token, ID">
+        <input class="form-control" type="text" name="q" value="<?php echo h($q); ?>" placeholder="Name, Vorname, E-Mail, Token, ID">
     </div>
     <div class="col-12 col-md-3 d-flex gap-2">
         <button class="btn btn-primary w-100" type="submit">Anwenden</button>
@@ -335,7 +302,6 @@ require __DIR__ . '/inc/header.php';
     </div>
 </form>
 
-<!-- Export Buttons -->
 <div class="d-flex flex-wrap gap-2 mb-2">
     <a class="btn btn-outline-primary btn-sm"
        href="/admin/export_csv.php?mode=all&<?php echo h(build_query(['page' => null])); ?>">
@@ -347,7 +313,6 @@ require __DIR__ . '/inc/header.php';
     </button>
 </div>
 
-<!-- Form für CSV-Auswahl -->
 <form id="selectionForm" method="post" action="/admin/export_csv.php">
     <input type="hidden" name="csrf_token" value="<?php echo h($csrf); ?>">
     <input type="hidden" name="mode" value="selected">
@@ -358,21 +323,19 @@ require __DIR__ . '/inc/header.php';
         <table class="table table-sm table-hover align-middle mb-0 admin-table">
             <thead class="table-light">
             <tr>
-                <th style="width:36px;">
-                    <input type="checkbox" id="checkAll">
-                </th>
+                <th style="width:36px;"><input type="checkbox" id="checkAll"></th>
                 <th><a href="<?php echo h(sort_link('id')); ?>">ID<?php echo h(sort_indicator('id')); ?></a></th>
                 <th><a href="<?php echo h(sort_link('name')); ?>">Name<?php echo h(sort_indicator('name')); ?></a></th>
                 <th>Vorname</th>
 
-                <th class="text-center">Keine</th>
+                <th class="bbs-col">Keine</th>
                 <?php foreach ($bbsRows as $b): ?>
                     <?php
                     $label = trim((string)($b['bbs_kurz'] ?? ''));
                     if ($label === '') $label = trim((string)($b['bbs_schulnummer'] ?? ''));
                     if ($label === '') $label = (string)($b['bbs_bezeichnung'] ?? '');
                     ?>
-                    <th class="text-center" title="<?php echo h((string)$b['bbs_bezeichnung']); ?>">
+                    <th class="bbs-col" title="<?php echo h((string)($b['bbs_bezeichnung'] ?? '')); ?>">
                         <?php echo h($label); ?>
                     </th>
                 <?php endforeach; ?>
@@ -392,22 +355,17 @@ require __DIR__ . '/inc/header.php';
 
                     $lockedByLabel = '';
                     if ($isLocked) {
-                        if ($r['locked_by_bbs_id'] === null) {
-                            $lockedByLabel = 'Admin';
-                        } else {
+                        if ($r['locked_by_bbs_id'] === null) $lockedByLabel = 'Admin';
+                        else {
                             $bid = (int)$r['locked_by_bbs_id'];
                             $lockedByLabel = $bbsMap[$bid] ?? ('BBS #' . $bid);
                         }
                     }
                     $lockedAt = $r['locked_at'] ? (string)$r['locked_at'] : '';
-
                     $disableAssign = ($isLocked && !$isAdminRole) ? 'disabled' : '';
 
                     $formId = 'assignForm' . $appId;
                     $radioName = 'pick_bbs_' . $appId;
-
-                    $name = (string)($r['name'] ?? '');
-                    $vorname = (string)($r['vorname'] ?? '');
                     ?>
                     <tr>
                         <td>
@@ -419,11 +377,11 @@ require __DIR__ . '/inc/header.php';
                         </td>
 
                         <td><?php echo $appId; ?></td>
-                        <td><?php echo h($name); ?></td>
-                        <td><?php echo h($vorname); ?></td>
+                        <td><?php echo h((string)($r['name'] ?? '')); ?></td>
+                        <td><?php echo h((string)($r['vorname'] ?? '')); ?></td>
 
-                        <!-- Assign Form (hidden) -->
-                        <td class="text-center">
+                        <!-- Hidden Assign Form -->
+                        <td class="bbs-col">
                             <form id="<?php echo h($formId); ?>" method="post" action="<?php echo h($postAction); ?>" class="m-0">
                                 <input type="hidden" name="csrf_token" value="<?php echo h($csrf); ?>">
                                 <input type="hidden" name="action" value="assign">
@@ -441,7 +399,7 @@ require __DIR__ . '/inc/header.php';
 
                         <?php foreach ($bbsRows as $b): ?>
                             <?php $bid = (int)$b['bbs_id']; ?>
-                            <td class="text-center">
+                            <td class="bbs-col">
                                 <input type="radio"
                                        name="<?php echo h($radioName); ?>"
                                        value="<?php echo $bid; ?>"
@@ -451,7 +409,6 @@ require __DIR__ . '/inc/header.php';
                             </td>
                         <?php endforeach; ?>
 
-                        <!-- Lock -->
                         <td class="text-nowrap" style="min-width:190px;">
                             <?php if ($isLocked): ?>
                                 <div class="d-flex gap-2 align-items-center">
@@ -489,9 +446,8 @@ require __DIR__ . '/inc/header.php';
     </div>
 </div>
 
-<!-- Pagination -->
 <nav class="mt-3">
-    <ul class="pagination pagination-sm mb-0">
+    <ul class="pagination pagination-sm">
         <?php
         $prev = max(1, $page - 1);
         $next = min($totalPages, $page + 1);
@@ -508,7 +464,7 @@ require __DIR__ . '/inc/header.php';
         $end   = min($totalPages, $page + 3);
         for ($p = $start; $p <= $end; $p++):
             $url = '/admin/applications.php?' . h(build_query(['page' => $p]));
-        ?>
+            ?>
             <li class="page-item <?php echo $p === $page ? 'active' : ''; ?>">
                 <a class="page-link" href="<?php echo $url; ?>"><?php echo (int)$p; ?></a>
             </li>
@@ -546,4 +502,4 @@ require __DIR__ . '/inc/header.php';
     });
 </script>
 
-<?php require __DIR__ . '/inc/footer.php'; ?>
+<?php require_once __DIR__ . '/inc/footer.php'; ?>
