@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'assign') {
         $posted = (int)($_POST['assigned_bbs_id'] ?? 0);
-        $newBbsId = $posted > 0 ? $posted : null; // 0 => NULL
+        $newBbsId = $posted > 0 ? $posted : null;
 
         if ($isLocked && !$isAdminRole) {
             header('Location: ' . $redirectUrl);
@@ -298,6 +298,11 @@ $st = $pdo->prepare("
 $st->execute($params);
 $rows = $st->fetchAll();
 
+// ---- Wichtig: Token + QS nur einmal ----
+$csrf = csrf_token();
+$qs = build_query([]);
+$postAction = '/admin/applications.php' . ($qs !== '' ? ('?' . $qs) : '');
+
 // colspan: 11 Basis + N BBS
 $colspan = 11 + count($bbsRows);
 ?>
@@ -313,9 +318,9 @@ $colspan = 11 + count($bbsRows);
 
     <style>
         .table-responsive { overflow-x: auto; }
-        table.table { width: max-content; min-width: 1600px; } /* breiter */
+        table.table { width: max-content; min-width: 1600px; }
         th, td { white-space: nowrap; }
-        th.bbs-col, td.bbs-col { text-align: center; vertical-align: middle; width: 92px; } /* BBS-Spalten etwas breiter */
+        th.bbs-col, td.bbs-col { text-align: center; vertical-align: middle; width: 92px; }
         th.bbs-col { font-size: 0.9rem; }
     </style>
 </head>
@@ -368,7 +373,7 @@ $colspan = 11 + count($bbsRows);
 
     <!-- Form für CSV-Auswahl -->
     <form id="selectionForm" method="post" action="/admin/export_csv.php">
-        <input type="hidden" name="csrf_token" value="<?php echo h(csrf_token()); ?>">
+        <input type="hidden" name="csrf_token" value="<?php echo h($csrf); ?>">
         <input type="hidden" name="mode" value="selected">
     </form>
 
@@ -455,8 +460,8 @@ $colspan = 11 + count($bbsRows);
 
                             <!-- Assign Form (hidden) -->
                             <td class="bbs-col">
-                                <form id="<?php echo h($formId); ?>" method="post" action="/admin/applications.php" class="m-0">
-                                    <input type="hidden" name="csrf_token" value="<?php echo h(csrf_token()); ?>">
+                                <form id="<?php echo h($formId); ?>" method="post" action="<?php echo h($postAction); ?>" class="m-0">
+                                    <input type="hidden" name="csrf_token" value="<?php echo h($csrf); ?>">
                                     <input type="hidden" name="action" value="assign">
                                     <input type="hidden" name="app_id" value="<?php echo $appId; ?>">
                                     <input type="hidden" name="assigned_bbs_id" value="<?php echo (int)$assignedBbsId; ?>">
@@ -491,16 +496,16 @@ $colspan = 11 + count($bbsRows);
                                             <?php echo h($lockedByLabel); ?>
                                             <?php echo $lockedAt ? ' · ' . h($lockedAt) : ''; ?>
                                         </small>
-                                        <form method="post" action="/admin/applications.php" class="m-0">
-                                            <input type="hidden" name="csrf_token" value="<?php echo h(csrf_token()); ?>">
+                                        <form method="post" action="<?php echo h($postAction); ?>" class="m-0">
+                                            <input type="hidden" name="csrf_token" value="<?php echo h($csrf); ?>">
                                             <input type="hidden" name="action" value="unlock">
                                             <input type="hidden" name="app_id" value="<?php echo $appId; ?>">
                                             <button type="submit" class="btn btn-sm btn-outline-danger">Unlock</button>
                                         </form>
                                     </div>
                                 <?php else: ?>
-                                    <form method="post" action="/admin/applications.php" class="d-flex gap-2 align-items-center m-0">
-                                        <input type="hidden" name="csrf_token" value="<?php echo h(csrf_token()); ?>">
+                                    <form method="post" action="<?php echo h($postAction); ?>" class="d-flex gap-2 align-items-center m-0">
+                                        <input type="hidden" name="csrf_token" value="<?php echo h($csrf); ?>">
                                         <input type="hidden" name="action" value="lock">
                                         <input type="hidden" name="app_id" value="<?php echo $appId; ?>">
                                         <button type="submit" class="btn btn-sm btn-outline-success" <?php echo $assignedBbsId > 0 ? '' : 'disabled'; ?>>
@@ -558,7 +563,6 @@ $colspan = 11 + count($bbsRows);
 
 <script src="/assets/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Check all
     const checkAll = document.getElementById('checkAll');
     const rowChecks = document.querySelectorAll('.rowCheck');
 
@@ -568,7 +572,6 @@ $colspan = 11 + count($bbsRows);
         });
     }
 
-    // Auto-Save: Radio -> Hidden im Form setzen -> submit
     document.querySelectorAll('input[data-assign-form]').forEach(el => {
         el.addEventListener('change', () => {
             const formId = el.getAttribute('data-assign-form');
