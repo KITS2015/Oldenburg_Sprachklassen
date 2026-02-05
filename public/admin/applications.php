@@ -1,628 +1,493 @@
 <?php
-// bin/init_db.php
-// UTF-8, no BOM
 declare(strict_types=1);
 
-require __DIR__ . '/../app/config.php';
+// Datei: public/admin/applications.php
 
-/**
- * Helpers
- */
-function pdo_admin(): PDO {
-    // Primär: DSN aus config.php
-    try {
-        return pdo(DB_ADMIN_DSN, DB_ADMIN_USER, DB_ADMIN_PASS, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        ]);
-    } catch (Throwable $e) {
-        // Fallback: localhost (Socket). Hilft bei Debian-Defaults (root via unix_socket)
-        $fallbackDsn = 'mysql:host=localhost;port=3306;charset=utf8mb4';
-        return pdo($fallbackDsn, DB_ADMIN_USER, DB_ADMIN_PASS, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        ]);
-    }
-}
+require_once __DIR__ . '/inc/bootstrap.php';
+require_once __DIR__ . '/inc/auth.php';
+require_once __DIR__ . '/inc/csrf.php';
+require_once __DIR__ . '/inc/helpers.php';
 
-function pdo_app(string $dbName): PDO {
-    return pdo("mysql:host=127.0.0.1;dbname=$dbName;port=3306;charset=utf8mb4", APP_DB_USER, APP_DB_PASS, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
-    ]);
-}
+require_admin();
 
-function col_exists(PDO $pdo, string $db, string $table, string $col): bool {
-    $q = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=? LIMIT 1";
-    $st = $pdo->prepare($q);
-    $st->execute([$db, $table, $col]);
-    return (bool)$st->fetchColumn();
-}
+$pdo = admin_db();
 
-function idx_exists(PDO $pdo, string $db, string $table, string $idx): bool {
-    $q = "SELECT 1 FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND INDEX_NAME=? LIMIT 1";
-    $st = $pdo->prepare($q);
-    $st->execute([$db, $table, $idx]);
-    return (bool)$st->fetchColumn();
-}
-
-function table_exists(PDO $pdo, string $db, string $table): bool {
-    $q = "SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=? AND TABLE_NAME=? LIMIT 1";
-    $st = $pdo->prepare($q);
-    $st->execute([$db, $table]);
-    return (bool)$st->fetchColumn();
-}
-
+/** BBS laden (robust gegen fehlende Spalte bbs_kurz in Alt-DBs) */
 try {
-    $admin = pdo_admin();
-
-    // 1) DB anlegen (idempotent)
-    $dbName = APP_DB_NAME;
-    $admin->exec("CREATE DATABASE IF NOT EXISTS `$dbName` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-
-    // 2) App-User anlegen/Rechte (robust: localhost + 127.0.0.1 + ::1)
-    //    - behebt die häufigste Neuinstallationsfalle (user@localhost aber DSN 127.0.0.1)
-    //    - REFERENCES wird für Foreign Keys benötigt
-    $hosts = ['localhost', '127.0.0.1', '::1'];
-
-    $user = APP_DB_USER;
-    $pass = APP_DB_PASS;
-
-    // sauberes Quoting für Identifier
-    $qUser = str_replace("`", "``", $user);
-    $qPass = $admin->quote($pass);
-
-    foreach ($hosts as $host) {
-        $qHost = str_replace("`", "``", $host);
-
-        $admin->exec("CREATE USER IF NOT EXISTS `$qUser`@`$qHost` IDENTIFIED BY $qPass");
-
-        // Passwort sicherstellen (CREATE USER IF NOT EXISTS ändert es nicht, wenn User existiert)
-        try {
-            $admin->exec("ALTER USER `$qUser`@`$qHost` IDENTIFIED BY $qPass");
-        } catch (Throwable $e) {
-            // ignore
-        }
-
-        $admin->exec("
-            GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES
-            ON `$dbName`.*
-            TO `$qUser`@`$qHost`
-        ");
-    }
-
-    $admin->exec("FLUSH PRIVILEGES");
-
-    // 3) Mit App-User verbinden
-    $app = pdo_app($dbName);
-
-    // ============================
-    // applications
-    // ============================
-    if (!table_exists($admin, $dbName, 'applications')) {
-        $app->exec("
-          CREATE TABLE IF NOT EXISTS applications (
-            id               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-            token            CHAR(32) NOT NULL,
-            email            VARCHAR(255) NULL,
-            dob              DATE NULL,
-            email_verified   TINYINT(1) NOT NULL DEFAULT 0,
-            email_account_id BIGINT UNSIGNED NULL,
-            data_json        JSON NULL,
-            status           ENUM('draft','submitted','withdrawn') NOT NULL DEFAULT 'draft',
-
-            -- Zuweisung / Lock für BBS-Verteilung (ohne is_locked)
-            assigned_bbs_id  BIGINT UNSIGNED NULL,
-            locked_by_bbs_id BIGINT UNSIGNED NULL,
-            locked_at        DATETIME NULL,
-
-            created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            submit_ip        VARBINARY(16) NULL,
-
-            PRIMARY KEY (id),
-            UNIQUE KEY uq_token (token),
-            KEY idx_email (email),
-            KEY idx_birth (dob),
-            KEY idx_email_dob (email, dob),
-            KEY idx_email_account_id (email_account_id),
-
-            KEY idx_assigned_bbs_id (assigned_bbs_id),
-            KEY idx_locked_by_bbs_id (locked_by_bbs_id)
-          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        ");
-    } else {
-        // retrieval_token -> token
-        if (col_exists($admin, $dbName, 'applications', 'retrieval_token') && !col_exists($admin, $dbName, 'applications', 'token')) {
-            $app->exec("ALTER TABLE applications CHANGE COLUMN retrieval_token token CHAR(32) NOT NULL");
-        }
-
-        // token + unique
-        if (!col_exists($admin, $dbName, 'applications', 'token')) {
-            $app->exec("ALTER TABLE applications ADD COLUMN token CHAR(32) NOT NULL AFTER id");
-        }
-        if (!idx_exists($admin, $dbName, 'applications', 'uq_token')) {
-            $app->exec("ALTER TABLE applications ADD UNIQUE KEY uq_token (token)");
-        }
-
-        // geburtsdatum -> dob
-        if (col_exists($admin, $dbName, 'applications', 'geburtsdatum') && !col_exists($admin, $dbName, 'applications', 'dob')) {
-            $app->exec("ALTER TABLE applications CHANGE COLUMN geburtsdatum dob DATE NULL");
-        }
-        if (!col_exists($admin, $dbName, 'applications', 'dob')) {
-            $app->exec("ALTER TABLE applications ADD COLUMN dob DATE NULL AFTER email");
-        } else {
-            $app->exec("ALTER TABLE applications MODIFY COLUMN dob DATE NULL");
-        }
-
-        // email nullable
-        if (col_exists($admin, $dbName, 'applications', 'email')) {
-            $st = $app->query("
-                SELECT IS_NULLABLE
-                FROM INFORMATION_SCHEMA.COLUMNS
-                WHERE TABLE_SCHEMA=" . $app->quote($dbName) . "
-                  AND TABLE_NAME='applications'
-                  AND COLUMN_NAME='email'
-            ");
-            if (($st->fetchColumn() ?? '') !== 'YES') {
-                $app->exec("ALTER TABLE applications MODIFY COLUMN email VARCHAR(255) NULL");
-            }
-        } else {
-            $app->exec("ALTER TABLE applications ADD COLUMN email VARCHAR(255) NULL AFTER token");
-        }
-
-        // email_verified
-        if (!col_exists($admin, $dbName, 'applications', 'email_verified')) {
-            $app->exec("ALTER TABLE applications ADD COLUMN email_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER dob");
-        }
-
-        // email_account_id + index
-        if (!col_exists($admin, $dbName, 'applications', 'email_account_id')) {
-            $app->exec("ALTER TABLE applications ADD COLUMN email_account_id BIGINT UNSIGNED NULL AFTER email_verified");
-        }
-        if (!idx_exists($admin, $dbName, 'applications', 'idx_email_account_id')) {
-            $app->exec("ALTER TABLE applications ADD KEY idx_email_account_id (email_account_id)");
-        }
-
-        // data_json
-        if (!col_exists($admin, $dbName, 'applications', 'data_json')) {
-            $app->exec("ALTER TABLE applications ADD COLUMN data_json JSON NULL AFTER email_account_id");
-        }
-
-        // status
-        if (!col_exists($admin, $dbName, 'applications', 'status')) {
-            $app->exec("ALTER TABLE applications ADD COLUMN status ENUM('draft','submitted','withdrawn') NOT NULL DEFAULT 'draft' AFTER data_json");
-        }
-
-        // created_at / updated_at
-        if (!col_exists($admin, $dbName, 'applications', 'created_at')) {
-            $app->exec("ALTER TABLE applications ADD COLUMN created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER status");
-        }
-        if (!col_exists($admin, $dbName, 'applications', 'updated_at')) {
-            $app->exec("ALTER TABLE applications ADD COLUMN updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at");
-        }
-
-        // submit_ip
-        if (!col_exists($admin, $dbName, 'applications', 'submit_ip')) {
-            $app->exec("ALTER TABLE applications ADD COLUMN submit_ip VARBINARY(16) NULL AFTER updated_at");
-        }
-
-        // indices
-        if (!idx_exists($admin, $dbName, 'applications', 'idx_email')) {
-            $app->exec("ALTER TABLE applications ADD KEY idx_email (email)");
-        }
-        if (!idx_exists($admin, $dbName, 'applications', 'idx_birth')) {
-            $app->exec("ALTER TABLE applications ADD KEY idx_birth (dob)");
-        }
-        if (!idx_exists($admin, $dbName, 'applications', 'idx_email_dob')) {
-            $app->exec("ALTER TABLE applications ADD KEY idx_email_dob (email, dob)");
-        }
-
-        // ============================
-        // Zuweisung / Lock für BBS-Verteilung (ohne is_locked)
-        // ============================
-        if (!col_exists($admin, $dbName, 'applications', 'assigned_bbs_id')) {
-            $app->exec("ALTER TABLE applications ADD COLUMN assigned_bbs_id BIGINT UNSIGNED NULL AFTER status");
-        }
-        if (!col_exists($admin, $dbName, 'applications', 'locked_by_bbs_id')) {
-            $app->exec("ALTER TABLE applications ADD COLUMN locked_by_bbs_id BIGINT UNSIGNED NULL AFTER assigned_bbs_id");
-        }
-        if (!col_exists($admin, $dbName, 'applications', 'locked_at')) {
-            $app->exec("ALTER TABLE applications ADD COLUMN locked_at DATETIME NULL AFTER locked_by_bbs_id");
-        }
-
-        if (!idx_exists($admin, $dbName, 'applications', 'idx_assigned_bbs_id')) {
-            $app->exec("ALTER TABLE applications ADD KEY idx_assigned_bbs_id (assigned_bbs_id)");
-        }
-        if (!idx_exists($admin, $dbName, 'applications', 'idx_locked_by_bbs_id')) {
-            $app->exec("ALTER TABLE applications ADD KEY idx_locked_by_bbs_id (locked_by_bbs_id)");
-        }
-    }
-
-    // ============================
-    // email_accounts
-    // ============================
-    if (!table_exists($admin, $dbName, 'email_accounts')) {
-        $app->exec("
-          CREATE TABLE IF NOT EXISTS email_accounts (
-            id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-            email          VARCHAR(255) NOT NULL,
-            password_hash  VARCHAR(255) NOT NULL,
-            email_verified TINYINT(1) NOT NULL DEFAULT 0,
-            max_tokens     INT NOT NULL DEFAULT 5,
-            created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            UNIQUE KEY uq_email (email)
-          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        ");
-    } else {
-        if (!col_exists($admin, $dbName, 'email_accounts', 'email')) {
-            $app->exec("ALTER TABLE email_accounts ADD COLUMN email VARCHAR(255) NOT NULL");
-        }
-        if (!idx_exists($admin, $dbName, 'email_accounts', 'uq_email')) {
-            $app->exec("ALTER TABLE email_accounts ADD UNIQUE KEY uq_email (email)");
-        }
-        if (!col_exists($admin, $dbName, 'email_accounts', 'password_hash')) {
-            $app->exec("ALTER TABLE email_accounts ADD COLUMN password_hash VARCHAR(255) NULL");
-        }
-        if (!col_exists($admin, $dbName, 'email_accounts', 'email_verified')) {
-            $app->exec("ALTER TABLE email_accounts ADD COLUMN email_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER password_hash");
-        }
-        if (!col_exists($admin, $dbName, 'email_accounts', 'max_tokens')) {
-            $app->exec("ALTER TABLE email_accounts ADD COLUMN max_tokens INT NOT NULL DEFAULT 5 AFTER email_verified");
-        }
-        if (!col_exists($admin, $dbName, 'email_accounts', 'created_at')) {
-            $app->exec("ALTER TABLE email_accounts ADD COLUMN created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP");
-        }
-        if (!col_exists($admin, $dbName, 'email_accounts', 'updated_at')) {
-            $app->exec("ALTER TABLE email_accounts ADD COLUMN updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
-        }
-
-        // safety for older installs
-        $app->exec("
-          UPDATE email_accounts
-          SET password_hash = COALESCE(password_hash, '')
-          WHERE password_hash IS NULL
-        ");
-    }
-
-    // FK applications.email_account_id -> email_accounts.id (try/catch idempotent enough)
-    try {
-        $app->exec("
-          ALTER TABLE applications
-          ADD CONSTRAINT fk_app_email_account
-          FOREIGN KEY (email_account_id) REFERENCES email_accounts(id)
-          ON DELETE SET NULL
-        ");
-    } catch (Throwable $e) {
-        // ignore
-    }
-
-    // ============================
-    // settings
-    // ============================
-    $app->exec("
-      CREATE TABLE IF NOT EXISTS settings (
-        setting_key    VARCHAR(100) NOT NULL,
-        setting_value  VARCHAR(255) NOT NULL,
-        description    VARCHAR(255) NULL,
-        updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        PRIMARY KEY (setting_key)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    ");
-
-    $app->exec("
-      INSERT INTO settings (setting_key, setting_value, description)
-      VALUES ('max_tokens_per_email', '5', 'Maximale Anzahl an Bewerbungen (Access-Tokens) pro Login-E-Mail')
-      ON DUPLICATE KEY UPDATE setting_value = setting_value
-    ");
-
-    // ============================
-    // personal (inkl. weitere_angaben)
-    // ============================
-    $app->exec("
-      CREATE TABLE IF NOT EXISTS personal (
-        application_id   BIGINT UNSIGNED NOT NULL,
-        name             VARCHAR(200) NOT NULL,
-        vorname          VARCHAR(200) NOT NULL,
-        geschlecht       ENUM('m','w','d') NOT NULL,
-        geburtsdatum     DATE NOT NULL,
-        geburtsort_land  VARCHAR(200) NOT NULL,
-        staatsang        VARCHAR(200) NOT NULL,
-        strasse          VARCHAR(200) NOT NULL,
-        plz              CHAR(5) NOT NULL,
-        wohnort          VARCHAR(200) NOT NULL,
-        telefon          VARCHAR(100) NOT NULL,
-        email            VARCHAR(255) NULL,
-        weitere_angaben  TEXT NULL,
-        dsgvo_ok         TINYINT(1) NOT NULL DEFAULT 0,
-        created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        PRIMARY KEY (application_id),
-        KEY idx_personal_email (email),
-        CONSTRAINT fk_personal_app FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    ");
-
-    // migrations/guarantees
-    if (table_exists($admin, $dbName, 'personal')) {
-        $app->exec("ALTER TABLE personal MODIFY COLUMN email VARCHAR(255) NULL");
-        if (!col_exists($admin, $dbName, 'personal', 'weitere_angaben')) {
-            $app->exec("ALTER TABLE personal ADD COLUMN weitere_angaben TEXT NULL AFTER email");
-        } else {
-            $app->exec("ALTER TABLE personal MODIFY COLUMN weitere_angaben TEXT NULL");
-        }
-    }
-
-    // ============================
-    // contacts
-    // ============================
-    $app->exec("
-      CREATE TABLE IF NOT EXISTS contacts (
-        id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-        application_id BIGINT UNSIGNED NOT NULL,
-        rolle          VARCHAR(100) NULL,
-        name           VARCHAR(200) NOT NULL,
-        tel            VARCHAR(100) NULL,
-        mail           VARCHAR(255) NULL,
-        notiz          VARCHAR(500) NULL,
-        created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        KEY idx_contacts_app (application_id),
-        CONSTRAINT fk_contacts_app FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    ");
-
-    // ============================
-    // school (OHNE deutsch_jahre)
-    // ============================
-    $app->exec("
-      CREATE TABLE IF NOT EXISTS school (
-        application_id         BIGINT UNSIGNED NOT NULL,
-
-        schule_aktuell         VARCHAR(50)  NULL,
-        schule_freitext        VARCHAR(255) NULL,
-        schule_label           VARCHAR(500) NULL,
-
-        klassenlehrer          VARCHAR(200) NULL,
-        mail_lehrkraft         VARCHAR(255) NULL,
-
-        seit_monat             TINYINT UNSIGNED NULL,
-        seit_jahr              SMALLINT UNSIGNED NULL,
-        seit_text              VARCHAR(50) NULL,
-
-        jahre_in_de            TINYINT UNSIGNED NULL,
-        schule_herkunft        ENUM('ja','nein') NULL,
-        jahre_schule_herkunft  TINYINT UNSIGNED NULL,
-        familiensprache        VARCHAR(200) NULL,
-
-        deutsch_niveau         ENUM('kein','A0','A1','A2','B1','B2','C1','C2') NULL,
-        interessen             VARCHAR(500) NULL,
-
-        created_at             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-        PRIMARY KEY (application_id),
-        CONSTRAINT fk_school_app FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    ");
-
-    // migrations for school columns (idempotent)
-    if (!col_exists($admin, $dbName, 'school', 'schule_aktuell')) {
-        $app->exec("ALTER TABLE school ADD COLUMN schule_aktuell VARCHAR(50) NULL AFTER application_id");
-    }
-    if (!col_exists($admin, $dbName, 'school', 'schule_freitext')) {
-        $app->exec("ALTER TABLE school ADD COLUMN schule_freitext VARCHAR(255) NULL AFTER schule_aktuell");
-    }
-    if (!col_exists($admin, $dbName, 'school', 'schule_label')) {
-        $app->exec("ALTER TABLE school ADD COLUMN schule_label VARCHAR(500) NULL AFTER schule_freitext");
-    }
-    if (!col_exists($admin, $dbName, 'school', 'klassenlehrer')) {
-        $app->exec("ALTER TABLE school ADD COLUMN klassenlehrer VARCHAR(200) NULL AFTER schule_label");
-    }
-    if (!col_exists($admin, $dbName, 'school', 'mail_lehrkraft')) {
-        $app->exec("ALTER TABLE school ADD COLUMN mail_lehrkraft VARCHAR(255) NULL AFTER klassenlehrer");
-    }
-    if (!col_exists($admin, $dbName, 'school', 'seit_monat')) {
-        $app->exec("ALTER TABLE school ADD COLUMN seit_monat TINYINT UNSIGNED NULL AFTER mail_lehrkraft");
-    }
-    if (!col_exists($admin, $dbName, 'school', 'seit_jahr')) {
-        $app->exec("ALTER TABLE school ADD COLUMN seit_jahr SMALLINT UNSIGNED NULL AFTER seit_monat");
-    }
-    if (!col_exists($admin, $dbName, 'school', 'seit_text')) {
-        $app->exec("ALTER TABLE school ADD COLUMN seit_text VARCHAR(50) NULL AFTER seit_jahr");
-    }
-    if (!col_exists($admin, $dbName, 'school', 'jahre_in_de')) {
-        $app->exec("ALTER TABLE school ADD COLUMN jahre_in_de TINYINT UNSIGNED NULL AFTER seit_text");
-    }
-    if (!col_exists($admin, $dbName, 'school', 'schule_herkunft')) {
-        $app->exec("ALTER TABLE school ADD COLUMN schule_herkunft ENUM('ja','nein') NULL AFTER jahre_in_de");
-    }
-    if (!col_exists($admin, $dbName, 'school', 'jahre_schule_herkunft')) {
-        $app->exec("ALTER TABLE school ADD COLUMN jahre_schule_herkunft TINYINT UNSIGNED NULL AFTER schule_herkunft");
-    }
-    if (!col_exists($admin, $dbName, 'school', 'familiensprache')) {
-        $app->exec("ALTER TABLE school ADD COLUMN familiensprache VARCHAR(200) NULL AFTER jahre_schule_herkunft");
-    }
-    if (!col_exists($admin, $dbName, 'school', 'deutsch_niveau')) {
-        $app->exec("ALTER TABLE school ADD COLUMN deutsch_niveau ENUM('kein','A0','A1','A2','B1','B2','C1','C2') NULL AFTER familiensprache");
-    }
-    if (!col_exists($admin, $dbName, 'school', 'interessen')) {
-        $app->exec("ALTER TABLE school ADD COLUMN interessen VARCHAR(500) NULL AFTER deutsch_niveau");
-    }
-
-    // make sure legacy installs accept A0
-    try {
-        $app->exec("ALTER TABLE school MODIFY COLUMN deutsch_niveau ENUM('kein','A0','A1','A2','B1','B2','C1','C2') NULL");
-    } catch (Throwable $e) {
-        // ignore
-    }
-
-    // ============================
-    // uploads
-    // ============================
-    $app->exec("
-      CREATE TABLE IF NOT EXISTS uploads (
-        id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-        application_id BIGINT UNSIGNED NOT NULL,
-        typ            ENUM('zeugnis','lebenslauf') NOT NULL,
-        filename       VARCHAR(255) NOT NULL,
-        mime           VARCHAR(100) NOT NULL,
-        size_bytes     INT UNSIGNED NOT NULL,
-        uploaded_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        KEY idx_uploads_app (application_id),
-        UNIQUE KEY uq_app_typ (application_id, typ),
-        CONSTRAINT fk_uploads_app FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    ");
-
-    // ============================
-    // audit_log
-    // ============================
-    $app->exec("
-      CREATE TABLE IF NOT EXISTS audit_log (
-        id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-        application_id BIGINT UNSIGNED NOT NULL,
-        event          VARCHAR(100) NOT NULL,
-        meta_json      JSON NULL,
-        created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        KEY idx_audit_app (application_id),
-        CONSTRAINT fk_audit_app FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    ");
-
-    // ============================
-    // admin_users / roles (Admin-Bereich Auth)
-    // ============================
-    $app->exec("
-      CREATE TABLE IF NOT EXISTS admin_users (
-        id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-        username       VARCHAR(100) NOT NULL,
-        password_hash  VARCHAR(255) NOT NULL,
-        display_name   VARCHAR(200) NULL,
-        is_active      TINYINT(1) NOT NULL DEFAULT 1,
-        last_login_at  DATETIME NULL,
-        created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        UNIQUE KEY uq_admin_username (username)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    ");
-
-    $app->exec("
-      CREATE TABLE IF NOT EXISTS roles (
-        id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-        role_key   VARCHAR(100) NOT NULL,
-        role_name  VARCHAR(200) NOT NULL,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        UNIQUE KEY uq_role_key (role_key)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    ");
-
-    $app->exec("
-      CREATE TABLE IF NOT EXISTS admin_user_roles (
-        user_id BIGINT UNSIGNED NOT NULL,
-        role_id BIGINT UNSIGNED NOT NULL,
-        PRIMARY KEY (user_id, role_id),
-        KEY idx_role_id (role_id),
-        CONSTRAINT fk_aur_user FOREIGN KEY (user_id) REFERENCES admin_users(id) ON DELETE CASCADE,
-        CONSTRAINT fk_aur_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    ");
-
-    $app->exec("
-      INSERT INTO roles (role_key, role_name)
-      VALUES ('admin', 'Administrator')
-      ON DUPLICATE KEY UPDATE role_name = VALUES(role_name)
-    ");
-
-    if (defined('ADMIN_USER') && defined('ADMIN_PASS_HASH')) {
-        $st = $app->prepare("
-            INSERT INTO admin_users (username, password_hash, display_name, is_active)
-            VALUES (?, ?, 'Admin', 1)
-            ON DUPLICATE KEY UPDATE
-              password_hash = VALUES(password_hash),
-              is_active = 1
-        ");
-        $st->execute([ADMIN_USER, ADMIN_PASS_HASH]);
-
-        $userId = (int)$app->query("SELECT id FROM admin_users WHERE username=" . $app->quote(ADMIN_USER))->fetchColumn();
-        $roleId = (int)$app->query("SELECT id FROM roles WHERE role_key='admin'")->fetchColumn();
-
-        if ($userId > 0 && $roleId > 0) {
-            $st2 = $app->prepare("
-                INSERT IGNORE INTO admin_user_roles (user_id, role_id)
-                VALUES (?, ?)
-            ");
-            $st2->execute([$userId, $roleId]);
-        }
-    }
-
-    // ============================
-    // bbs (BoB-Backends / API-Clients)
-    // ============================
-    $app->exec("
-      CREATE TABLE IF NOT EXISTS bbs (
-        bbs_id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-        bbs_schulnummer   VARCHAR(50)  NOT NULL,
-        bbs_kurz          VARCHAR(10)  NULL,
-        bbs_bezeichnung   VARCHAR(255) NOT NULL,
-        rest_token_hash   CHAR(64)     NULL,
-        is_active         TINYINT(1)   NOT NULL DEFAULT 1,
-        created_at        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        PRIMARY KEY (bbs_id),
-        UNIQUE KEY uq_bbs_schulnummer (bbs_schulnummer)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    ");
-
-    if (table_exists($admin, $dbName, 'bbs') && !col_exists($admin, $dbName, 'bbs', 'bbs_kurz')) {
-        $app->exec("ALTER TABLE bbs ADD COLUMN bbs_kurz VARCHAR(10) NULL AFTER bbs_schulnummer");
-    }
-
-    // ============================
-    // FK applications -> bbs (Zuweisung / Lock)
-    // ============================
-    try {
-        $app->exec("
-          ALTER TABLE applications
-          ADD CONSTRAINT fk_app_assigned_bbs
-          FOREIGN KEY (assigned_bbs_id) REFERENCES bbs(bbs_id)
-          ON DELETE SET NULL
-        ");
-    } catch (Throwable $e) {
-        // ignore
-    }
-
-    try {
-        $app->exec("
-          ALTER TABLE applications
-          ADD CONSTRAINT fk_app_locked_by_bbs
-          FOREIGN KEY (locked_by_bbs_id) REFERENCES bbs(bbs_id)
-          ON DELETE SET NULL
-        ");
-    } catch (Throwable $e) {
-        // ignore
-    }
-
-    // Optional: Konsistenz (locked_at nur wenn locked_by_bbs_id gesetzt)
-    try {
-        $app->exec("
-          UPDATE applications
-          SET locked_at = NULL
-          WHERE (locked_by_bbs_id IS NULL OR locked_by_bbs_id = 0)
-            AND locked_at IS NOT NULL
-        ");
-    } catch (Throwable $e) {
-        // ignore
-    }
-
-    echo "[OK] Datenbank ist aktuell (Tabellen/Spalten/Indizes ergänzt, nichts gelöscht).\n";
-
+    $bbsRows = $pdo->query("
+        SELECT bbs_id, bbs_kurz, bbs_schulnummer, bbs_bezeichnung
+        FROM bbs
+        WHERE is_active = 1
+        ORDER BY bbs_bezeichnung
+    ")->fetchAll(PDO::FETCH_ASSOC);
 } catch (Throwable $e) {
-    fwrite(STDERR, "[ERROR] " . $e->getMessage() . "\n");
-    exit(1);
+    $bbsRows = $pdo->query("
+        SELECT bbs_id, bbs_schulnummer, bbs_bezeichnung
+        FROM bbs
+        WHERE is_active = 1
+        ORDER BY bbs_bezeichnung
+    ")->fetchAll(PDO::FETCH_ASSOC);
 }
+
+$bbsMap = [];
+foreach ($bbsRows as $b) {
+    $bbsMap[(int)$b['bbs_id']] = (string)($b['bbs_bezeichnung'] ?? '');
+}
+
+/** POST: assign / lock / unlock (Admin hat immer volle Rechte) */
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    if (!csrf_verify($_POST['csrf_token'] ?? '')) {
+        http_response_code(400);
+        echo "Ungültiger CSRF-Token.";
+        exit;
+    }
+
+    $action = (string)($_POST['action'] ?? '');
+    $appId  = (int)($_POST['app_id'] ?? 0);
+
+    $redirectUrl = '/admin/applications.php';
+    $qs = build_query([]);
+    if ($qs !== '') $redirectUrl .= '?' . $qs;
+
+    if ($appId <= 0 || !in_array($action, ['assign', 'lock', 'unlock'], true)) {
+        header('Location: ' . $redirectUrl);
+        exit;
+    }
+
+    $st = $pdo->prepare("
+        SELECT id, assigned_bbs_id, locked_by_bbs_id, locked_at
+        FROM applications
+        WHERE id = ?
+        LIMIT 1
+    ");
+    $st->execute([$appId]);
+    $cur = $st->fetch(PDO::FETCH_ASSOC);
+
+    if (!$cur) {
+        header('Location: ' . $redirectUrl);
+        exit;
+    }
+
+    $assignedBbsId = $cur['assigned_bbs_id'] !== null ? (int)$cur['assigned_bbs_id'] : 0;
+    $lockedByBbsId = $cur['locked_by_bbs_id'] !== null ? (int)$cur['locked_by_bbs_id'] : 0;
+    $isLocked      = ($lockedByBbsId > 0);
+
+    if ($action === 'assign') {
+        $posted = (int)($_POST['assigned_bbs_id'] ?? 0);
+        $newBbsId = $posted > 0 ? $posted : null;
+
+        if ($newBbsId !== null && !isset($bbsMap[(int)$newBbsId])) {
+            header('Location: ' . $redirectUrl);
+            exit;
+        }
+
+        // assigned_bbs_id setzen
+        $stUp = $pdo->prepare("
+            UPDATE applications
+            SET assigned_bbs_id = ?, updated_at = NOW()
+            WHERE id = ?
+        ");
+        $stUp->execute([$newBbsId, $appId]);
+
+        // Wenn die Bewerbung gelockt ist "im Namen" der bisherigen Zuweisung (Admin-Lock),
+        // dann Lock sauber mitziehen (oder lösen bei Zuweisung = NULL)
+        if ($isLocked && $assignedBbsId > 0 && $lockedByBbsId === $assignedBbsId) {
+            if ($newBbsId === null) {
+                $pdo->prepare("
+                    UPDATE applications
+                    SET locked_by_bbs_id = NULL,
+                        locked_at = NULL,
+                        updated_at = NOW()
+                    WHERE id = ?
+                ")->execute([$appId]);
+            } else {
+                $pdo->prepare("
+                    UPDATE applications
+                    SET locked_by_bbs_id = ?,
+                        locked_at = NOW(),
+                        updated_at = NOW()
+                    WHERE id = ?
+                ")->execute([(int)$newBbsId, $appId]);
+            }
+        }
+
+        try {
+            $meta = json_encode(['assigned_bbs_id' => $newBbsId], JSON_UNESCAPED_UNICODE);
+            $stA = $pdo->prepare("INSERT INTO audit_log (application_id, event, meta_json) VALUES (?, 'assigned_bbs_changed', ?)");
+            $stA->execute([$appId, $meta]);
+        } catch (Throwable $e) {}
+
+        header('Location: ' . $redirectUrl);
+        exit;
+    }
+
+    if ($action === 'lock') {
+        // Lock nur möglich, wenn zugewiesen
+        if ($assignedBbsId <= 0) {
+            header('Location: ' . $redirectUrl);
+            exit;
+        }
+
+        // Admin-Lock: locked_by_bbs_id = assigned_bbs_id
+        // idempotent: wenn bereits gelockt, lassen wir es einfach so (kein Fehler)
+        $stUp = $pdo->prepare("
+            UPDATE applications
+            SET locked_by_bbs_id = ?,
+                locked_at = NOW(),
+                updated_at = NOW()
+            WHERE id = ?
+        ");
+        $stUp->execute([$assignedBbsId, $appId]);
+
+        try {
+            $meta = json_encode(['locked_by_bbs_id' => $assignedBbsId], JSON_UNESCAPED_UNICODE);
+            $stA = $pdo->prepare("INSERT INTO audit_log (application_id, event, meta_json) VALUES (?, 'locked', ?)");
+            $stA->execute([$appId, $meta]);
+        } catch (Throwable $e) {}
+
+        header('Location: ' . $redirectUrl);
+        exit;
+    }
+
+    if ($action === 'unlock') {
+        // Admin-Override: immer entsperren
+        $stUp = $pdo->prepare("
+            UPDATE applications
+            SET locked_by_bbs_id = NULL,
+                locked_at = NULL,
+                updated_at = NOW()
+            WHERE id = ?
+        ");
+        $stUp->execute([$appId]);
+
+        try {
+            $stA = $pdo->prepare("INSERT INTO audit_log (application_id, event, meta_json) VALUES (?, 'unlocked', NULL)");
+            $stA->execute([$appId]);
+        } catch (Throwable $e) {}
+
+        header('Location: ' . $redirectUrl);
+        exit;
+    }
+
+    header('Location: ' . $redirectUrl);
+    exit;
+}
+
+/** Filter / Suche / Paging */
+$limit = 25;
+
+$page = (int)($_GET['page'] ?? 1);
+if ($page < 1) $page = 1;
+$offset = ($page - 1) * $limit;
+
+$status = trim((string)($_GET['status'] ?? ''));
+$allowedStatus = ['', 'draft', 'submitted', 'withdrawn'];
+if (!in_array($status, $allowedStatus, true)) $status = '';
+
+$q = trim((string)($_GET['q'] ?? ''));
+$q = mb_substr($q, 0, 200);
+
+$sort = (string)($_GET['sort'] ?? 'id');
+$dir  = strtolower((string)($_GET['dir'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
+
+// locked sort: nach "hat locked_by_bbs_id" + optional timestamp
+$sortMap = [
+    'id'     => 'a.id',
+    'name'   => 'p.name',
+    'locked' => '(a.locked_by_bbs_id IS NOT NULL) ',
+];
+
+if (!isset($sortMap[$sort])) $sort = 'id';
+$orderBy = $sortMap[$sort] . ' ' . strtoupper($dir) . ', a.id ' . strtoupper($dir);
+
+$where = [];
+$params = [];
+
+if ($status !== '') {
+    $where[] = 'a.status = ?';
+    $params[] = $status;
+}
+
+if ($q !== '') {
+    $where[] = '('
+        . 'a.email LIKE ? OR '
+        . 'COALESCE(p.email, "") LIKE ? OR '
+        . 'COALESCE(p.name, "") LIKE ? OR '
+        . 'COALESCE(p.vorname, "") LIKE ? OR '
+        . 'a.token LIKE ? OR '
+        . 'CAST(a.id AS CHAR) LIKE ?'
+        . ')';
+    $like = '%' . $q . '%';
+    $params = array_merge($params, [$like, $like, $like, $like, $like, $like]);
+}
+
+$whereSql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
+
+$stCount = $pdo->prepare("
+    SELECT COUNT(*)
+    FROM applications a
+    LEFT JOIN personal p ON p.application_id = a.id
+    $whereSql
+");
+$stCount->execute($params);
+$total = (int)$stCount->fetchColumn();
+$totalPages = (int)max(1, (int)ceil($total / $limit));
+
+if ($page > $totalPages) $page = $totalPages;
+$offset = ($page - 1) * $limit;
+
+$st = $pdo->prepare("
+    SELECT
+        a.id,
+        a.status,
+        a.assigned_bbs_id,
+        a.locked_by_bbs_id,
+        a.locked_at,
+        p.name,
+        p.vorname
+    FROM applications a
+    LEFT JOIN personal p ON p.application_id = a.id
+    $whereSql
+    ORDER BY $orderBy
+    LIMIT $limit OFFSET $offset
+");
+$st->execute($params);
+$rows = $st->fetchAll(PDO::FETCH_ASSOC);
+
+$csrf = csrf_token();
+$qs = build_query([]);
+$postAction = '/admin/applications.php' . ($qs !== '' ? ('?' . $qs) : '');
+
+$pageTitle = 'Admin – Bewerbungen';
+$activeNav = 'applications';
+require_once __DIR__ . '/inc/header.php';
+
+/** colspan: Checkbox + ID + Name + Vorname + (Keine + N BBS) + Lock = 6 + N */
+$colspan = 6 + count($bbsRows);
+?>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h4 mb-1">Bewerbungen</h1>
+        <div class="text-muted">Gesamt: <?php echo (int)$total; ?> · Seite <?php echo (int)$page; ?> / <?php echo (int)$totalPages; ?></div>
+    </div>
+</div>
+
+<form class="row g-2 align-items-end mb-3" method="get" action="/admin/applications.php">
+    <div class="col-12 col-md-3">
+        <label class="form-label">Status</label>
+        <select class="form-select" name="status">
+            <option value="" <?php echo $status===''?'selected':''; ?>>Alle</option>
+            <option value="draft" <?php echo $status==='draft'?'selected':''; ?>>draft</option>
+            <option value="submitted" <?php echo $status==='submitted'?'selected':''; ?>>submitted</option>
+            <option value="withdrawn" <?php echo $status==='withdrawn'?'selected':''; ?>>withdrawn</option>
+        </select>
+    </div>
+    <div class="col-12 col-md-6">
+        <label class="form-label">Suche</label>
+        <input class="form-control" type="text" name="q" value="<?php echo h($q); ?>" placeholder="Name, Vorname, E-Mail, Token, ID">
+    </div>
+    <div class="col-12 col-md-3 d-flex gap-2">
+        <button class="btn btn-primary w-100" type="submit">Anwenden</button>
+        <a class="btn btn-outline-secondary w-100" href="/admin/applications.php">Reset</a>
+    </div>
+</form>
+
+<div class="d-flex flex-wrap gap-2 mb-2">
+    <a class="btn btn-outline-primary btn-sm"
+       href="/admin/export_csv.php?mode=all&<?php echo h(build_query(['page' => null])); ?>">
+        CSV exportieren (alle Treffer)
+    </a>
+
+    <button class="btn btn-outline-primary btn-sm" type="submit" form="selectionForm" name="export_selected" value="1">
+        CSV exportieren (ausgewählt)
+    </button>
+</div>
+
+<form id="selectionForm" method="post" action="/admin/export_csv.php">
+    <input type="hidden" name="csrf_token" value="<?php echo h($csrf); ?>">
+    <input type="hidden" name="mode" value="selected">
+</form>
+
+<div class="card shadow-sm">
+    <div class="admin-table-wrap">
+        <table class="table table-sm table-hover align-middle mb-0 admin-table">
+            <thead class="table-light">
+            <tr>
+                <th style="width:36px;"><input type="checkbox" id="checkAll"></th>
+                <th><a href="<?php echo h(sort_link('id')); ?>">ID<?php echo h(sort_indicator('id')); ?></a></th>
+                <th><a href="<?php echo h(sort_link('name')); ?>">Name<?php echo h(sort_indicator('name')); ?></a></th>
+                <th>Vorname</th>
+
+                <th class="bbs-col">Keine</th>
+                <?php foreach ($bbsRows as $b): ?>
+                    <?php
+                    $label = trim((string)($b['bbs_kurz'] ?? ''));
+                    if ($label === '') $label = trim((string)($b['bbs_schulnummer'] ?? ''));
+                    if ($label === '') $label = (string)($b['bbs_bezeichnung'] ?? '');
+                    ?>
+                    <th class="bbs-col" title="<?php echo h((string)($b['bbs_bezeichnung'] ?? '')); ?>">
+                        <?php echo h($label); ?>
+                    </th>
+                <?php endforeach; ?>
+
+                <th><a href="<?php echo h(sort_link('locked')); ?>">Lock<?php echo h(sort_indicator('locked')); ?></a></th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php if (!$rows): ?>
+                <tr><td colspan="<?php echo (int)$colspan; ?>" class="text-muted p-3">Keine Datensätze gefunden.</td></tr>
+            <?php else: ?>
+                <?php foreach ($rows as $r): ?>
+                    <?php
+                    $appId = (int)$r['id'];
+                    $assignedBbsId = $r['assigned_bbs_id'] !== null ? (int)$r['assigned_bbs_id'] : 0;
+
+                    $lockedByBbsId = $r['locked_by_bbs_id'] !== null ? (int)$r['locked_by_bbs_id'] : 0;
+                    $isLocked = ($lockedByBbsId > 0);
+
+                    $lockedByLabel = '';
+                    if ($isLocked) {
+                        $lockedByLabel = $bbsMap[$lockedByBbsId] ?? ('BBS #' . $lockedByBbsId);
+                    }
+
+                    $lockedAt = $r['locked_at'] ? (string)$r['locked_at'] : '';
+
+                    $formId = 'assignForm' . $appId;
+                    $radioName = 'pick_bbs_' . $appId;
+                    ?>
+                    <tr>
+                        <td>
+                            <input class="form-check-input rowCheck"
+                                   type="checkbox"
+                                   name="ids[]"
+                                   value="<?php echo $appId; ?>"
+                                   form="selectionForm">
+                        </td>
+
+                        <td><?php echo $appId; ?></td>
+                        <td><?php echo h((string)($r['name'] ?? '')); ?></td>
+                        <td><?php echo h((string)($r['vorname'] ?? '')); ?></td>
+
+                        <!-- Hidden Assign Form -->
+                        <td class="bbs-col">
+                            <form id="<?php echo h($formId); ?>" method="post" action="<?php echo h($postAction); ?>" class="m-0">
+                                <input type="hidden" name="csrf_token" value="<?php echo h($csrf); ?>">
+                                <input type="hidden" name="action" value="assign">
+                                <input type="hidden" name="app_id" value="<?php echo $appId; ?>">
+                                <input type="hidden" name="assigned_bbs_id" value="<?php echo (int)$assignedBbsId; ?>">
+                            </form>
+
+                            <input type="radio"
+                                   name="<?php echo h($radioName); ?>"
+                                   value="0"
+                                   data-assign-form="<?php echo h($formId); ?>"
+                                   <?php echo $assignedBbsId === 0 ? 'checked' : ''; ?>>
+                        </td>
+
+                        <?php foreach ($bbsRows as $b): ?>
+                            <?php $bid = (int)$b['bbs_id']; ?>
+                            <td class="bbs-col">
+                                <input type="radio"
+                                       name="<?php echo h($radioName); ?>"
+                                       value="<?php echo $bid; ?>"
+                                       data-assign-form="<?php echo h($formId); ?>"
+                                       <?php echo $assignedBbsId === $bid ? 'checked' : ''; ?>>
+                            </td>
+                        <?php endforeach; ?>
+
+                        <td class="text-nowrap" style="min-width:190px;">
+                            <?php if ($isLocked): ?>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <span class="badge bg-success">LOCK</span>
+                                    <small class="text-muted">
+                                        <?php echo h($lockedByLabel); ?>
+                                        <?php echo $lockedAt ? ' · ' . h($lockedAt) : ''; ?>
+                                    </small>
+                                    <form method="post" action="<?php echo h($postAction); ?>" class="m-0">
+                                        <input type="hidden" name="csrf_token" value="<?php echo h($csrf); ?>">
+                                        <input type="hidden" name="action" value="unlock">
+                                        <input type="hidden" name="app_id" value="<?php echo $appId; ?>">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Unlock</button>
+                                    </form>
+                                </div>
+                            <?php else: ?>
+                                <form method="post" action="<?php echo h($postAction); ?>" class="d-flex gap-2 align-items-center m-0">
+                                    <input type="hidden" name="csrf_token" value="<?php echo h($csrf); ?>">
+                                    <input type="hidden" name="action" value="lock">
+                                    <input type="hidden" name="app_id" value="<?php echo $appId; ?>">
+                                    <button type="submit" class="btn btn-sm btn-outline-success" <?php echo $assignedBbsId > 0 ? '' : 'disabled'; ?>>
+                                        Lock
+                                    </button>
+                                    <?php if ($assignedBbsId <= 0): ?>
+                                        <small class="text-muted">erst zuweisen</small>
+                                    <?php endif; ?>
+                                </form>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<nav class="mt-3">
+    <ul class="pagination pagination-sm">
+        <?php
+        $prev = max(1, $page - 1);
+        $next = min($totalPages, $page + 1);
+
+        $prevUrl = '/admin/applications.php?' . h(build_query(['page' => $prev]));
+        $nextUrl = '/admin/applications.php?' . h(build_query(['page' => $next]));
+        ?>
+        <li class="page-item <?php echo $page <= 1 ? 'disabled' : ''; ?>">
+            <a class="page-link" href="<?php echo $prevUrl; ?>">«</a>
+        </li>
+
+        <?php
+        $start = max(1, $page - 3);
+        $end   = min($totalPages, $page + 3);
+        for ($p = $start; $p <= $end; $p++):
+            $url = '/admin/applications.php?' . h(build_query(['page' => $p]));
+            ?>
+            <li class="page-item <?php echo $p === $page ? 'active' : ''; ?>">
+                <a class="page-link" href="<?php echo $url; ?>"><?php echo (int)$p; ?></a>
+            </li>
+        <?php endfor; ?>
+
+        <li class="page-item <?php echo $page >= $totalPages ? 'disabled' : ''; ?>">
+            <a class="page-link" href="<?php echo $nextUrl; ?>">»</a>
+        </li>
+    </ul>
+</nav>
+
+<script>
+    const checkAll = document.getElementById('checkAll');
+    const rowChecks = document.querySelectorAll('.rowCheck');
+
+    if (checkAll) {
+        checkAll.addEventListener('change', () => {
+            rowChecks.forEach(cb => cb.checked = checkAll.checked);
+        });
+    }
+
+    // Auto-Save: Radio -> Hidden im Form setzen -> submit
+    document.querySelectorAll('input[data-assign-form]').forEach(el => {
+        el.addEventListener('change', () => {
+            const formId = el.getAttribute('data-assign-form');
+            const form = document.getElementById(formId);
+            if (!form) return;
+
+            const hidden = form.querySelector('input[name="assigned_bbs_id"]');
+            if (!hidden) return;
+
+            hidden.value = el.value;
+            form.submit();
+        });
+    });
+</script>
+
+<?php require_once __DIR__ . '/inc/footer.php'; ?>
