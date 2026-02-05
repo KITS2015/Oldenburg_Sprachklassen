@@ -96,6 +96,11 @@ $st = $pdo->prepare("
         a.created_at,
         a.updated_at,
 
+        -- Zuweisung / Lock (für BoB-Portal UI)
+        a.assigned_bbs_id,
+        a.locked_by_bbs_id,
+        a.locked_at,
+
         p.name, p.vorname, p.geschlecht, p.geburtsdatum, p.geburtsort_land, p.staatsang,
         p.strasse, p.plz, p.wohnort, p.telefon, p.email, p.weitere_angaben, p.dsgvo_ok,
 
