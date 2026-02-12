@@ -2435,7 +2435,7 @@ le bulletin du dernier semestre',
             // =======================
             // STEP Start: Index (AR)
             // =======================
-            'index.title' => 'مدرسة التهيئة المهنية – اللغة والاندماج – صفوف اللغة',
+            'index.title' => 'index.title' => 'مرحبًا بكم في التسجيل عبر الإنترنت – مدرسة التهيئة المهنية للغة والاندماج',
             'index.lead'  => 'هذه الخدمة مخصّصة للوافدين الجدد إلى أولدنبورغ. يساعدنا النموذج على التواصل معكم واختيار العروض المناسبة.',
             'index.bullets' => [
                 'يرجى تجهيز بيانات الاتصال ووثائق الهوية (إن وُجدت).',
@@ -4411,7 +4411,7 @@ son yarıyıl karnesi',
             // =======================
             // STEP Start: Index (FA)
             // =======================
-            'index.title' => 'ثبت‌نام آنلاین – کلاس‌های زبان',
+            'index.title' => 'به ثبت‌نام آنلاین خوش آمدید – مدرسه ورود به حرفه، زبان و ادغام',
             'index.lead'  => 'این خدمت برای افرادی است که تازه به اولدن‌بورگ آمده‌اند. این فرم به ما کمک می‌کند با شما تماس بگیریم و گزینه‌های مناسب را پیدا کنیم.',
             'index.bullets' => [
                 'لطفاً اطلاعات تماس و مدارک شناسایی را (در صورت وجود) آماده داشته باشید.',
@@ -5070,7 +5070,7 @@ son yarıyıl karnesi',
             // =======================
             // STEP Start: Index (VN)
             // =======================
-            'index.title' => 'Chào mừng đến với đăng ký trực tuyến – Lớp học tiếng',
+            'index.title' => 'Chào mừng đến với đăng ký trực tuyến – Trường khởi đầu nghề nghiệp – Ngôn ngữ và hội nhập',
             'index.lead'  => 'Dịch vụ này dành cho những người mới đến Oldenburg. Biểu mẫu giúp chúng tôi liên hệ với bạn và tìm các lựa chọn phù hợp.',
             'index.bullets' => [
                 'Vui lòng chuẩn bị thông tin liên hệ và giấy tờ tùy thân (nếu có).',
