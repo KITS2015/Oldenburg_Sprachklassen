@@ -5,7 +5,7 @@ declare(strict_types=1);
 /**
  * Zentrale i18n-Helfer
  * - Sprach-Erkennung: GET > Session > Cookie > Browser > de
- * - t(): String-Übersetzung
+ * - t(): String-Übersetzunghttps://github.com/KITS2015/Oldenburg_Sprachklassen/blob/main/app/i18n.php
  * - t_arr(): Array-Übersetzung (Bullets etc.)
  * - i18n_languages(): verfügbare Sprachen (Anzeige)
  * - i18n_is_rtl(): RTL-Check
