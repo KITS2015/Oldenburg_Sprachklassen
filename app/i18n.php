@@ -92,7 +92,7 @@ function i18n_dict(): array {
             // =======================
             // Start: Index (DE)
             // =======================
-            'index.title' => 'Willkommen zur Online-Anmeldung – Sprachklassen',
+            'index.title' => 'Willkommen zur Online-Anmeldung – Berufseinstiegsschule Sprache und Integration',
             'index.lead'  => 'Dieses Angebot richtet sich an neu zugewanderte Menschen in Oldenburg. Das Formular hilft uns, Kontakt aufzunehmen und passende Angebote zu finden.',
             'index.bullets' => [
                 'Halten Sie bitte Kontaktdaten und Ausweisdokumente bereit (falls vorhanden).',
