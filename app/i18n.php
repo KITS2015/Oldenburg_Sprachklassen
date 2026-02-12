@@ -620,7 +620,7 @@ Sie erhalten mit der Zusage der Schule die Aufforderung, diese Dateien nachzurei
         // EN
         // ============================================================
         'en' => [
-            'index.title' => 'Welcome to the Online Registration – Language Classes',
+            'index.title' => 'Welcome to the Online Registration – Vocational Entry School – Language and Integration',
             'index.lead'  => 'This service is for newly arrived people in Oldenburg. The form helps us contact you and find suitable options.',
             'index.bullets' => [
                 'Please have your contact details and ID/passport ready (if available).',
@@ -1114,7 +1114,7 @@ most recent half-year report card',
             // =======================
             // STEP Start: Index (FR)
             // =======================
-            'index.title' => 'Bienvenue – Inscription en ligne aux cours de langue',
+            'index.title' => 'Bienvenue – École d’insertion professionnelle – Langue et intégration',
             'index.lead'  => 'Ce service s’adresse aux personnes nouvellement arrivées à Oldenburg. Le formulaire nous aide à vous contacter et à trouver une offre adaptée.',
             'index.bullets' => [
                 'Veuillez préparer vos coordonnées et une pièce d’identité (si disponible).',
@@ -1775,7 +1775,7 @@ le bulletin du dernier semestre',
             // =======================
             // STEP Start: Index (UK)
             // =======================
-            'index.title' => 'Ласкаво просимо до онлайн-реєстрації – мовні класи',
+            'index.title' => 'Ласкаво просимо до онлайн-реєстрації – Професійно-орієнтаційна школа – Мова та інтеграція',
             'index.lead'  => 'Ця послуга призначена для людей, які нещодавно прибули до Ольденбурга. Форма допоможе нам зв’язатися з вами та підібрати відповідні пропозиції.',
             'index.bullets' => [
                 'Будь ласка, підготуйте контактні дані та документ, що посвідчує особу (за наявності).',
@@ -2435,7 +2435,7 @@ le bulletin du dernier semestre',
             // =======================
             // STEP Start: Index (AR)
             // =======================
-            'index.title' => 'مرحبًا بكم في التسجيل الإلكتروني – صفوف اللغة',
+            'index.title' => 'مدرسة التهيئة المهنية – اللغة والاندماج – صفوف اللغة',
             'index.lead'  => 'هذه الخدمة مخصّصة للوافدين الجدد إلى أولدنبورغ. يساعدنا النموذج على التواصل معكم واختيار العروض المناسبة.',
             'index.bullets' => [
                 'يرجى تجهيز بيانات الاتصال ووثائق الهوية (إن وُجدت).',
@@ -3094,7 +3094,7 @@ le bulletin du dernier semestre',
             // =======================
             // STEP Start: Index (RU)
             // =======================
-            'index.title' => 'Добро пожаловать на онлайн-регистрацию – языковые классы',
+            'index.title' => 'Добро пожаловать на онлайн-регистрацию – Школа профессионального старта — язык и интеграция',
             'index.lead'  => 'Этот сервис предназначен для недавно прибывших людей в Ольденбург. Форма помогает нам связаться с вами и подобрать подходящие предложения.',
             'index.bullets' => [
                 'Пожалуйста, подготовьте контактные данные и документы, удостоверяющие личность (если есть).',
@@ -3752,7 +3752,7 @@ le bulletin du dernier semestre',
             // =======================
             // STEP Start: Index (TR)
             // =======================
-            'index.title' => 'Çevrim içi Başvuru – Dil Sınıfları',
+            'index.title' => 'Çevrim içi Başvuru – Mesleğe Giriş Okulu – Dil ve Uyum',
             'index.lead'  => 'Bu hizmet, Oldenburg’a yeni göç eden kişiler içindir. Form, sizinle iletişime geçmemize ve uygun seçenekleri bulmamıza yardımcı olur.',
             'index.bullets' => [
                 'Lütfen iletişim bilgilerinizi ve kimlik belgenizi (varsa) hazır bulundurun.',
