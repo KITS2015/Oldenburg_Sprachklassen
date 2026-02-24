@@ -34,7 +34,7 @@ foreach ($bbsRows as $b) {
     $bbsMap[(int)$b['bbs_id']] = (string)($b['bbs_bezeichnung'] ?? '');
 }
 
-/** POST: assign / lock / unlock (Admin hat immer volle Rechte) */
+/** POST: assign / lock / unlock / delete_selected (Admin hat immer volle Rechte) */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!csrf_verify($_POST['csrf_token'] ?? '')) {
@@ -49,6 +49,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $redirectUrl = '/admin/applications.php';
     $qs = build_query([]);
     if ($qs !== '') $redirectUrl .= '?' . $qs;
+
+    // --- NEU: Bulk-Delete (ausgewählt) ---
+    if ($action === 'delete_selected') {
+        $ids = $_POST['ids'] ?? [];
+        if (!is_array($ids)) $ids = [];
+
+        $ids = array_values(array_unique(array_map('intval', $ids)));
+        $ids = array_filter($ids, function($v){ return $v > 0; });
+
+        if (!$ids) {
+            header('Location: ' . $redirectUrl);
+            exit;
+        }
+
+        // Transaktion: erst Children, dann applications
+        $pdo->beginTransaction();
+        try {
+            $ph = implode(',', array_fill(0, count($ids), '?'));
+
+            // Child-Tabellen (je nach DB-Design)
+            $pdo->prepare("DELETE FROM uploads  WHERE application_id IN ($ph)")->execute($ids);
+            $pdo->prepare("DELETE FROM contacts WHERE application_id IN ($ph)")->execute($ids);
+            $pdo->prepare("DELETE FROM school   WHERE application_id IN ($ph)")->execute($ids);
+            $pdo->prepare("DELETE FROM personal WHERE application_id IN ($ph)")->execute($ids);
+
+            // Audit (optional, falls FK existiert)
+            try {
+                $pdo->prepare("DELETE FROM audit_log WHERE application_id IN ($ph)")->execute($ids);
+            } catch (Throwable $e) {}
+
+            // Parent
+            $pdo->prepare("DELETE FROM applications WHERE id IN ($ph)")->execute($ids);
+
+            $pdo->commit();
+        } catch (Throwable $e) {
+            $pdo->rollBack();
+            // Optional: Fehler als Flash o.ä. – hier simpel:
+            http_response_code(500);
+            echo "Löschen fehlgeschlagen: " . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');
+            exit;
+        }
+
+        header('Location: ' . $redirectUrl);
+        exit;
+    }
 
     if ($appId <= 0 || !in_array($action, ['assign', 'lock', 'unlock'], true)) {
         header('Location: ' . $redirectUrl);
@@ -130,7 +175,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Admin-Lock: locked_by_bbs_id = assigned_bbs_id
-        // idempotent: wenn bereits gelockt, lassen wir es einfach so (kein Fehler)
         $stUp = $pdo->prepare("
             UPDATE applications
             SET locked_by_bbs_id = ?,
@@ -303,11 +347,22 @@ $colspan = 6 + count($bbsRows);
     <button class="btn btn-outline-primary btn-sm" type="submit" form="selectionForm" name="export_selected" value="1">
         CSV exportieren (ausgewählt)
     </button>
+
+    <!-- NEU: Löschen (ausgewählt) -->
+    <button class="btn btn-outline-danger btn-sm" type="button" id="btnDeleteSelected">
+        Ausgewählte löschen
+    </button>
 </div>
 
 <form id="selectionForm" method="post" action="/admin/export_csv.php">
     <input type="hidden" name="csrf_token" value="<?php echo h($csrf); ?>">
     <input type="hidden" name="mode" value="selected">
+</form>
+
+<!-- NEU: Delete-Form (separat, damit export_csv.php nicht betroffen ist) -->
+<form id="deleteForm" method="post" action="<?php echo h($postAction); ?>" style="display:none;">
+    <input type="hidden" name="csrf_token" value="<?php echo h($csrf); ?>">
+    <input type="hidden" name="action" value="delete_selected">
 </form>
 
 <div class="card shadow-sm">
@@ -361,9 +416,8 @@ $colspan = 6 + count($bbsRows);
                         <td>
                             <input class="form-check-input rowCheck"
                                    type="checkbox"
-                                   name="ids[]"
                                    value="<?php echo $appId; ?>"
-                                   form="selectionForm">
+                                   data-app-id="<?php echo $appId; ?>">
                         </td>
 
                         <td><?php echo $appId; ?></td>
@@ -488,6 +542,52 @@ $colspan = 6 + count($bbsRows);
             form.submit();
         });
     });
+
+    // NEU: Bulk-Delete mit Bestätigung
+    const btnDelete = document.getElementById('btnDeleteSelected');
+    const deleteForm = document.getElementById('deleteForm');
+
+    function getSelectedIds() {
+        const ids = [];
+        document.querySelectorAll('.rowCheck').forEach(cb => {
+            if (cb.checked) {
+                const id = parseInt(cb.getAttribute('data-app-id'), 10);
+                if (!isNaN(id) && id > 0) ids.push(id);
+            }
+        });
+        return ids;
+    }
+
+    if (btnDelete && deleteForm) {
+        btnDelete.addEventListener('click', () => {
+            const ids = getSelectedIds();
+            if (!ids.length) {
+                alert('Bitte mindestens einen Datensatz auswählen.');
+                return;
+            }
+
+            const msg = 'Sollen die ausgewählten Datensätze wirklich gelöscht werden?\n\n'
+                + 'Anzahl: ' + ids.length + '\n'
+                + 'IDs: ' + ids.join(', ') + '\n\n'
+                + 'Dieser Vorgang kann nicht rückgängig gemacht werden.';
+
+            if (!confirm(msg)) return;
+
+            // Hidden inputs ids[] ins Delete-Form einfügen
+            // vorher leeren (außer csrf/action)
+            deleteForm.querySelectorAll('input[name="ids[]"]').forEach(n => n.remove());
+
+            ids.forEach(id => {
+                const inp = document.createElement('input');
+                inp.type = 'hidden';
+                inp.name = 'ids[]';
+                inp.value = String(id);
+                deleteForm.appendChild(inp);
+            });
+
+            deleteForm.submit();
+        });
+    }
 </script>
 
 <?php require_once __DIR__ . '/inc/footer.php'; ?>
