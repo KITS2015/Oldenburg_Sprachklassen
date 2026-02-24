@@ -53,6 +53,94 @@ function require_bob(PDO $pdo): array {
 
 $bbs = require_bob($pdo);
 
+// --- Detailmodus: /api/bob/applications.php?id=123 ---
+$appId = (int)($_GET['id'] ?? 0);
+if ($appId > 0) {
+
+    // 1 Datensatz (wie Liste, aber WHERE a.id=?)
+    $st = $pdo->prepare("
+        SELECT
+            a.id,
+            a.token,
+            a.status,
+            a.created_at,
+            a.updated_at,
+
+            a.assigned_bbs_id,
+            a.locked_by_bbs_id,
+            a.locked_at,
+
+            p.name, p.vorname, p.geschlecht, p.geburtsdatum, p.geburtsort_land, p.staatsang,
+            p.strasse, p.plz, p.wohnort, p.telefon, p.email, p.weitere_angaben, p.dsgvo_ok,
+
+            s.schule_aktuell, s.schule_freitext, s.schule_label, s.klassenlehrer, s.mail_lehrkraft,
+            s.seit_monat, s.seit_jahr, s.seit_text, s.jahre_in_de, s.schule_herkunft, s.jahre_schule_herkunft,
+            s.familiensprache, s.deutsch_niveau, s.interessen
+
+        FROM applications a
+        LEFT JOIN personal p ON p.application_id = a.id
+        LEFT JOIN school   s ON s.application_id = a.id
+        WHERE a.id = ?
+        LIMIT 1
+    ");
+    $st->execute([$appId]);
+    $row = $st->fetch(PDO::FETCH_ASSOC);
+
+    if (!$row) {
+        json_out(404, ['ok' => false, 'error' => 'not_found']);
+    }
+
+    // contacts
+    $contacts = [];
+    $stC = $pdo->prepare("
+        SELECT rolle, name, tel, mail, notiz
+        FROM contacts
+        WHERE application_id = ?
+        ORDER BY id ASC
+    ");
+    $stC->execute([$appId]);
+    while ($c = $stC->fetch(PDO::FETCH_ASSOC)) {
+        $contacts[] = [
+            'rolle' => (string)($c['rolle'] ?? ''),
+            'name'  => (string)($c['name'] ?? ''),
+            'tel'   => (string)($c['tel'] ?? ''),
+            'mail'  => (string)($c['mail'] ?? ''),
+            'notiz' => (string)($c['notiz'] ?? ''),
+        ];
+    }
+    $row['contacts'] = $contacts;
+
+    // uploads (Metadaten)
+    $uploads = [];
+    $stU = $pdo->prepare("
+        SELECT typ, filename, mime, size_bytes, uploaded_at
+        FROM uploads
+        WHERE application_id = ?
+        ORDER BY id ASC
+    ");
+    $stU->execute([$appId]);
+    while ($u = $stU->fetch(PDO::FETCH_ASSOC)) {
+        $uploads[] = [
+            'typ'         => (string)($u['typ'] ?? ''),
+            'filename'    => (string)($u['filename'] ?? ''),
+            'mime'        => (string)($u['mime'] ?? ''),
+            'size_bytes'  => (int)($u['size_bytes'] ?? 0),
+            'uploaded_at' => (string)($u['uploaded_at'] ?? ''),
+        ];
+    }
+    $row['uploads'] = $uploads;
+
+    json_out(200, [
+        'ok' => true,
+        'bbs' => [
+            'bbs_id' => (int)$bbs['bbs_id'],
+            'schulnummer' => (string)$bbs['bbs_schulnummer'],
+            'bezeichnung' => (string)$bbs['bbs_bezeichnung'],
+        ],
+        'data' => $row,
+    ]);
+}
+
 // --- Paging ---
 $limit = (int)($_GET['limit'] ?? 200);
 if ($limit < 1) $limit = 1;
