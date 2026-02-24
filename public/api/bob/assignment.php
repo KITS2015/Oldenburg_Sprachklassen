@@ -7,6 +7,28 @@ require_once __DIR__ . '/../../../app/config.php';
 
 date_default_timezone_set('Europe/Berlin');
 
+// --- CORS (BoB läuft auf anderem Host) ---
+$origin = isset($_SERVER['HTTP_ORIGIN']) ? (string)$_SERVER['HTTP_ORIGIN'] : '';
+$allowOrigins = array(
+    'https://silbobdev.svs.schule',
+    // ggf. weitere erlaubte BoB-Hosts:
+    // 'https://silbob.svs.schule',
+);
+
+if ($origin !== '' && in_array($origin, $allowOrigins, true)) {
+    header('Access-Control-Allow-Origin: ' . $origin);
+    header('Vary: Origin');
+    header('Access-Control-Allow-Credentials: true');
+    header('Access-Control-Allow-Headers: Authorization, Content-Type, Accept');
+    header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+}
+
+// Preflight muss ohne Auth funktionieren
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
 // DB
 $dsn = 'mysql:host=127.0.0.1;dbname=' . APP_DB_NAME . ';port=3306;charset=utf8mb4';
 $pdo = pdo($dsn, APP_DB_USER, APP_DB_PASS);
