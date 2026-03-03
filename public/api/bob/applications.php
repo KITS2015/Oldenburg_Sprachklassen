@@ -11,6 +11,12 @@ date_default_timezone_set('Europe/Berlin');
 $origin = isset($_SERVER['HTTP_ORIGIN']) ? (string)$_SERVER['HTTP_ORIGIN'] : '';
 $allowOrigins = array(
     'https://silbobdev.svs.schule',
+    // Produktiv/weitere Schulen:
+    'https://bbs-3-ol.svs.schule',
+    'https://bbs-haarentor-ol.svs.schule',
+    'https://bbs-wechloy-ol.svs.schule',
+    'https://bbs-bztg-ol.svs.schule',
+
     // ggf. weitere erlaubte BoB-Hosts:
     // 'https://silbob.svs.schule',
 );
