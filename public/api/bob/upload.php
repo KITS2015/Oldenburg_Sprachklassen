@@ -7,7 +7,9 @@ require_once __DIR__ . '/../../../app/config.php';
 date_default_timezone_set('Europe/Berlin');
 
 // --- CORS (BoB läuft auf anderem Host) ---
-$origin = isset($_SERVER['HTTP_ORIGIN']) ? (string)$_SERVER['HTTP_ORIGIN'] : '';
+$origin = isset($_SERVER['HTTP_ORIGIN']) ? trim((string)$_SERVER['HTTP_ORIGIN']) : '';
+$originLower = strtolower($origin);
+
 $allowOrigins = array(
     'https://silbobdev.svs.schule',
     'https://bbs-3-ol.svs.schule',
@@ -15,6 +17,33 @@ $allowOrigins = array(
     'https://bbs-wechloy-ol.svs.schule',
     'https://bbs-bztg-ol.svs.schule',
 );
+
+$allowMap = array();
+for ($i=0; $i<count($allowOrigins); $i++) {
+    $allowMap[strtolower($allowOrigins[$i])] = true;
+}
+
+if ($origin !== '' && isset($allowMap[$originLower])) {
+    header('Access-Control-Allow-Origin: ' . $origin);
+    header('Vary: Origin');
+
+    // Credentials kannst du drin lassen; wichtig ist: nicht "*" als Origin
+    header('Access-Control-Allow-Credentials: true');
+
+    // WICHTIG: X-Requested-With + evtl. Range (PDF Viewer) erlauben
+    header('Access-Control-Allow-Headers: Authorization, Content-Type, Accept, X-Requested-With, Range');
+
+    header('Access-Control-Allow-Methods: GET, OPTIONS');
+
+    // Optional aber hilfreich (PDF/Viewer/Debug):
+    header('Access-Control-Expose-Headers: Content-Type, Content-Disposition, Content-Length');
+}
+
+// Preflight muss ohne Auth funktionieren
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
 
 if ($origin !== '' && in_array($origin, $allowOrigins, true)) {
     header('Access-Control-Allow-Origin: ' . $origin);
