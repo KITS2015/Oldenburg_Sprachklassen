@@ -4,6 +4,9 @@ declare(strict_types=1);
 // Datei: app/config.php
 // UTF-8, no BOM
 
+// Upload Verzeichnis
+const APP_UPLOADS = '/var/www/oldenburg.anmeldung.schule/uploads';
+
 // DB Admin-Konto NUR für init_db.php (kann danach entzogen werden)
 const DB_ADMIN_DSN  = 'mysql:host=127.0.0.1;port=3306;charset=utf8mb4';
 const DB_ADMIN_USER = 'root';
