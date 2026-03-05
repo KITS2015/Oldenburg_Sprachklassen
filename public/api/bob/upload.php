@@ -19,23 +19,20 @@ $allowOrigins = array(
 );
 
 $allowMap = array();
-for ($i=0; $i<count($allowOrigins); $i++) {
+for ($i = 0; $i < count($allowOrigins); $i++) {
     $allowMap[strtolower($allowOrigins[$i])] = true;
 }
 
 if ($origin !== '' && isset($allowMap[$originLower])) {
     header('Access-Control-Allow-Origin: ' . $origin);
     header('Vary: Origin');
-
-    // Credentials kannst du drin lassen; wichtig ist: nicht "*" als Origin
     header('Access-Control-Allow-Credentials: true');
 
-    // WICHTIG: X-Requested-With + evtl. Range (PDF Viewer) erlauben
+    // jQuery/XHR + PDF Range
     header('Access-Control-Allow-Headers: Authorization, Content-Type, Accept, X-Requested-With, Range');
-
     header('Access-Control-Allow-Methods: GET, OPTIONS');
 
-    // Optional aber hilfreich (PDF/Viewer/Debug):
+    // hilfreich für Viewer/Debug
     header('Access-Control-Expose-Headers: Content-Type, Content-Disposition, Content-Length');
 }
 
@@ -45,28 +42,16 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS
     exit;
 }
 
-if ($origin !== '' && in_array($origin, $allowOrigins, true)) {
-    header('Access-Control-Allow-Origin: ' . $origin);
-    header('Vary: Origin');
-    header('Access-Control-Allow-Credentials: true');
-    header('Access-Control-Allow-Headers: Authorization, Content-Type, Accept');
-    header('Access-Control-Allow-Methods: GET, OPTIONS');
-}
-
-if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204);
-    exit;
-}
-
 // DB
 $dsn = 'mysql:host=127.0.0.1;dbname=' . APP_DB_NAME . ';port=3306;charset=utf8mb4';
 $pdo = pdo($dsn, APP_DB_USER, APP_DB_PASS);
 
-function bearer_token(): string {
+function bearer_token(): string
+{
     $hdr = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
     if ($hdr === '' && function_exists('apache_request_headers')) {
         $headers = apache_request_headers();
-        $hdr = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+        $hdr = $headers['Authorization'] ?? ($headers['authorization'] ?? '');
     }
     if (preg_match('/^\s*Bearer\s+(.+)\s*$/i', $hdr, $m)) {
         return trim($m[1]);
@@ -74,13 +59,16 @@ function bearer_token(): string {
     return '';
 }
 
-function require_bob(PDO $pdo): array {
+function require_bob(PDO $pdo): array
+{
     $token = bearer_token();
     if ($token === '') {
         http_response_code(401);
+        header('Content-Type: text/plain; charset=utf-8');
         echo "missing_bearer_token";
         exit;
     }
+
     $hash = hash('sha256', $token);
 
     $st = $pdo->prepare("
@@ -89,13 +77,16 @@ function require_bob(PDO $pdo): array {
         WHERE is_active=1 AND rest_token_hash=?
         LIMIT 1
     ");
-    $st->execute([$hash]);
+    $st->execute(array($hash));
     $bbs = $st->fetch(PDO::FETCH_ASSOC);
+
     if (!$bbs) {
         http_response_code(401);
+        header('Content-Type: text/plain; charset=utf-8');
         echo "invalid_token";
         exit;
     }
+
     return $bbs;
 }
 
@@ -106,11 +97,13 @@ $typ   = (string)($_GET['typ'] ?? '');
 
 if ($appId <= 0) {
     http_response_code(400);
+    header('Content-Type: text/plain; charset=utf-8');
     echo "invalid_app_id";
     exit;
 }
 if (!in_array($typ, array('zeugnis', 'lebenslauf'), true)) {
     http_response_code(400);
+    header('Content-Type: text/plain; charset=utf-8');
     echo "invalid_typ";
     exit;
 }
@@ -121,33 +114,61 @@ $st = $pdo->prepare("
     WHERE application_id = ? AND typ = ?
     LIMIT 1
 ");
-$st->execute([$appId, $typ]);
+$st->execute(array($appId, $typ));
 $u = $st->fetch(PDO::FETCH_ASSOC);
 
 if (!$u || empty($u['filename'])) {
     http_response_code(404);
+    header('Content-Type: text/plain; charset=utf-8');
     echo "not_found";
     exit;
 }
 
-$uploadDir = rtrim(APP_UPLOADS, '/');
+// Upload-Verzeichnis (muss in config.php als const APP_UPLOADS gesetzt sein)
+if (!defined('APP_UPLOADS') || !APP_UPLOADS) {
+    http_response_code(500);
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "upload_dir_not_configured";
+    exit;
+}
+
+$uploadDir = rtrim((string)APP_UPLOADS, '/');
+
+// Filename absichern (kein ../)
 $fn = (string)$u['filename'];
+$fn = str_replace("\\", "/", $fn);
+$fn = ltrim($fn, "/");
+
+if ($fn === '' || strpos($fn, '..') !== false) {
+    http_response_code(400);
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "invalid_filename";
+    exit;
+}
+
 $path = $uploadDir . '/' . $fn;
 
 if (!is_file($path)) {
     http_response_code(404);
+    header('Content-Type: text/plain; charset=utf-8');
     echo "file_missing";
     exit;
 }
 
-$mime = (string)$u['mime'];
-if ($mime === '') $mime = 'application/octet-stream';
+$mime = (string)($u['mime'] ?? '');
+if ($mime === '' || $mime === 'application/octet-stream') {
+    $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
+    if ($ext === 'pdf') $mime = 'application/pdf';
+    elseif ($ext === 'jpg' || $ext === 'jpeg') $mime = 'image/jpeg';
+    elseif ($ext === 'png') $mime = 'image/png';
+    else $mime = 'application/octet-stream';
+}
 
-$ext = '';
+$extForName = '';
 $dot = strrpos($fn, '.');
-if ($dot !== false) $ext = substr($fn, $dot); // inkl. Punkt
+if ($dot !== false) $extForName = substr($fn, $dot);
 
-$dlName = $typ . '_' . $appId . ($ext ?: '');
+$dlName = $typ . '_' . $appId . ($extForName ? $extForName : '');
 
 header('Content-Type: ' . $mime);
 header('Content-Length: ' . (string)filesize($path));
